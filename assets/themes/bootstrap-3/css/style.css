@@ -36,7 +36,7 @@ h1 small, h2 small, h3 small, h4 small, h5 small, h6 small, .h1 small, .h2 small
 .posts article:hover {
     background-color: #eee;
     padding: 1em;
-    margin: -1em 0 1em -1em;
+    margin: -1em -1em 1em -1em;
 }
 .posts article h1 {
     font-size: 2em;

@@ -16,7 +16,7 @@ author :
   github : neocjmix
   twitter : cjmix
   feedburner : 
-
+  
 # The production_url is only used when full-domain names are needed
 # such as sitemap.txt 
 # Most places will/should use BASE_PATH to make the urls
@@ -82,7 +82,7 @@ JB :
   comments :
     provider : disqus
     disqus :
-      short_name : jekyllbootstrap
+      short_name : neocjmix
     livefyre :
       site_id : 123
     intensedebate :
@@ -93,7 +93,7 @@ JB :
       width: 580
       colorscheme: light
     duoshuo :
-      short_name : jekyllbootstrap
+      short_name : neocjmix
    
   # Settings for analytics helper
   # Set 'provider' to the analytics provider you want to use.
