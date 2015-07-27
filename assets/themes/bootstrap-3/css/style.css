@@ -17,10 +17,91 @@
 h1, h2, h3, h4 {
   color: #f22430;
 }
+h2, .h2 {
+    font-size: 2em;
+}
+h1 small, h2 small, h3 small, h4 small, h5 small, h6 small, .h1 small, .h2 small, .h3 small, .h4 small, .h5 small, .h6 small, h1 .small, h2 .small, h3 .small, h4 .small, h5 .small, h6 .small, .h1 .small, .h2 .small, .h3 .small, .h4 .small, .h5 .small, .h6 .small{
+  color: #aaa; 
+}
 #footer {
   background-color: #fdcd60;
 }
 
+
+/* posts list */
+.posts article {
+    padding: 0 0 1em;
+    margin: 0 0 1em 0;
+}
+.posts article:hover {
+    background-color: #eee;
+    padding: 1em;
+    margin: -1em 0 1em -1em;
+}
+.posts article h1 {
+    font-size: 2em;
+    display: inline;
+}
+.posts article h1 a {
+    color: red;
+}
+.posts article .date {
+    margin: 0 1em 0 0.5em;
+    text-align: right;
+    line-height: 3em;
+    vertical-align: top;
+    font-style: italic;
+}
+.posts article .date:before {
+    content: '\002014';
+    margin: 0 0.5em 0 0;
+}
+.posts article .categories {
+    display: inline-block;
+    padding: 0;
+    border-right: solid 1px #eee;
+    margin-right: .5em;
+}
+.posts article .categories li {
+    display: inline;
+    margin: 0 0.5em 0 0;
+    font-size: 1.4em;
+}
+.posts article .categories li a {
+    color: #aaa;
+}
+.posts article .excerpt{
+  padding: 1em;
+}
+.posts article .tags {
+    padding: 0 0 0 1em;
+}
+.posts article .tags h2 {
+    font-size: 1em;
+    display: inline;
+    color: #aaa;
+    padding-right: 0.5em;
+}
+.posts article .tags h2:after {
+    content: ' : ';
+}
+.posts article .tags ul {
+    display: inline-block;
+    padding: 0;
+}
+.posts article .tags li {
+    display: inline;
+}
+.posts article .tags li:after {
+    content: ',';
+}
+
+.posts article .tags li:last-child:after {
+    content: '';
+}
+.posts article .tags li a {
+    color: #aaa;
+}
 
 
 /* posts index */
