@@ -14,11 +14,16 @@
   float: right; }*/
 
 /* Jekyll Bootstrap Colors */
+
 h1, h2, h3, h4 {
   color: #f22430;
 }
 h2, .h2 {
     font-size: 2em;
+}
+h3, .h3 {
+    font-size: 21px;
+    color: #B30000;
 }
 h1 small, h2 small, h3 small, h4 small, h5 small, h6 small, .h1 small, .h2 small, .h3 small, .h4 small, .h5 small, .h6 small, h1 .small, h2 .small, h3 .small, h4 .small, h5 .small, h6 .small, .h1 .small, .h2 .small, .h3 .small, .h4 .small, .h5 .small, .h6 .small{
   color: #aaa; 
@@ -122,6 +127,27 @@ h1 small, h2 small, h3 small, h4 small, h5 small, h6 small, .h1 small, .h2 small
 .post-full .date {
   margin-bottom: 20px;
   font-weight: bold; }
+
+.post-full .content h1,
+.post-full .content h2,
+.post-full .content h3 {
+    margin-top: 2em;
+}
+
+.post-full .content h4,
+.post-full .content h5,
+.post-full .content h6 {
+    margin-top: 1em;
+}
+
+.post-full .content img {
+    margin: 1em auto;
+    text-align: center;
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border: solid 1px #ddd;
+}
 
 /* tag_box */
 .tag_box {
