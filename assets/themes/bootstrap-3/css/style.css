@@ -25,6 +25,12 @@ h3, .h3 {
     font-size: 21px;
     color: #B30000;
 }
+h4, .h4 {
+    color: #AB0000;
+}
+h5, .h5 {
+    color: #7B0202;
+}
 h1 small, h2 small, h3 small, h4 small, h5 small, h6 small, .h1 small, .h2 small, .h3 small, .h4 small, .h5 small, .h6 small, h1 .small, h2 .small, h3 .small, h4 .small, h5 .small, h6 .small, .h1 .small, .h2 .small, .h3 .small, .h4 .small, .h5 .small, .h6 .small{
   color: #aaa; 
 }
@@ -141,7 +147,7 @@ h1 small, h2 small, h3 small, h4 small, h5 small, h6 small, .h1 small, .h2 small
 }
 
 .post-full .content img {
-    margin: 1em auto;
+    margin: 2em;
     text-align: center;
     display: block;
     max-width: 100%;
