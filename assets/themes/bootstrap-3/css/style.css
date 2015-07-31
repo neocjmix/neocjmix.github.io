@@ -153,6 +153,7 @@ h1 small, h2 small, h3 small, h4 small, h5 small, h6 small, .h1 small, .h2 small
     max-width: 100%;
     height: auto;
     border: solid 1px #ddd;
+    max-height: 450px;
 }
 
 /* tag_box */
