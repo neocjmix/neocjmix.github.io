@@ -23,13 +23,20 @@ h2, .h2 {
 }
 h3, .h3 {
     font-size: 21px;
-    color: #B30000;
+    color: #E00000;
+    font-weight: bold;
 }
 h4, .h4 {
-    color: #AB0000;
+    color: #BF0000;
+    font-weight: bold;
 }
 h5, .h5 {
-    color: #7B0202;
+    color: #880303;
+    font-weight: bold;
+}
+h6, .h6 {
+    color: black;
+    font-weight: bold;
 }
 h1 small, h2 small, h3 small, h4 small, h5 small, h6 small, .h1 small, .h2 small, .h3 small, .h4 small, .h5 small, .h6 small, h1 .small, h2 .small, h3 .small, h4 .small, h5 .small, h6 .small, .h1 .small, .h2 .small, .h3 .small, .h4 .small, .h5 .small, .h6 .small{
   color: #aaa; 
