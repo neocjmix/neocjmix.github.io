@@ -15,32 +15,56 @@
 
 /* Jekyll Bootstrap Colors */
 
-h1, h2, h3, h4 {
-  color: #f22430;
+h1, .h1{
+    color: #f22430;
+    font-size: 2.6em;
 }
 h2, .h2 {
+    color: #f22430;
     font-size: 2em;
 }
 h3, .h3 {
-    font-size: 21px;
+    font-size: 1.5em;
     color: #E00000;
     font-weight: bold;
 }
 h4, .h4 {
     color: #BF0000;
     font-weight: bold;
+    font-size: 1.3em;
 }
 h5, .h5 {
     color: #880303;
     font-weight: bold;
+    font-size: 1em;
 }
 h6, .h6 {
     color: black;
     font-weight: bold;
+    font-size: 0.85em;
 }
 h1 small, h2 small, h3 small, h4 small, h5 small, h6 small, .h1 small, .h2 small, .h3 small, .h4 small, .h5 small, .h6 small, h1 .small, h2 .small, h3 .small, h4 .small, h5 .small, h6 .small, .h1 .small, .h2 .small, .h3 .small, .h4 .small, .h5 .small, .h6 .small{
   color: #aaa; 
 }
+
+blockquote p {
+    font-size: 1.25em;
+}
+
+p {
+    margin-bottom: 0.7em;
+}
+
+ul, ol {
+    margin-bottom: .6em;
+}
+
+pre {
+    font-size: 0.93em;
+    padding: 0.6em;
+    margin-bottom: 0.7em;
+}
+
 #footer {
   background-color: #fdcd60;
 }
@@ -48,8 +72,8 @@ h1 small, h2 small, h3 small, h4 small, h5 small, h6 small, .h1 small, .h2 small
 
 /* posts list */
 .posts article {
-    padding: 0 0 1em;
-    margin: 0 0 1em 0;
+    padding: 0;
+    margin: 0 0 2em 0;
 }
 .posts article:hover {
     background-color: #eee;
@@ -75,10 +99,11 @@ h1 small, h2 small, h3 small, h4 small, h5 small, h6 small, .h1 small, .h2 small
     margin: 0 0.5em 0 0;
 }
 .posts article .categories {
-    display: inline-block;
-    padding: 0;
+    padding: 0 0 0 10px;
     border-right: solid 1px #eee;
-    margin-right: .5em;
+    margin: 0 0 .2em 0;
+    border-left: solid 3px #ddd;
+    line-height: 1em;
 }
 .posts article .categories li {
     display: inline;
@@ -90,9 +115,12 @@ h1 small, h2 small, h3 small, h4 small, h5 small, h6 small, .h1 small, .h2 small
 }
 .posts article .excerpt{
   padding: 1em;
+  background-color: #fafafa;
+  border: solid 1px #f1f1f1;
+  font-size: 0.4em;
 }
 .posts article .tags {
-    padding: 0 0 0 1em;
+    padding: 0;
 }
 .posts article .tags h2 {
     font-size: 1em;
@@ -145,12 +173,14 @@ h1 small, h2 small, h3 small, h4 small, h5 small, h6 small, .h1 small, .h2 small
 .post-full .content h2,
 .post-full .content h3 {
     margin-top: 2em;
+    margin-bottom: 0.4em;
 }
 
 .post-full .content h4,
 .post-full .content h5,
 .post-full .content h6 {
     margin-top: 1em;
+    margin-bottom: 0.6em;
 }
 
 .post-full .content img {

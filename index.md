@@ -17,9 +17,6 @@ tagline:
         <h1><a href="{{ BASE_PATH }}{{ post.url }}">{{ post.title }}</a></h1>
         <span class="date">{{ post.date | date_to_string }}</span>
       </header>
-      <section class="excerpt">
-        {{ post.content | strip_html | truncatewords:50}}
-      </section>
       <section class="tags">
         <h2>tags</h2>
         <ul>

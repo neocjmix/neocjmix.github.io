@@ -27,6 +27,10 @@ author :
 #
 production_url : http://neocjmix.github.io
 
+# Build settings
+#markdown: kramdown
+markdown: redcarpet
+
 # All Jekyll-Bootstrap specific configurations are namespaced into this hash
 #
 JB :
