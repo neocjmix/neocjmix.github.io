@@ -236,6 +236,33 @@ pre {
     max-height: 450px;
 }
 
+.post-full .content table {
+    display: block;
+    width: 100%;
+    overflow: auto;
+    word-break: normal;
+    word-break: keep-all;
+    margin-bottom: 0.7em;
+}
+
+.post-full .content table th {
+    font-weight: bold
+}
+
+.post-full .content table th,.post-full .content table td {
+    padding: 6px 13px;
+    border: 1px solid #ddd
+}
+
+.post-full .content table tr {
+    background-color: #fff;
+    border-top: 1px solid #ccc
+}
+
+.post-full .content table tr:nth-child(2n) {
+    background-color: #f8f8f8
+}
+
 /* tag_box */
 .tag_box {
   list-style: none;

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>부트스트랩</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <h1>부트스트랩 <small>기본 스타일</small></h1>  
+    <hr />
+    
+    <h2>타이포그래피</h2>  
+    <p class="lead">이 문단은 강조되는 문단입니다. 다음 예제는 부트스트랩에서 기본으로 제공하는 css 스타일 중 일부를 보여줍니다. 그리드 레이아웃과 조합해서 사용하면 별도의 스타일을 입히지 않아도 html만으로 괜찮은 레이아웃을 만들 수 있습니다.</p>
+
+    <p>더 많은 정보가 필요하면 <a href="http://getbootstrap.com/css/">부트스트랩 공식 사이트</a>나, <a href="http://bootstrapk.com/css/">부트스트랩 번역 사이트</a>에서 얻을 수 있습니다.</p>
+    
+    <p>이 문단은 일반 문단입니다. 다음 예제는 부트스트랩에서 기본으로 제공하는 css 스타일을 보여줍니다. 그리드 레이아웃과 조합해서 사용하면 별도의 스타일을 입히지 않아도 html만으로 괜찮은 레이아웃을 만들 수 있습니다. <mark>이렇게 일부분을 강조하거나, </mark> <del>취소할 수도</del> 있습니다. <u>또 밑줄을 그을 수도 있습니다.</u> <small>작은 텍스트도 간단히 만들 수 있습니다.</small><strong>두껍게 해서 강조하거나</strong><em>이탤릭체로 강조할 수도 있습니다.</em></p> 
+
+    <p class="text-left">간단하게 클래스만으로 텍스트를 왼쪽 정렬</p>
+    <p class="text-right">또는 오른쪽으로 정렬할 수도 있고,</p> 
+    <p class="text-center">물론 가운데로 정렬할 수 있습니다.</p>
+    <p class="text-justify">긴 텍스트를 보기 좋게 하기 위해서는 양쪽 정렬을 사용하면 텍스트의 양쪽 끝단을 맞춰 화면에서 보기 좋게 표현해 줍니다. 이러한 스타일의 효과를 보기 위해서는 일정 길이 이상의 텍스트 문단이 필요하므로 한번 더 반복합니다. 긴 텍스트를 보기 좋게 하기 위해서는 양쪽 정렬을 사용하면 텍스트의 양쪽 끝단을 맞춰 화면에서 보기 좋게 표현해 줍니다. 이러한 스타일의 효과를 보기 위해서는 일정 길이 이상의 텍스트 문단이 필요하므로 한번 더 반복합니다. 긴 텍스트를 보기 좋게 하기 위해서는 양쪽 정렬을 사용하면 텍스트의 양쪽 끝단을 맞춰 화면에서 보기 좋게 표현해 줍니다. 이러한 스타일의 효과를 보기 위해서는 일정 길이 이상의 텍스트 문단이 필요하므로 한번 더 반복합니다.</p>
+
+    <blockquote>
+      <p>부트스트랩은 반응형이며 모바일 우선인 웹프로젝트 개발을 위한 가장 인기있는 HTML, CSS, JS 프레임워크입니다.</p>
+      <footer><cite title="Source Title">http://www.getbootstrap.com/</cite> 에서 번역됨</footer>
+    </blockquote>
+
+    <h2>폼 요소</h2>
+    <div class="row">
+      <div class="col-md-6 col-md-push-6">
+        <img src="http://placehold.it/1200x400?text=responsible-image" class="img-responsive" alt="Responsive image">
+        <p>폼 디자인 역시 따로 스타일 시트를 작성하지 않아도 심플하고 보기 좋은 스타일을 제공합니다.</p> 
+        <p>이 부분은 폼이 너무 넓으면 보기가 좋지 않아 양쪽을 따로 나누는 스타일을 적용했는데, css는 하나도 건드리지 않고 html만 입력해서 완성했습니다.</p>
+        <p>아래와 같이 "form-inline" 클래스를 사용하면 간단한 인라인 폼을 만들 수도 있습니다.</p> 
+        <form class="form-inline">
+          <div class="form-group">
+            <label class="sr-only" for="exampleInputAmount">Amount (in dollars)</label>
+            <div class="input-group">
+              <div class="input-group-addon">$</div>
+              <input type="text" class="form-control" id="exampleInputAmount" placeholder="Amount">
+              <div class="input-group-addon">.00</div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Transfer cash</button>
+        </form>
+        <p>부트스트랩은 폼요소에 대해서 훨씬 더 많은 옵션과 다양한 바리에이션을 제공합니다. 더 많은 정보는 <a href="http://bootstrapk.com/css/#forms">부트스트랩 공식 사이트</a>에서 확인하시기 바랍니다.</p> 
+      </div><!--col-->
+
+      <div class="col-md-6 col-md-pull-6">
+        <form>
+          <div class="form-group">
+            <label for="exampleInputEmail1">이메일 주소</label>
+            <input type="email" class="form-control" id="exampleInputEmail1" placeholder="이메일을 입력하세요">
+          </div>
+          <div class="form-group">
+            <label for="exampleInputPassword1">암호</label>
+            <input type="password" class="form-control" id="exampleInputPassword1" placeholder="암호">
+          </div>
+          <div class="form-group">
+            <label for="exampleInputFile">파일 업로드</label>
+            <input type="file" id="exampleInputFile">
+            <p class="help-block">여기에 블록레벨 도움말 예제</p>
+          </div>
+          <div class="checkbox">
+            <label>
+              <input type="checkbox"> 입력을 기억합니다
+            </label>
+          </div>
+          <button type="submit" class="btn btn-default">제출</button>
+        </form>
+      </div><!--col-->
+
+
+
+    </div><!--row-->
+
+
+    <h2>자바스크립트가 포함된 컴포넌트</h2>
+    <p>아래 부분은 간단한 탭을 만드는 부분입니다. 코드는 공식 홈페이지에 있는 것을 가져왔습니다. 소스코드 보기를 해서 문서 맨 아래쪽에 있는 <code>script</code> 태그를 참조하세요.</p> 
+    
+    <div role="tabpanel">
+      <!-- Nav tabs -->
+      <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">tab1</a></li>
+        <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">tab2</a></li>
+        <li role="presentation"><a href="#messages" aria-controls="messages" role="tab" data-toggle="tab">tab3</a></li>
+        <li role="presentation"><a href="#settings" aria-controls="settings" role="tab" data-toggle="tab">tab4</a></li>
+      </ul>
+
+      <!-- Tab panes -->
+      <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="home">이렇게</div>
+        <div role="tabpanel" class="tab-pane" id="profile">내용이 포함된</div>
+        <div role="tabpanel" class="tab-pane" id="messages">탭을 만들 수 </div>
+        <div role="tabpanel" class="tab-pane" id="settings">있습니다.</div>
+      </div>
+
+    </div>
+    <h3>슬라이드쇼 <small>Carousel</small></h3>
+    <p>아래 슬라이드쇼 처럼 고정폭 컨테이너를 끊고 full-width 로 내용을 삽입할 수 있습니다.</p>
+
+  </div><!--container-->
+
+  <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+    <!-- Indicators -->
+    <ol class="carousel-indicators">
+      <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
+      <li data-target="#carousel-example-generic" data-slide-to="1"></li>
+      <li data-target="#carousel-example-generic" data-slide-to="2"></li>
+    </ol>
+
+    <!-- Wrapper for slides -->
+    <div class="carousel-inner" role="listbox">
+      <div class="item active">
+        <img src="http://placehold.it/1920x600/000000?text=Slide-Show-01" alt="">
+        <div class="carousel-caption">
+          이 슬라이드 쇼는 따로 js를 넣지 않아도 알아서 작동합니다.
+        </div>
+      </div>
+      <div class="item">
+        <img src="http://placehold.it/1920x600/000000?text=Slide-Show-02" alt="">
+        <div class="carousel-caption">
+          하지만 Internet Explorer 9 이하에서는 애니메이션을 제공하지 않습니다.
+        </div>
+      </div>
+      <div class="item">
+        <img src="http://placehold.it/1920x600/000000?text=Slide-Show-03" alt="">
+        <div class="carousel-caption">
+          안타까운 일입니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <a class="left carousel-control" href="#carousel-example-generic" role="button" data-slide="prev">
+      <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+      <span class="sr-only">Previous</span>
+    </a>
+    <a class="right carousel-control" href="#carousel-example-generic" role="button" data-slide="next">
+      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+      <span class="sr-only">Next</span>
+    </a>
+  
+  </div><!--carousel-->
+  <div class="container">
+    <p>그리고 다시 고정폭 컨테이너를 열어서 내용을 집어넣을 수 있습니다.</p>
+
+    <h2>더 많은 것들</h2>
+    <p>부트스트랩에는 더 편리하고 많은 기능들이 있습니다. 공식홈페이지에 가면 수많은 예제들이 있고, copy &amp; paste 만으로 수많은 기능과 미리 완성되어 있는 스타일을 사용할 수 있습니다. 사실 수많은 예제들을 다 이해하느라 노력 필요가 별로 없습니다. 부트스트랩은 편하고 빠르게 웹사이트를 만들 수 있도록 마련된 프레임웍이기 때문에, 일단 복사해서 빨리 만들고 모르는 것이 생기면 공식 홈페이지에서 그떄그떄 찾아보고 사용하는 것이 최선이라고 생각합니다.</p>
+  </div>
+
+
+  <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script>
+  $('#myTab a').click(function (e) {
+    e.preventDefault()
+    $(this).tab('show')
+  })
+  </script>
+</body>
+</html>
