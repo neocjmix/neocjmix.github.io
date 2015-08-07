@@ -30,7 +30,8 @@ production_url : http://neocjmix.github.io
 # Build settings
 #markdown: kramdown
 markdown: redcarpet
-
+redcarpet:
+  extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "with_toc_data"]
 # All Jekyll-Bootstrap specific configurations are namespaced into this hash
 #
 JB :
