@@ -96,7 +96,9 @@ Mobile device를 위한 `viewport` 설정을 합니다.
 
 `body` 가 끝나기 바로 전에 `jquery.js`와 `bootstrap.js` 파일을 추가합니다.
 
+
 **[주의]** Bootstrap이 jQuery를 필요로 하므로 반드시 Bootstrap 보다 jQuery를 먼저 로드해야 합니다.  
+
 **[주의]** 이미 문서 어디에서든 jQuery를 로딩했다면 jQuery를 불러오는 코드가 중복되지 않도록 주의해야 합니다.
 
 ```html
