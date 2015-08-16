@@ -2,7 +2,7 @@
 layout: post
 title: "Bootstrap Beginner Tutorial"
 description: ""
-category: "tool"
+category: "tools"
 tags: [bootstrap, css, html, javascript, framework, responsible, mobile]
 ---
 {% include JB/setup %}

@@ -91,6 +91,11 @@ h5 a:after, .h5 a:after,
 h6 a:after, .h6 a:after{
     content:" \f0c1";
     font-family:FontAwesome;
+    font-size: 0.7em;
+    vertical-align: super;
+    transform: rotateZ(95deg);
+    display: inline-block;
+    margin-left: 0.3em;
 }
 
 h1 small,
@@ -149,7 +154,7 @@ pre {
     border: 0;
     box-shadow: none;
     border-bottom: solid 1px #666;
-    border-radius: 0;
+    border-radius: 6px;
 }
 
 .navbar a{
