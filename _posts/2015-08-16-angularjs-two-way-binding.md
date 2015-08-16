@@ -85,11 +85,26 @@ $compile(template)(scope);
 
 가장 중요한 것은 사실 Dirty checking 시점인데, 일반적인 JS Event Loop처럼 지속적으로 루프를 돌면서 체크해주면 참 좋겠지만, 이 동작을 경제적으로 하기 위해서 Angular는 몇가지 특정 시점에서만 체크한다.
 
-DOM 이벤트(ng-click, ng-mousedown, ng-change, ng-checked, …)가 발생한 후.
-$http와 $resource에서 응답이 돌아왔을 경우.
-$location에서 URL을 변경한 후.
-$timeout이벤트가 발생한 후.
-AngularJS는 위의 동작이 발생할 때, Dirty Checking이 발생하게 된다. 이 외에도 $scope.$apply()나 $scope.$digest()가 호출될 때 Dirty Checking을 한다.
+####자동체크
+
+ - ng-events (ng-click, ng-mousedown, ng-change, ng-checked, …) 발생시
+ - $timeout
+ - $http
+ - $resource
+ - $location
+
+위 경우에 해당할 때 Angular Context로 들어가며 $scope.$apply()가 실행된다.
+ 
+####수동체크
+
+ - $scope.$apply()
+ - $scope.$digest()
+
+Angular를 사용해서 어떤 데이터가 바뀔 수 있는 거의 모든 경우에 Dirty Checking을 해주고 있다. 하지만 Angular events를 사용하지 않고 Native JS나 jQuery등을 이용해서 DOM이나 값을 변경해준 경우 Dirty Checking을 자동으로 해주지 않으므로, 바인딩이 끊겨 양방향 데이터가 동기화가 안된 상태로 남아있게 된다. 따라서 이런 경우에 $scope.$apply()나 $scope.$digest()를 통해서 수동으로 Dirty Checking을 해주어야 한다.
+
+공식적으로 digest 보다는 apply를 권장한다고 하는데, 케이스가 명확하고 성능상 이점을 취하려면 digest를 사용하는것도 좋다.
+
+(앞으로 Angular2 에서는 Observer를 사용하여 항상 자동으로 체크해준다고 한다.)
 
 
 
