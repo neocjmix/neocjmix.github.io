@@ -6,7 +6,7 @@ category: "AngularJS"
 tags: []
 ---
 {% include JB/setup %}
-AngularJS 의 Scope Object는 양방향 바인딩을 구현하기 위해 다음의 세 가지 메소드를 가지고 있다.
+AngularJS 의 Scope Object는 양방향 바인딩을 구현하기 위해 대표적으로 다음의 세 가지 메소드를 가지고 있다.
  
  - $watch
  - $apply
