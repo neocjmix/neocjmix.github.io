@@ -20,12 +20,13 @@ mkdir e2e
 필요한 프로그램, 라이브러리 모듈 전부 설치
 
 ```sh
-#install global programs
+#install global modules
 brew install node
 brew install mongodb
 npm install -g grunt-cli
 npm install -g nodemon
 npm install -g protractor
+npm install -g karma
 
 #create package.json
 npm init
@@ -37,17 +38,27 @@ bower install angular bootstrap jquery --save
 bower install angular-mocks --save-dev
 
 #grunt and plugins
+npm install --save-dev load-grunt-tasks
 npm install --save-dev grunt
 npm install --save-dev grunt-bower-install
 npm install --save-dev grunt-contrib-jshint
+npm install --save-dev grunt-concurrent
 npm install --save-dev grunt-contrib-watch
 npm install --save-dev grunt-node-inspector
+npm install --save-dev grunt-nodemon
+npm install --save-dev grunt-open
+npm install --save-dev grunt-wiredep
+npm install --save-dev grunt-express-server
+
+
+#open
+npm install --save-dev open
 
 #mongoose
 npm install --save mongoose
 
 #express
-npm install express
+npm install --save express
 
 #test tools
 npm install --save-dev supertest
@@ -64,12 +75,16 @@ npm install --save-dev karma-phantomjs-launcher
 설치한 라이브러리에 대한 기본 셋팅
 
 ```sh
-#git
-git init
-cat > .gitignore #https://www.gitignore.io/api/node,bower,grunt
-
 #karma
 karma init karma.conf.js #(**/*.spec.js)
+
+#bower
+bower init
+cat > .bowerrc #{"directory" : "client/lib"} #client
+
+#git
+git init
+cat > .gitignore #https://www.gitignore.io/api/node,bower,grunt, bower경로 수정
 ```
 
 ##Hello World
@@ -147,20 +162,86 @@ npm start 5000
 	
 http://localhost:5000
 
-##Basic Grunt Task for Running and Debugging
+##Grunt 기본 작업
 
 ```sh
-#(re)start server with watch/livereload
-npm install grunt-express-server --save-dev
-#open web browser
-npm install --save-dev grunt-open
-
-touch Gruntfile.js
+cat Gruntfile.js
 ```
+
+###실행할 작업
+ - static html에 의존성 라이브러리를 삽입 -> wiredep
+ - js 문법체크 -> jshint
+ - 브라우저 오픈 -> open
+ - 클라이언트 코드 변경시 새로고침 -> watch
+ - 서버쪽 코드 변경시 재시작 및 새로고침 -> nodemon + watch
+ - 디버그시 breakpoint & inspect -> node-inspector
+
+###grunt-concurrent
+
+nodemon, node-inspector, watch 등은 동시에 프로세스가 살아있어야 하므로 일반적인 grunt task로는 제대로 실행시킬 수 없다. 이 task들을 동시에 실행하기 위해서 grunt-concurrent 가 필요하다.
+
+```js
+concurrent: {
+  options: {
+    logConcurrentOutput: true
+  },
+  dev: {
+    tasks: ['nodemon:dev', 'watch']
+  },
+  debug: {
+    tasks: ['nodemon:debug', 'node-inspector', 'watch']
+  },
+  "debug-brk": {
+    tasks: ['nodemon:debug-brk', 'node-inspector', 'watch']
+  }
+},
+
+   ...
+
+function nodemonReload(nodemon) {
+  nodemon.on('log', function (event) {
+    console.log(event.colour);
+  });
+
+  nodemon.on('config:update', function () {
+    setTimeout(function() {
+      require('open')('http://'+serverConf.express.host + ':' + serverConf.express.serverPort);
+    }, 1000);
+  });
+
+  nodemon.on('restart', function () {
+    setTimeout(function() {
+      require('fs').writeFileSync('.rebooted', 'rebooted');
+    }, 1000);
+  });
+}
+
+function nodemonReloadWithInspector(nodemon) {
+  nodemonReload(nodemon);
+  nodemon.on('config:update', function () {
+    setTimeout(function() {
+      require('open')('http://'+serverConf.express.host + ':' + serverConf.express.inspectorPort);
+    }, 1000);
+  });
+}
+```
+
+###Basic Grunt Tasks for dev & debug
 
 Gruntfile.js
 
 ```js
-
+grunt.registerTask('dev', ['wiredep', 'jshint', 'concurrent:dev']);
+grunt.registerTask('debug', ['wiredep', 'jshint', 'concurrent:debug']);
+grunt.registerTask('debug-brk', ['wiredep', 'jshint', 'concurrent:debug-brk']);
 ```
+
+###주의할 점
+ - wiredep은 bootstrap 3.3.5 버전부터 css를 제대로 삽입 못하는 버그가 있다. bootstrap 3.3.4 버전을 사용하면 일단 해결은 된다.
+
+
+
+
+
+
 

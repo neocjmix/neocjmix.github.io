@@ -18,7 +18,7 @@ body{
   color: #666;
   font-size: 14px;
   line-height: 1.8em;
-  font-family: "Helvetica Nueue", "Helvetica", "arial", "Nanum Gothic" "Apple SD Gothic neo", "맑은 고딕", "돋움", "굴림", sans-serif;
+  font-family: "Helvetica Nueue", "Helvetica", "arial", "Nanum Gothic" "Apple SD Gothic neo", "ë§‘ì€ ê³ ë”•", "ë‹ì›€", "êµ´ë¦¼", sans-serif;
   font-weight: 100;
 }
 a{
@@ -312,10 +312,10 @@ pre {
 }
 
 .post-full .content img {
-    margin: 2em;
+    margin: 4%;
     text-align: center;
     display: block;
-    max-width: 100%;
+    max-width: 92%;
     height: auto;
     border: solid 1px #ddd;
     max-height: 450px;
