@@ -36,17 +36,19 @@ npm install --save-dev bower
 bower init
 bower install angular bootstrap jquery --save
 bower install angular-mocks --save-dev
+bower install require --save
+bower install angular-ui-router --save
 
 #grunt and plugins
 npm install --save-dev load-grunt-tasks
 npm install --save-dev grunt
-npm install --save-dev grunt-bower-install
 npm install --save-dev grunt-contrib-jshint
 npm install --save-dev grunt-concurrent
 npm install --save-dev grunt-contrib-watch
 npm install --save-dev grunt-node-inspector
 npm install --save-dev grunt-nodemon
 npm install --save-dev grunt-open
+npm install --save-dev grunt-bower-install
 npm install --save-dev grunt-wiredep
 npm install --save-dev grunt-express-server
 
@@ -162,6 +164,16 @@ npm start 5000
 	
 http://localhost:5000
 
+##NODE_ENV
+developement 모드인지 product 모드인지를 나눠서 실행.
+
+app.js
+
+```js
+process.env.NODE_ENV = ( process.env.NODE_ENV && ( process.env.NODE_ENV ).trim().toLowerCase() == 'production' ) ? 'production' : 'development';
+```
+
+
 ##Grunt 기본 작업
 
 ```sh
@@ -226,6 +238,21 @@ function nodemonReloadWithInspector(nodemon) {
 }
 ```
 
+###live reload
+모든 파일에 livereload.js 를 로딩하는 코드를 넣었다가 배포시에는 제거하는 작업은 성가실 수 있다. 이걸 자동화 하기 위해 서버 쪽 코드, express에 미들웨어 'connect-livereload'를 추가한다. 개발모드일 때만 livereload 코드를 로딩한다.
+
+**주의** dynamic routing을 하기 전에 삽입해야 한다.
+
+app.js
+
+```js
+if( process.env.NODE_ENV == 'development' ) {
+  app.use(require('connect-livereload')({
+    port: liveReloadPort
+  }));
+}
+```
+
 ###Basic Grunt Tasks for dev & debug
 
 Gruntfile.js
@@ -240,7 +267,116 @@ grunt.registerTask('debug-brk', ['wiredep', 'jshint', 'concurrent:debug-brk']);
  - wiredep은 bootstrap 3.3.5 버전부터 css를 제대로 삽입 못하는 버그가 있다. bootstrap 3.3.4 버전을 사용하면 일단 해결은 된다.
 
 
+###require.js + AngularJs + ng-ui-Router
 
+####계획
+
+main.js --> app.js --> route.js --> controllers
+
+####라이브러리
+
+```sh
+bower install require --save
+bower install angular-ui-router --save
+```
+
+####코드
+
+index.html
+
+```html
+<!DOCTYPE html>
+
+<!--ng-app 을 넣지 않고 angualr.bootstrap() 을 이용-->
+<html lang="ko"> 
+<head>
+  <meta charset="UTF-8">
+  <title>Hello World!</title>
+
+  <!--grunt-wiredep 으로 의존성을 로드한다.-->
+  <!-- bower:css --><!-- endbower -->
+  <!-- bower:js --><!-- endbower -->
+
+  <!--require setup & angualr.bootstrap()-->
+  <script src="js/main.js"></script> 
+
+</script>
+</head>
+<body>
+  <header>
+    <h1>The Wall</h1>
+    <nav>
+      <ul>
+        <li><a href="/">home</a></li>
+        <li><a href="/user">user</a></li>
+      </ul>
+    </nav>
+  </header>
+  <!--ng-ui-router 작동을 위한 ng-view directive-->
+  <main ui-view></main>
+  <footer></footer>
+</body>
+</html>
+```
+
+js/main.js
+
+```js
+(function(){
+  'use strict';
+
+  requirejs.config({
+    baseUrl:'js'
+  });
+  
+  //app.js 로딩 && 문서 로딩후 bootstrap 수행
+  requirejs(['app'], function () { 
+    $(document).ready(function () { 
+      angular.bootstrap(document, ['theWall']);
+    });
+  });
+})();
+```
+
+js/app.js
+
+```js
+//route.js 로딩, 의존성 주입
+define(['route'],function(route){
+  var theWall = angular.module('theWall', ['ui.router']);
+  route(theWall);
+  return theWall;
+});
+```
+
+js/route.js
+
+```js
+define(function() {
+  function route(app){
+    app.config(function($urlRouterProvider, $locationProvider, $stateProvider) {
+      $locationProvider.html5Mode({
+        enabled: true,
+          requireBase: false
+      });
+
+      $urlRouterProvider.otherwise('/');
+      
+      $stateProvider
+      .state('main', {
+        url: '/',
+        templateUrl: 'html/main.html'
+      })
+      .state('user', {
+        url: '/user',
+        templateUrl: 'html/user.html'
+      });
+    });
+  }
+
+  return route;
+});
+```
 
 
 
