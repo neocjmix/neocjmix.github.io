@@ -43,9 +43,9 @@ Controller는 생성자 함수라고 했으니까 convention에 맞도록 첫글
 <section ng-controller="MyController">{​{MyController.greeting}}</section>
 ```
 
-해보면 알겠지만 view에는 아무것도 나타나지 않는다. 왜냐하면 MyController는 생성자이지 인스턴스가 아니기 때문이다. MyController는 angularJS 내부 컨텍스트에서 실행되기 떄문에 현재로써는 서비스코드에서 생성된 인스턴스에 직접 접근할 방법이 없다.
+해보면 알겠지만 view에는 아무것도 나타나지 않는다. 왜냐하면 MyController는 생성자이지 인스턴스가 아니기 때문이다. MyController는 angularJS 내부 컨텍스트에서 실행되기 떄문에 현재 서비스코드나 view에서는 생성된 인스턴스에 직접 접근할 방법이 없다.
 
-일반적으로 view와 controller 내부 로직에서 정의한 변수들을 binding하기 위해서 `$scope` 객체 를 injection 한다.  
+따라서 일반적으로 view와 controller 내부 로직에서 정의한 변수들을 binding하기 위해서는 `$scope` 객체 를 injection 해서 사용한다.  
 다음과 같이 수정하면 view에서 Hello World! 를 확인할 수 있다.
 
 ```js
