@@ -118,6 +118,7 @@ childScope에 greeting으로 binding되어 있는 input의 내용을 변경하�
 ###간단한 해결 방법
 
 가장 간단한 해결책 중 하나는 binding할 변수를 객체의 프로퍼티로 설정하는 것이다.
+
 ```js
 app.controller('Parent', function($scope){
     $scope.greeting = {
