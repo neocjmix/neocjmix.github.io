@@ -31,7 +31,7 @@ production_url : http://neocjmix.github.io
 #markdown: kramdown
 markdown: redcarpet
 redcarpet:
-  extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "with_toc_data"]
+  extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "with_toc_data", "smart"]
 # All Jekyll-Bootstrap specific configurations are namespaced into this hash
 #
 JB :

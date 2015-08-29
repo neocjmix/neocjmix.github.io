@@ -2,7 +2,7 @@
 layout: post
 title: "Step By Step MEAN Stack Dev Environment"
 description: ""
-category: "tools"
+category: "developement"
 tags: [yeoman, yo, generator]
 ---
 {% include JB/setup %}
