@@ -184,7 +184,7 @@ view template에서는 `$scope` 의 멤버에만(상속받은 멤버 포함) {�
 
 ##요약
  - view에서 사용하는 {​{ }} 문법으로는 `$scope` 의 멤버에만 직접 접근 가능하다.
- - '`Controller`는 `$scope`에 뭔가를 추가하는 어떤 것'이 아니고 **생성자 함수** 이다.
+ - `Controller`는 '`$scope`에 뭔가를 추가하는 어떤 것'이 아니고 **생성자 함수** 이다.
  - `Controller as instance` 에서 as 뒤의 단어는 alias가 아니라 생성된 인스턴스객체의 변수명이다.
  - `ng-controller` 디렉티브를 link 할때 생성된 인스턴스 객체는 `$scope`의 멤버로 등록되어 {​{ }} 로 접근가능하며 `$digest` 시 업데이트 된다.
  - 하위 Controller의 `$scope`객체는 상위 Controller의 `$scope` 객체에 **프로토타입 체인 연결**을 가진다.
