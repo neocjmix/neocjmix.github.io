@@ -17,8 +17,8 @@
 body{
   color: #666;
   font-size: 14px;
-  line-height: 1.8em;
-  font-family: "Helvetica Nueue", "Helvetica", "arial", "Nanum Gothic" "Apple SD Gothic neo", "ë§‘ì€ ê³ ë”•", "ë‹ì›€", "êµ´ë¦¼", sans-serif;
+  line-height: 1.6em;
+  font-family: "Helvetica Nueue", "Helvetica", "arial", "Nanum Gothic" "Apple SD Gothic neo", "Ã«Â§â€˜Ã¬Ââ‚¬ ÃªÂ³Â Ã«â€â€¢", "Ã«Ââ€¹Ã¬â€ºâ‚¬", "ÃªÂµÂ´Ã«Â¦Â¼", sans-serif;
   font-weight: 100;
 }
 a{
@@ -131,7 +131,7 @@ blockquote p {
 }
 
 p {
-    margin-bottom: 0.7em;
+    margin-bottom: 1em;
 }
 
 ul, ol {
