@@ -149,6 +149,10 @@ pre {
     border-radius: 7px;
 }
 
+.container{
+  max-width: 970px;
+}
+
 .navbar {
     background: none;
     border: 0;
