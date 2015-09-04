@@ -482,5 +482,39 @@ module.exports = function(config) {
 
 
 
+##Bower componenets -> require.js 자동 등록
+
+```sh
+$ npm install grunt-bower-requirejs --save-dev
+```
+
+```js
+/*Gruntfile.js*/
+grunt.initConfig({
+  bower: {
+    target: {
+      rjsConfig: 'app/config.js'
+    }
+  }
+});
+ 
+grunt.loadNpmTasks('grunt-bower-requirejs');
+ 
+grunt.registerTask('default', ['bower']);
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
