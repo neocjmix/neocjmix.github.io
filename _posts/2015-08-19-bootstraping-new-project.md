@@ -32,7 +32,7 @@ npm install -g karma
 npm init
 
 #bower and frontend libraries
-npm install --save-dev bower 
+npm install --save-dev -g bower 
 bower init
 bower install angular bootstrap jquery --save
 bower install angular-mocks --save-dev
@@ -42,6 +42,7 @@ bower install angular-ui-router --save
 #grunt and plugins
 npm install --save-dev load-grunt-tasks
 npm install --save-dev grunt
+npm install --save-dev -g grunt-cli
 npm install --save-dev grunt-contrib-jshint
 npm install --save-dev grunt-concurrent
 npm install --save-dev grunt-contrib-watch
@@ -66,7 +67,7 @@ npm install --save express
 npm install --save-dev supertest
 npm install --save-dev mocha
 npm install --save-dev chai
-npm install --save-dev karma-cli
+npm install --save-dev -g karma-cli
 npm install --save-dev jasmine
 npm install --save-dev phantomjs
 npm install --save-dev karma-jasmine@2_0
@@ -77,9 +78,6 @@ npm install --save-dev karma-phantomjs-launcher
 설치한 라이브러리에 대한 기본 셋팅
 
 ```sh
-#karma
-karma init karma.conf.js #(**/*.spec.js)
-
 #bower
 bower init
 cat > .bowerrc #{"directory" : "client/lib"} #client
@@ -267,20 +265,20 @@ grunt.registerTask('debug-brk', ['wiredep', 'jshint', 'concurrent:debug-brk']);
  - wiredep은 bootstrap 3.3.5 버전부터 css를 제대로 삽입 못하는 버그가 있다. bootstrap 3.3.4 버전을 사용하면 일단 해결은 된다.
 
 
-###require.js + AngularJs + ng-ui-Router
+##require.js + AngularJs + ng-ui-Router
 
-####계획
+###계획
 
 main.js --> app.js --> route.js --> controllers
 
-####라이브러리
+###라이브러리
 
 ```sh
 bower install require --save
 bower install angular-ui-router --save
 ```
 
-####코드
+###코드
 
 index.html
 
@@ -377,6 +375,111 @@ define(function() {
   return route;
 });
 ```
+
+##Settings for Karma test with AngularJs + require.js
+
+```sh
+karma init
+
+Which testing framework do you want to use ?
+> jasmine
+
+Do you want to use Require.js ?
+> yes
+
+Do you want to capture any browsers automatically ?
+> PhantomJS
+
+What is the location of your source and test files ?
+> **/*spec.js
+
+Should any of the files included by the previous patterns be excluded ?
+>
+
+Do you wanna generate a bootstrap file for) RequireJS?
+> yes
+
+Do you want Karma to watch all the files and run the tests on change ?
+> yes
+```
+
+server/config/express.js
+
+```js
+module.exports = {
+    ...
+    testMain        : "test-main.js",
+    ...
+};
+```
+
+Gruntfile.js
+
+```js
+  bowerRequirejs: {
+    app : {
+      rjsConfig: serverConf.clientPath + '/js/main.js'
+    },
+    test : {
+      rjsConfig: serverConf.testMain
+    }
+  },
+```
+
+karma.conf.js
+
+```js
+var config = require("server/config").express;
+
+module.exports = function(config) {
+  config.set({
+    basePath: '',
+    frameworks: ['jasmine', 'requirejs'],
+    files: [
+      config.testMain,
+      {pattern: config.clientPath + '/**/*.js', included: false},
+      {pattern: '**/*spec.js', included: false}
+    ],
+    exclude: [],
+    preprocessors: {},
+    reporters: ['progress'],
+    port: 9876,
+    colors: true,
+    logLevel: config.LOG_DEBUG,
+    autoWatch: true,
+    browsers: ['PhantomJS'],
+    singleRun: false
+  })
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
