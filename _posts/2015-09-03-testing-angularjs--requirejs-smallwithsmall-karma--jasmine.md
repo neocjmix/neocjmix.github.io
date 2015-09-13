@@ -140,14 +140,15 @@ define(['app'],function(app){
 ```
 
 
-
 ###partials/main.html
 
 `ui-view`에 들어갈 html 템플릿
 
 ```html
+<div>
 this is main Page.<br />
-Hello, {{name}}!
+Hello, {​{name}}!
+</div>
 ```
 
 ###Bootstraping
@@ -462,7 +463,7 @@ PhantomJS 1.9.8 (Mac OS X 0.0.0): Executed 3 of 3 (2 FAILED) (0.005 secs / 0.02 
     function sampleDirective(){
       return {
         restrict: 'E', //element directive
-        template: 'Hello, {{name}}!', //scope의 name에게 인사하는 내용을 집어넣는다.
+        template: 'Hello, {​{name}}!', //scope의 name에게 인사하는 내용을 집어넣는다.
         link: function (scope, element, attr){
           scope.name = attr.name; // name attr을 받아서 scope에 넣는다.
         }
