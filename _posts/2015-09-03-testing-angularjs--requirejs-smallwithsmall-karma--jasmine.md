@@ -8,9 +8,7 @@ tags: [test, angularjs, require.js, karma, jasmine]
 ---
 {% include JB/setup %}
 
-AngularJS를 rquire.js 로 구성하는 방법은 여러 가지가 나와 있고, 이를 테스트 가능하게 하는 방법도 여러가지이다. 구글링을 해보면 관련 주제에 대해 다양한 포스팅이 있는데, 대체로 상당히 복잡하다.
-
-가능한 심플한 방법으로 테스트 가능한 AngularJS + require.js 앱을 구성해 봤다. 코드가 길어보여도 막상 설명을 위한 주석을 다 지우고 나면 그리 길거나 복잡하진 않다.
+AngularJS를 rquire.js 로 구성하는 방법은 여러 가지가 나와 있고, 이를 테스트 가능하게 하는 방법도 여러가지이다. 가능한 심플한 방법으로 테스트 가능한 AngularJS + require.js 앱을 구성해 봤다. 코드가 길어보여도 막상 설명을 위한 주석을 다 지우고 나면 그리 길거나 복잡하진 않다.
 
 ##AngularJS + require.js
 먼저 테스트 이전에 기본 구성을 시작한다.
@@ -21,9 +19,9 @@ AngularJS를 rquire.js 로 구성하는 방법은 여러 가지가 나와 있고
      + controllers
          * SampleController.js .....테스트할 컨트롤러
      + lib .........................라이브러리 디렉토리
-         * angular
-         * angular-ui-router
-         * requirejs
+         * angular/...
+         * angular-ui-router/...
+         * requirejs/...
      + app.js ......................angular 모듈
      + main.js .....................require.js 설정
  - partials ........................ng-route 파트
@@ -167,13 +165,12 @@ angular.bootstrap(document, ['app']);
  - controller : 컨트롤러를 모듈에 등록
  - route      : 모듈에 route 설정. 등록된 컨트롤러를 route에 할당함.
  
-여기서 한가지 짚고 넘어갈 것은, route.js에서 `app.config`에 넘긴 설정을 담당하는 콜백 함수는 bootstrap 시점에서 실행된다는 것이다. 이를 바탕으로 위 코드들의 올바른 실행 순서를 살펴보면 다음과 같이 실행되어야 맞을 것이다.
+여기서 한가지 짚고 넘어갈 것은, route.js에서 `app.config`에 넘긴 설정을 담당하는 콜백 함수는 bootstrap 시점에서 실행된다는 것이다. 그러므로 bootstrap 하기 이전에 미리 app.config을 실행해 두어야 bootstrap할 때 제대로 실행된다. 그리고 방금 말한 callback 함수에서 controller를 url에 매핑하므로 controller등록도 bootstrap 하기 이전에만 하면 된다. (route.js보다는 빠르든 늦든 상관 없다. route.js 실행시점에 controller들을 바로 참조해서 매핑하는것이 아니라 콜백함수만 넘기기 때문이다.) 이를 바탕으로 위 코드들의 올바른 실행 순서를 살펴보면 다음과 같이 실행되어야 맞을 것이다.
 
 ```
-main -> app -> controller + route -> bootstrap
+main -> app -> (controller, route) -> bootstrap
 ```
-
-현재 상태를 보면 실행되는 것은 main.js뿐으로, require.js가 로드하도록 data-main에 지정해두었으므로 가장 먼저 실행이 될 것이다. 그리고 app은 controller와 route에 의존성 설정을 해두었으므로 이 둘보다는 먼저 실행되도록 되어 있다. 따라서 controller나 route가 실행되면 실행 되도록 되어 있다. bootstraping을 하려면 이 모든 모듈이 로딩 되어 있어야 하므로, 필요한 의존성 모듈을 주입 받아서 다음과 같이 실행하면 된다.
+현재 상태를 보면 실제로 실행되는 것은 main.js뿐이다. require.js가 로드하도록 `data-main`에 지정해두었으므로 가장 먼저 실행이 될 것이다. 그리고 app은 controller와 route에 의존성 설정을 해두었으므로 controller나 route가 실행되면 실행 되도록 되어 있다. bootstraping을 하려면 이 모든 모듈이 로딩 되어 있어야 하므로, 필요한 의존성 모듈을 주입 받아서 다음과 같이 실행하면 된다.
 
 ```js
 requirejs([
@@ -186,7 +183,7 @@ requirejs([
 });
 ```
 
-위의 코드를 별도의 js 파일에 넣어도 상관 없지만 그냥 간단하게 `main.js` 뒤쪽에 넣어준다.
+위의 내용은, require.js가 main.js를 동적으로 로딩해서 config를 실행한 이후에 실행되어야 하므로 `main.js`의 config 뒤쪽에 넣어준다.
 
 ```js
 /*main.js*/
@@ -305,10 +302,9 @@ mv test-main.js js
 
 //앞부분은 테스트 파일을 모두 가져와서 allTestFiles라는 배열에 넣는 부분이다.
 //TEST_REGEXP를 보면 **/*spec.js, **/*test.js 파일들을 로딩하게 되어 있다.
-//다른 형식을 원하면 이 부분의 정규표현식을 변경하면 된다.
 
 var allTestFiles = [];
-var TEST_REGEXP = /(spec|test)\.js$/i;
+var TEST_REGEXP = /(spec|test)\.js$/i; //다른 형식을 원하면 이 부분의 정규표현식을 변경하면 된다.
 
 Object.keys(window.__karma__.files).forEach(function(file) {
   if (TEST_REGEXP.test(file)) {
@@ -317,13 +313,15 @@ Object.keys(window.__karma__.files).forEach(function(file) {
   }
 });
 
+
+//앞서 main.js에서 했던 설정과 유사하게 require.js 설정을 수행한다.
 require.config({
   
   baseUrl: '/base', //karma.conf.js에서 basePath로 설정한 Path의, 서버에서의 주소이다.
   deps: allTestFiles, //앞에서 만든 allTestFiles 를 로딩하는 부분
   callback: window.__karma__.start,
 
-  //main.js에서와 같은 요령으로 테스트에서 사용할 의존성을 설정한다.
+  //테스트에서 사용할 의존성을 설정한다.
   paths: {
     angular: "lib/angular/angular",
     "angular-mocks": "lib/angular-mocks/angular-mocks",
@@ -338,36 +336,28 @@ require.config({
 
 ###js/Controllers/SampleController.spec.js
 
-드디어 여기서 테스트 코드를 작성한다. 테스트 코드 역시 require.js 에 의해서 주입되는 모듈이므로, AMD 표준에 맞추어 작성한다.
+여기서 테스트 코드를 작성한다. 테스트 코드 역시 require.js 에 의해서 주입되는 모듈이므로, AMD 표준에 맞추어 작성한다.
 
 ```js
-(function(){
-  'use strict';
+//필요한 "AMD"의존성을 주입받는다.
+define(['./SampleController', 'angular', 'angular-mocks'],
+  function(SampleController) {
 
-    //'./SampleController.js 모듈을 주입받는다.
-  define(['./SampleController', 'angular', 'angular-mocks'],
-  function(sampleController) {
-
+    //test code 시작
     describe('SampleController', function () {
       var ctrl, scope;
-
-      //ng-mock을 사용해서 module을 mock하면서 $controllerProvider를 이용해서 controller 등록
-      beforeEach(module(function($controllerProvider){
-        sampleController($controllerProvider);
-      }));
-
+      
+      //각각 테스트를 시작하기 전에 필요한 "angular모듈"들을 주입받는다.
       beforeEach(inject(function($controller, $rootScope) {
-        scope = $rootScope.$new();
-        ctrl = $controller('SampleController', {$scope: scope});
+        scope = $rootScope.$new(); //매번 새로운 scope에서 깔끔하게 테스트
+        ctrl = $controller(SampleController, {$scope: scope}); //방금 생성한 scope 기반으로 controller를 mocking한다.
       }));
 
       it('has default name "World"', function() {
-        expect(scope.name).toBe("World");
+        expect(scope.name).toBe("World"); //beforeEach에서 생성한 scope에 대해서 controller가 제대로 작동했는지 test.
       });
     });
   });
-})();
-
 ```
 
 
@@ -390,53 +380,111 @@ PhantomJS 1.9.8 (Mac OS X 0.0.0): Executed 1 of 1 SUCCESS (0.004 secs / 0.008 se
 
 ##Adding & Testing Directive
 
-Controller와 마찬가지로 directive도 require.js 로 주입되는 AMD 모듈로 만들 수 있다. 먼저 test부터 작성해보자.
+Controller와 마찬가지로 directive도 require.js 로 주입되는 AMD 모듈로 만들 수 있다.
+만들 directive는 name 이라는 attribute로 값을 전달받아서 인사를 하는 element directive다.
 
-directive는 기본적으로 factory이므로 [$provide.factory](https://docs.angularjs.org/api/auto/service/$provide#factory)를 이용해서 mock을 하고, template을 [$compile](https://docs.angularjs.org/api/ng/service/$compile) 해서 테스트 한다.
+이번에는 test코드를 먼저 작성해보자. 일단 빈 directive를 등록하는 AMD를 만들자. 앞의 Samplecontroller와 유사하다.
+
+```js
+/*js/directives/SampleDirective.js*/
+define(['app'],function(app){
+  function sampleDirective(){
+    return {};
+  }
+
+  app.directive('sampleDirective', sampleDirective);
+  
+  return sampleDirective;
+});
+```
+
+test code
 
 ```js
 /*js/directives/SampleDirective.spec.js*/
 
-(function(){
-  'use strict';
+//directive와 필요한 AMD를 로드
+define(['./sampleDirective', 'angular', 'angular-mocks'],
+function(sampleDirective) {
 
-  //모듈 주입
-  define(['./SampleDirective', 'angular', 'angular-mocks'],
-  function(SampleDirective) {
+  describe('sampleDirective', function () {
+    //테스트에 사용할 전역변수
+    var $compile, $rootScope, element;
+    var name = 'World';
 
-    describe('SampleDirective', function () {
-      var scope, element;
-      var name = 'World';
+    //directive를 테스트하기 위해서는 html을 compile해야 하므로 module이 필요하다.
+    //app.js는 test-main.js에 등록이 되어있고, SampleDirective에 의존성으로 설정했으므로  
+    //이미 로드되어있다. ng-mock.module로 mocking할 수 있다.
+    beforeEach(module("app")); 
 
-      //directive를 mock한다.
-      beforeEach(module(function($provide){
-        SampleDirective($provide)
-      }));
+    //inject로 angular 모듈을 주입받을 때, 나중에 집어넣을 변수이름을 짓기 용이하게 하기 위해서
+    //앞뒤로 _를 붙여서 주입받을 수 있다.(자동으로 _를 제거해서 모듈을 주입해준다.)
+    beforeEach(inject( function(_$compile_, _$rootScope_) {
+      //따라서 아래와 같이 저장할 변수명을 좀더 편하게 지정할 수 있다.
+      $compile = _$compile_;
+      $rootScope = _$rootScope_;
 
-      beforeEach(inject(function($compile, $rootScope){
-        scope = $rootScope.$new()
+      //매 테스트 하기 전마다 html을 compile하고 scope를 digest해준다.
+      element = $compile('<sample-directive name="'+name+'"></sample-directive>')($rootScope);
+      $rootScope.$digest();
+    }));
 
-        //template을 compile한다.
-        element = $compile('<sample name="'+name+'"></sample>', scope);
-      }));
+    //directive가 잘 작동하는지 테스트한다.
+    it('gets attr value', function() {
+      expect($rootScope.name).toBe(name);
+    });
 
-      it('gets attr value', function() {
-        expect(scope.name).toBe(name);
-      });
-
-      it('puts greeting', function() {
-        expect(element.html()).toBe("Hello, "+name+"!");
-      });
+    it('compile template correctly', function() {
+      expect(element.html()).toContain("Hello, "+name);
     });
   });
-})();
+});
+```
 
-/*js/directives/SampleDirective.js*/
+`karma start`로 테스트를 실행해보면
+
+```sh
+PhantomJS 1.9.8 (Mac OS X 0.0.0) sampleDirective compile template correctly FAILED
+  Expected '' to contain 'Hello, World'.
+  Error: Expected '' to contain 'Hello, World'.
+
+  ...
+
+PhantomJS 1.9.8 (Mac OS X 0.0.0): Executed 3 of 3 (2 FAILED) (0.005 secs / 0.02 secs)
+```
+
+통과하지 못한다. `ctrl-c` 로 테스트를 **종료하지 말고** 별도의 에디터로 테스트에 맞도록 디렉티브 로직을 작성한다.
+
+```js
+(function(){
+  'use strict';
+  define(['app'],function(app){
+    function sampleDirective(){
+      return {
+        restrict: 'E', //element directive
+        template: 'Hello, {{name}}!', //scope의 name에게 인사하는 내용을 집어넣는다.
+        link: function (scope, element, attr){
+          scope.name = attr.name; // name attr을 받아서 scope에 넣는다.
+        }
+      };
+      
+    }
+
+    app.directive('sampleDirective', sampleDirective);
+    
+    return sampleDirective;
+  });
+})();
 ```
 
 
+다 작성하고 파일을 저장하면 karma가 파일을 watch하고 있다가 자동으로 테스트를 재수행 해준다.  
+(karma.conf.js의 `autoWatch: true` 설정)   
+로직을 제대로 작성했다면, 다음과 같이 success 메시지가 뜬다.
 
-
+```sh
+PhantomJS 1.9.8 (Mac OS X 0.0.0): Executed 3 of 3 SUCCESS (0.001 secs / 0.021 secs)
+```
 
 
 
