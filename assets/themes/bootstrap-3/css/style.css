@@ -18,7 +18,7 @@ body{
   color: #666;
   font-size: 14px;
   line-height: 1.6em;
-  font-family: "Helvetica Nueue", "Helvetica", "arial", "Apple SD Gothic neo", "맑은 고딕", "돋움", sans-serif;
+  font-family: "Apple SD Gothic neo", "맑은 고딕", "돋움", "Helvetica Nueue", "Helvetica", "arial", sans-serif;
   font-weight: 100;
 }
 a{
@@ -199,13 +199,11 @@ pre {
 
 
 .posts article {
-    padding: 0;
-    margin: 0 0 2em 0;
+    padding: 1.2em;
+    margin: 0;
 }
 .posts article:hover {
     background-color: #eee;
-    padding: 1em;
-    margin: -1em -1em 1em -1em;
 }
 .posts article h1 {
     font-size: 2em;
