@@ -28,6 +28,7 @@ date: "2016-05-31 18:42"
 ### Dependencies
 #### gradle
 _mySQL DB_
+
 ```java
   dependencies {
   	compile('org.springframework.boot:spring-boot-starter-data-jpa')
