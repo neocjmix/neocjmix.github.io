@@ -11,17 +11,18 @@ date: "2016-05-31 18:42"
  - Hibernate를 기반으로 java 표준으로 지정된 ORM 표준 기술.
  - 객체를 db상의 테이블과 매핑한다.
 
-## 구조
-### multi Persistent Context
+### 구조
+ - Persistent Context
  - Entity Manager Factory
  - Entity Manager
  - Transaction Manager
  - Entity
- #### 생명주기
- ##### New
- ##### Managed
- ##### Detached
- ##### Removed
+
+### 생명주기
+ - New
+ - Managed
+ - Detached
+ - Removed
 
 ## Spring-data-JPA
 ### Dependencies
