@@ -3,3 +3,99 @@ layout: "post"
 title: "JPA"
 date: "2016-05-31 18:42"
 ---
+## 개념
+| __Object Relation Mapping__  
+객체를 RDB와 매핑하는 기술.
+
+### jpa
+ - Hibernate를 기반으로 java 표준으로 지정된 ORM 표준 기술.
+ - 객체를 db상의 테이블과 매핑한다.
+
+## 구조
+### multi Persistent Context
+ - Entity Manager Factory
+ - Entity Manager
+ - Transaction Manager
+ - Entity
+ #### 생명주기
+ ##### New
+ ##### Managed
+ ##### Detached
+ ##### Removed
+
+## Spring-data-JPA
+### Dependencies
+#### gradle
+_mySQL DB_
+```java
+  dependencies {
+  	compile('org.springframework.boot:spring-boot-starter-data-jpa')
+  	compile('org.springframework.boot:spring-boot-starter-jdbc')
+  	runtime('mysql:mysql-connector-java')
+  }
+```
+
+
+
+
+### 두개 이상의 datasource를 연결할 시
+하나의 datasourc는 한개의 configuration Class에 의해 한개의 entity용 package, 한개의 repository용 package와 매핑된다. 즉,
+
+1. 서로 다른 datasource와 연관된 entity는 각각 다른 package에 위치해야 한다.
+2. 서로 다른 datasource와 연관된 repository는 각각 다른 package에 위치해야 한다.
+3. 각각의 `LocalContainerEntityManagerFactoryBean`에 대한 configuration Class가 datasource의 수만큼 필요하다.  
+   설정에는 해당 entity들이 들어있는 package이름, repository들이 들어있는 package이름, 각 datasource의 설정값이 필요하다.
+
+#### configuration class 예시
+
+```java
+@Configuration
+@EnableJpaRepositories(
+        basePackages = "pe.frank.dao.Features", //repository가 들어있는 package 이름
+        entityManagerFactoryRef = "dataEntityManager", //entityManagerFactory래핑 bean이름
+        transactionManagerRef = "dataTransactionManager" //dataTransactionManager래핑 bean이름
+)
+public class DataDBConfiguration {
+
+    //application-properties등에 설정된 설정값을 참조하기 위한 bean
+    @Autowired
+    private org.springframework.core.env.Environment env;
+
+    //entityManagerFactory래핑 bean
+    @Bean
+    public LocalContainerEntityManagerFactoryBean dataEntityManager(EntityManagerFactoryBuilder builder) {
+        LocalContainerEntityManagerFactoryBean em = builder.dataSource(dataDataSource())
+                .persistenceUnit("primary") //엔티티매니저팩토리의 유닛 이름(선택적)
+                .packages("pe.frank.model.Features") //entity class가 들어있는 package 이름
+                .build();
+
+        //hibernate 설정
+        em.setJpaPropertyMap(new HashMap<String, Object>(){{
+            put(org.hibernate.cfg.Environment.HBM2DDL_AUTO, env.getProperty("hibernate.hbm2ddl.auto"));
+            put(org.hibernate.cfg.Environment.DIALECT, env.getProperty("data.hibernate.dialect"));
+        }});
+
+        return em;
+    }
+
+    @Bean
+    public DataSource dataDataSource() {
+        //env.getProperty를 이용해서 각 datasource에 대한 설정을 한다.
+        return DataSourceBuilder
+                .create()
+                .driverClassName(env.getProperty("Features.jdbc.driverClassName"))
+                .url(env.getProperty("Features.jdbc.url"))
+                .username(env.getProperty("Features.jdbc.user"))
+                .password(env.getProperty("Features.jdbc.pass"))
+                .build();
+    }
+
+    //dataTransactionManager래핑 bean
+    @Bean
+    public PlatformTransactionManager dataTransactionManager(EntityManagerFactoryBuilder builder) {
+        JpaTransactionManager jpaTransactionManager = new JpaTransactionManager();
+        jpaTransactionManager.setEntityManagerFactory(dataEntityManager(builder).getObject());
+        return jpaTransactionManager;
+    }
+}
+```
