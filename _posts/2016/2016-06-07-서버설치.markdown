@@ -1,5 +1,68 @@
 ---
 layout: "post"
-title: "서버설치"
+title: "apache tomcat 서버설치"
 date: "2016-06-07 11:21"
 ---
+
+## 준비
+### 사용할 환경
+>CentOS, JDK1.8, Apache Tomcat 8, nginx
+
+당연하지만, jdk 대신 jre를 설치해도 톰캣을 구동하는데는 문제 없다.
+
+
+### 사용될 명령어
+- 네트워크 파일 복사
+  - `scp` : ssh 파일 복사
+  - `wget` : http 다운로드
+- 압축 & 아카이브
+  - `tar` : 아카이브 (여러 파일을 합침)
+    - `-v` : verbose, `-x` : 압축해제, `-f` : 파일
+    - ex)
+      - `$ tar -xvf 파일이름 .` : 압축해제
+      - `$ tar -cf 파일이름` : 압축하기
+  - `gunzip` : 압축 (용량 줄이기)
+  - `filename.tar.gz`
+    - 압축 + 아카이브
+    -
+    ```shell
+    $ gunzip filename.tar.gz
+    $ tar -xvf filename.tar.gz
+    ```
+    - `tar -xvzf filename.tar.gz`
+- 링크 : `ln`
+- 프로파일 적용 : `source`
+
+
+## JDK 1.8
+
+### Download
+http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+
+1. 다음과 같이 wget으로 받을 수 있으면 편하다.
+`wget http://download.oracle.com/otn-pub/java/jdk/8u91-b14/jdk-8u91-linux-x64.tar.gz`  
+ 그게 안되는 환경이라면 `scp` 로 올리든지 `ftp`로 하든지 해야 한다. `scp`를 사용하려면 외부에서 현재 단말에 원격 접속(ssh)이 가능해야 하는데 맥에서는 __preference -> 공유__ 로 가서 원격 로그인 옵션을 켜둬야 한다.  
+ ![ㄴㄹㅇㅎ](images/2016/06/스크린샷 2016-06-07 오후 12.52.40.png)
+
+2. `tar` 로 압축을 푼 후에 디렉토리를 `/usr/local`과 같이 적당한 위치로 옮긴다.
+3. 여러 버전을 설치할 경우를 대비해서 해당 디렉토리에 대한 symbolic link 를 만든다. 나중에 설정을 유지하면서 버전만 바꿀때 유용하다.  
+   `ln -s jdk1.8.0 java` 이렇게 해두면 profile 설정 같은 곳에서 `/usr/local/java`와 같이 참조해서 설정할 수 있다.
+
+### 프로파일 설정
+
+환경변수를 설정해야 제대로 작동한다.  
+`vim /etc/profile` 아래 내용을 추가한다.
+
+```shell
+JAVA_HOME=/usr/local/java             #위에서 만든 jdk디렉토리에 대한 심볼릭 링크 path
+CLASSPATH=.:$JAVA_HOME/lib/tools.jar
+PATH=$PATH:$JAVA_HOME/bin             #java, javac 파일에 실행을 위한 path 설정
+export JAVA_HOME CLASSPATH PATH       #쉘 변수를 환경변수화 시킨다
+```
+만약에 jre를 설치했다면 `JAVA_HOME`을 `JRE_HOME`으로 바꿔야한다. `$JAVA_HOME/bin/java`에 대한 path 설정이 있지만 만약 기본으로 설치된 `java` 가 있다면 잘못 인식될 수 있으므로 `which java`등을 이용해서 기본 java 파일의 위치를 확인하고 이름을 바꾸어두는 것이 필요할 수 있다.
+
+쉘을 재시작 하지 않아도 `source /etc/profile` 하면 프로파일을 바로 적용할 수 있다.
+
+
+
+...계속
