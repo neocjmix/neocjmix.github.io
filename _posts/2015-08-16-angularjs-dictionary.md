@@ -2,7 +2,7 @@
 layout: post
 title: "AngularJS Components for Test"
 description: ""
-category: [test, angularJs]
+category: [test, AngularJs]
 tags: [AngularJS, test]
 ---
 {% include JB/setup %}

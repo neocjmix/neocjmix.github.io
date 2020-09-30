@@ -2,7 +2,7 @@
 layout: post
 title: "AngularJS Two way Binding"
 description: ""
-category: "AngularJS"
+category: "AngularJs"
 tags: []
 ---
 {% include JB/setup %}

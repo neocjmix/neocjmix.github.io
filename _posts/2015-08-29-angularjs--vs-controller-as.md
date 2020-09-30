@@ -2,7 +2,7 @@
 layout: post
 title: "AngularJs Controller : <small>$scope VS Controller as</small>"
 description: ""
-category: "angularjs"
+category: "AngularJs"
 tags: [angularjs]
 ---
 {% include JB/setup %}
