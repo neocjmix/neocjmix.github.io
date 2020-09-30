@@ -15,19 +15,19 @@
 
 /* Jekyll Bootstrap Colors */
 body{
-  color: #666;
-  font-size: 14px;
-  line-height: 1.6em;
-  font-family: "Apple SD Gothic neo", "맑은 고딕", "돋움", "Helvetica Nueue", "Helvetica", "arial", sans-serif;
-  font-weight: 100;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6em;
+    font-family: "Apple SD Gothic neo", "맑은 고딕", "돋움", "Helvetica Nueue", "Helvetica", "arial", sans-serif;
+    font-weight: 100;
 }
 a{
-  color: #000;
-  text-decoration: underline;
+    color: #000;
+    text-decoration: underline;
 }
 pre, code{
-  font-family: 'Nanum Gothic Coding', monospace !important;
-  font-weight: normal;
+    font-family: 'Nanum Gothic Coding', monospace !important;
+    font-weight: normal;
 }
 
 pre:hover {
@@ -60,8 +60,8 @@ h6, .h6 {
 }
 
 h1,h2,h3,h4,h5,h6,.h1,.h2,.h3,.h4,.h5,.h6{
-  font-family: "raleway", "Apple SD Gothic neo";
-  font-weight: 100;
+    font-family: "raleway", "Apple SD Gothic neo", sans-serif;
+    font-weight: 100;
 }
 
 h1 a, .h1 a,
@@ -90,7 +90,7 @@ h4 a:after, .h4 a:after,
 h5 a:after, .h5 a:after,
 h6 a:after, .h6 a:after{
     content:" \f0c1";
-    font-family:FontAwesome;
+    font-family: FontAwesome, sans-serif;
     font-size: 0.7em;
     vertical-align: super;
     transform: rotateZ(95deg);
@@ -102,27 +102,27 @@ h1 small,
 h2 small,
 h3 small,
 h4 small,
-h5 small, 
-h6 small, 
-.h1 small, 
-.h2 small, 
-.h3 small, 
-.h4 small, 
-.h5 small, 
-.h6 small, 
+h5 small,
+h6 small,
+.h1 small,
+.h2 small,
+.h3 small,
+.h4 small,
+.h5 small,
+.h6 small,
 h1 .small,
-h2 .small, 
-h3 .small, 
+h2 .small,
+h3 .small,
 h4 .small,
 h5 .small,
 h6 .small,
-.h1 .small, 
-.h2 .small, 
+.h1 .small,
+.h2 .small,
 .h3 .small,
-.h4 .small, 
+.h4 .small,
 .h5 .small,
 .h6 .small{
-  color: #aaa; 
+    color: #aaa;
 }
 
 
@@ -150,7 +150,7 @@ pre {
 }
 
 .container{
-  max-width: 970px;
+    max-width: 970px;
 }
 
 .navbar {
@@ -162,7 +162,7 @@ pre {
 }
 
 .navbar a{
-  text-decoration: none;
+    text-decoration: none;
 }
 
 
@@ -184,12 +184,12 @@ pre {
 
 .navbar a.navbar-brand {
     font-weight: 600;
-    font-family: 'raleway';
+    font-family: 'raleway', sans-serif;
     color: #333;
 }
 
 #footer {
-  background-color: #fdcd60;
+    background-color: #fdcd60;
 }
 
 
@@ -236,10 +236,10 @@ pre {
     color: #aaa;
 }
 .posts article .excerpt{
-  padding: 1em;
-  background-color: #fafafa;
-  border: solid 1px #f1f1f1;
-  font-size: 0.4em;
+    padding: 1em;
+    background-color: #fafafa;
+    border: solid 1px #f1f1f1;
+    font-size: 0.4em;
 }
 .posts article .tags {
     padding: 0;
@@ -274,29 +274,29 @@ pre {
 
 /* posts index */
 .post > h3.title {
-  position: relative;
-  padding-top: 10px; }
+    position: relative;
+    padding-top: 10px; }
 
 .post > h3.title span.date {
-  position: absolute;
-  right: 0;
-  font-size: 0.9em; }
+    position: absolute;
+    right: 0;
+    font-size: 0.9em; }
 
 .post > .more {
-  margin: 10px 0;
-  text-align: left; }
+    margin: 10px 0;
+    text-align: left; }
 
 /* post-full*/
 .page-header {
     border: 0;
     text-align: center;
-    margin: 7em 0 0;
+    margin: 5em 0 2em;
 }
 
 .post-full .date {
-  margin-bottom: 4em;
-  font-weight: bold; 
-  text-align: center;
+    margin-bottom: 4em;
+    font-weight: bold;
+    text-align: center;
 }
 
 .post-full .content h1,
@@ -333,7 +333,6 @@ pre {
     display: block;
     width: 100%;
     overflow: auto;
-    word-break: normal;
     word-break: keep-all;
     margin-bottom: 0.7em;
 }
@@ -358,36 +357,36 @@ pre {
 
 /* tag_box */
 .tag_box {
-  list-style: none;
-  margin: 0;
-  overflow: hidden; }
+    list-style: none;
+    margin: 0;
+    overflow: hidden; }
 
 .tag_box li {
-  line-height: 28px; }
+    line-height: 28px; }
 
 .tag_box li i {
-  opacity: 0.9; }
+    opacity: 0.9; }
 
 .tag_box.inline li {
-  float: left; }
+    float: left; }
 
 .tag_box a {
-  padding: 3px 6px;
-  margin: 2px;
-  background: #eee;
-  color: #555;
-  border-radius: 3px;
-  text-decoration: none;
-  border: 1px dashed #cccccc; }
+    padding: 3px 6px;
+    margin: 2px;
+    background: #eee;
+    color: #555;
+    border-radius: 3px;
+    text-decoration: none;
+    border: 1px dashed #cccccc; }
 
 .tag_box a span {
-  vertical-align: super;
-  font-size: 0.8em; }
+    vertical-align: super;
+    font-size: 0.8em; }
 
 .tag_box a:hover {
-  background-color: #e5e5e5; }
+    background-color: #e5e5e5; }
 
 .tag_box a.active {
-  background: #57A957;
-  border: 1px solid #4c964d;
-  color: #FFF; }
+    background: #57A957;
+    border: 1px solid #4c964d;
+    color: #FFF; }

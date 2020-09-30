@@ -29,7 +29,7 @@ date: "2016-05-31 18:42"
 #### gradle
 _mySQL DB_
 
-```java
+```groovy
   dependencies {
   	compile('org.springframework.boot:spring-boot-starter-data-jpa')
   	compile('org.springframework.boot:spring-boot-starter-jdbc')
@@ -72,10 +72,12 @@ public class DataDBConfiguration {
                 .build();
 
         //hibernate 설정
-        em.setJpaPropertyMap(new HashMap<String, Object>(){{
-            put(org.hibernate.cfg.Environment.HBM2DDL_AUTO, env.getProperty("hibernate.hbm2ddl.auto"));
-            put(org.hibernate.cfg.Environment.DIALECT, env.getProperty("data.hibernate.dialect"));
-        }});
+        em.setJpaPropertyMap(new HashMap<String, Object>(){
+            {
+                put(org.hibernate.cfg.Environment.HBM2DDL_AUTO, env.getProperty("hibernate.hbm2ddl.auto"));
+                put(org.hibernate.cfg.Environment.DIALECT, env.getProperty("data.hibernate.dialect"));
+            }
+        });
 
         return em;
     }
