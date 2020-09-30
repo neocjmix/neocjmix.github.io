@@ -7,9 +7,9 @@ published: True
 
 ---
 
-##sha1 hmac
+## sha1 hmac
 
-###HMAC
+### HMAC
 
 >MAC that uses a cryptographic hash function in conjunction with a secret key.
 
@@ -18,7 +18,7 @@ mac : Message Authentication Code - 무결성을 검증
 따라서 sha1 hmac 란 sha1를 해시 함수로 쓰는 메시지 무결성 검증 코드이다.
 
 
-##Generating sha1 hmac signature with Java
+## Generating sha1 hmac signature with Java
 
  - mac 객체 생성    : `Mac mac = Mac.getInstance(해시알고리즘).init(new SecretKeySpec(키값, 해시알고리즘))`;
  - 암호화                 : `byte[] rawHmac = mac.doFinal(암호화할 데이터)`

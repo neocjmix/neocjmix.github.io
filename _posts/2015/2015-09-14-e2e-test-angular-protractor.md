@@ -1,13 +1,13 @@
 ---
 layout: post
-title: "e2e Testing AngularJS <small>with</small> Protractor + Jasmine"
+title: "e2e Testing AngularJs <small>with</small> Protractor + Jasmine"
 description: ""
-category: [test, angularjs]
-tags: [test, angularjs, protractor, jasmine, e2e]
+category: [test, AngularJs]
+tags: [test, AngularJs, protractor, jasmine, e2e]
 ---
 {% include JB/setup %}
 
-앞의 [Testing AngularJS + Require.js with Karma + Jasmine](/test/angularjs/2015/09/03/testing-angularjs--requirejs-smallwithsmall-karma--jasmine/) 에 이어서 e2e 테스트 하는 방법을 기록한다.
+앞의 [Testing AngularJs + Require.js with Karma + Jasmine](/test/angularjs/2015/09/03/testing-angularjs--requirejs-smallwithsmall-karma--jasmine/) 에 이어서 e2e 테스트 하는 방법을 기록한다.
 
 테스트 툴은 [Protractor](https://angular.github.io/protractor)를 사용한다.  
 e2e test를 위한 전체 구조는 다음과 같다.
@@ -28,9 +28,9 @@ ______________________________
 [설정파일](protractor.conf.js)
 ```
 
-##Quick Start
+## Quick Start
 
-###Protractor & Wabdriver Install
+### Protractor & Wabdriver Install
 
 ```sh
 npm install -g protractor
@@ -38,7 +38,7 @@ npm install -g protractor
 
 위 명령어는 툴을 두개 설치하는데 하나는 물론 **Protractor** 이고, 추가로 **webdriver-manager**를 설치한다.
 
-####webdriver-manager
+#### webdriver-manager
 webdriver-manager는 브라우저 자동화를 지원하는 [Selenium](http://www.seleniumhq.org/) 서버를 쉽게 실행시켜주는 매니저다. 다음과 같이 필요한 binary를 다운받아야 한다.
 
 ```sh
@@ -54,8 +54,8 @@ webdriver-manager start
 엔터를 치면 서버가 종료되므로 가만히 두고, http://localhost:4444/wd/hub 로 접속하면 현재 가동되고 있는 Selenium 서버의 상태를 알 수 있다.
 
 
-###Test Code 작성
-[Testing AngularJS + Require.js with Karma + Jasmine](/test/angularjs/2015/09/03/testing-angularjs--requirejs-smallwithsmall-karma--jasmine/) 를 수행했다면 angularJS를 사용한 간단한 어플리케이션이 존재할 것이다.
+### Test Code 작성
+[Testing AngularJs + Require.js with Karma + Jasmine](/test/angularjs/2015/09/03/testing-angularjs--requirejs-smallwithsmall-karma--jasmine/) 를 수행했다면 angularJS를 사용한 간단한 어플리케이션이 존재할 것이다.
 
 프로젝트 루트 디렉토리에 e2e 테스트 파일을 저장할 디렉토리를 생성하고, `app.spec.js` 파일을 작성한다.
 
@@ -68,7 +68,7 @@ describe('Protractor Demo App', function() {
 });
 ```
 
-###config 파일 작성
+### config 파일 작성
 karma와 마찬가지로 config가 필요하다.
 
 protractor.conf.js
@@ -83,7 +83,7 @@ exports.config = {
 
 e2e 디렉토리의 모든 *.spec.js 파일들에 대해서 테스트를 진행한다.
 
-###run test
+### run test
 
 여기까지 했으면 테스트를 진행할 수 있다. 테스트를 진행하기 위해서는 테스트할 앱이 서버에서 돌아가고 있어야 한다. express app이면 node로 구동시켜도 되고 아무튼 test code에 설정한 주소인 http://localhost:5000로 테스트할 angular app에 접속 가능하도록 한다.
 
@@ -115,7 +115,7 @@ Finished in 1.543 seconds
     ...
 ```
 
-##좀더 간편하게..
+## 좀더 간편하게..
 
 위의 예제에서는 일단 서버를 띄우고, config 파일 경로를 맞춰서 protractor를 실행해야 하는 번거로움이 있다. grunt를 통해 과정을 자동화 해 보자. 이미 기본적으로 앱을 서버에 올리기 위한 Gruntfile이 어느정도 셋팅 되어있다는 가정하에 진행한다.
 
@@ -217,8 +217,8 @@ grunt test-e2e
 서버를 띄운 후 최초 한 번 e2e 테스트를 실행하고, 백엔드나 프론트엔드 코드가 변경될 때마다 테스트를 자동으로 다시 실행시켜준다.
 
 
-##브라우저 다루기
-[Protractor api](http://angular.github.io/protractor/#/api)를 이용해서 다양한 유저 동작 시나리오를 만들고 결과를 테스트할 수 있다. 앞에서의 test code는 title만 확인하는 간단한 테스트였다. 좀더 확실한 테스트를 하기 위해서 [Testing AngularJS + Require.js with Karma + Jasmine](/test/angularjs/2015/09/03/testing-angularjs--requirejs-smallwithsmall-karma--jasmine/)에서 작성한 앱에 기반해서 route와, controller와 directive가 잘 작동하는지 확인해보겠다.
+## 브라우저 다루기
+[Protractor api](http://angular.github.io/protractor/#/api)를 이용해서 다양한 유저 동작 시나리오를 만들고 결과를 테스트할 수 있다. 앞에서의 test code는 title만 확인하는 간단한 테스트였다. 좀더 확실한 테스트를 하기 위해서 [Testing AngularJs + Require.js with Karma + Jasmine](/test/angularjs/2015/09/03/testing-angularjs--requirejs-smallwithsmall-karma--jasmine/)에서 작성한 앱에 기반해서 route와, controller와 directive가 잘 작동하는지 확인해보겠다.
 
 Protractor api를 사용해서 일련의 테스트 코드를 작성한 예
 

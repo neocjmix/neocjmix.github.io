@@ -7,7 +7,7 @@ published: True
 
 ---
 
-##Promise pattern
+## Promise pattern
 Promise 패턴은 Javascript 에서 연속적인 비동기 처리를 원활히 하기 위해서 제안된 패턴이고, ES6에서부터는 정식으로 채택되었다.
 
 
@@ -30,10 +30,10 @@ new Promise( function(resolve, reject) {
 });
 ```
 
-##Polyfill
+## Polyfill
 오래된 브라우저에서는 native Promise를 지원하지 않으므로 다양한 Library나 Framework에서 polyfill을 지원하고 있다.
 
-###jQuery.deferred
+### jQuery.deferred
 
  - resolve, reject, notify 를 이용하면 done, fail, progress 시점에 예약된 callback을 실행시킬 수 있다.
  - resolveWith, rejectWith, notifyWith 를 이용해서 각 시점에 메시지를 전달할 수 있다.
@@ -154,5 +154,5 @@ $.when.apply($,AlldonePromises).done(function(){
 ```
 
 
-###AngularJs $q
+### AngularJs $q
 ...

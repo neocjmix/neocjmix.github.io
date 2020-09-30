@@ -3,16 +3,16 @@ layout: post
 title: "AngularJs Controller : <small>$scope VS Controller as</small>"
 description: ""
 category: "AngularJs"
-tags: [angularjs]
+tags: [AngularJs]
 ---
 {% include JB/setup %}
 
-##Controller
+## Controller
 
 >Controllers are "classes" or "constructor functions" that are responsible for providing the application behavior that supports the declarative markup in the template.   
  - https://docs.angularjs.org/guide/di
 
-위 인용문에서 나타나듯이 Controller는 **생성자 함수**이다. 따라서 AngularJS 내부 어딘가에서 Controller를 실행하는 스코프에 인스턴스객체를 리턴한다.
+위 인용문에서 나타나듯이 Controller는 **생성자 함수**이다. 따라서 AngularJs 내부 어딘가에서 Controller를 실행하는 스코프에 인스턴스객체를 리턴한다.
 
 AngularJs 코드를 보기 전에 먼저 전통적인 객체 생성자의 사용을 보자.
 
@@ -60,7 +60,7 @@ app.controller('MyController', function($scope) {
 
 이 `$scope` 는 [$rootScope.Scope](https://docs.angularjs.org/api/ng/type/$rootScope.Scope) 클래스의 인스턴스이다. `$watch`, `$digest`, `$apply` 등의 메소드를 가지고 데이터를 [양방향 바인딩](/angularjs/2015/08/16/angularjs-two-way-binding/) 하는 바로 그 클래스이다.
 
-###Child Scope & Parent Scope
+### Child Scope & Parent Scope
 Controller는 부모-자식 관계를 가질 수 있다. 이때 자식 Controller는 부모 Controller의 $scope에 접근할 수 있다.
 
 이 과정이 어떻게 이루어지는지를 확인하기 위해 http://codetunnel.io/angularjs-controller-as-or-scope/ 에서 발견한 예제를 인용하겠다.
@@ -96,7 +96,7 @@ parent쪽에서 값을 입력하면 child쪽의 값도 잘 변경된다. 그런�
 
 왜 이런 현상이 발생할까?
 
-###$scope의 상속관계
+### $scope의 상속관계
 
 위 Child Controller를 다음과 같이 변경하고 브라우저에서 실행한 다음 console창을 보면,
 
@@ -115,7 +115,7 @@ console
 
 childScope에 greeting으로 binding되어 있는 input의 내용을 변경하면 `this.greeting = "변경된 내용"` 과 같이 작동하므로, 프로토타입 체인을 참조하지 않고, childScope에 새로운 greeting이 선언된다. 따라서 현재 스코프에 있는 greeting을 참조하게 됨으로써 프로토타입 체인이 깨지고 더이상 parent scope의 greeting과의 바인딩을 유지할 수 없게 되는 것이다.
 
-###간단한 해결 방법
+### 간단한 해결 방법
 
 가장 간단한 해결책 중 하나는 binding할 변수를 객체의 프로퍼티로 설정하는 것이다.
 
@@ -141,7 +141,7 @@ app.controller('Child', function($scope){
 
 이렇게 하면 내용을 변경할 때, `this.greeting.text = "변경된 내용"` 로 실행이 될텐데, `this.greeting` 객체가 없으므로 상속받은 객체의 프로퍼티를 참조하게 되어 문제없이 binding이 유지된다.
 
-##Controller "as"
+## Controller "as"
 
 Anguler 1.2 이후에 나온 예제들를 처음 접하다 보면 대개 다음과 같은 코드를 보게 된다.
 
@@ -163,7 +163,7 @@ app.controller('Controller', function() {
 
 이것은 as의 역할을 잘 모르고 단순히 alias(별칭)로만 생각하기 떄문에 드는 착각이다. 맨 처음에 작성한, [인스턴스가 없어서 실패한 코드](#controller) 를 보고 위 코드를 다시한 번 보자. alias 하나를 추가했을 뿐인데 아까는 안되던 것이 이번엔 된다. **왜냐하면 `as ctrl`은 단순한 alias가 아니라 Controller를 생성자로 실행해서 리턴된 instance이기 때문이다.**
 
-좀더 자세히 설명하자면 AngularJS 1.2 부터 ng-controller directive에 `as`로 인스턴스 변수명을 적을 수 있는 문법이 추가되었는데, AngularJs가 이 directive를 link할 때, Controller를 생성자로 인스턴스를 만든 후에 `$scope`에 집어넣어준다.
+좀더 자세히 설명하자면 AngularJs 1.2 부터 ng-controller directive에 `as`로 인스턴스 변수명을 적을 수 있는 문법이 추가되었는데, AngularJs가 이 directive를 link할 때, Controller를 생성자로 인스턴스를 만든 후에 `$scope`에 집어넣어준다.
 
 ```js
 console.log($scope.ctrl)
@@ -178,11 +178,11 @@ view template에서는 `$scope` 의 멤버에만(상속받은 멤버 포함) {�
 다음은 `this` 와 `as`를 이용해서 자식 Controller에서 부모 Controller의 데이터를 binding 한 이다. 부모쪽에서 변경하든 자식쪽에서 변경든 문제없이 binding 된다.
 <iframe src="http://embed.plnkr.co/azcQWtj9TbrYSy4TKaLI/preview" frameborder="0"></iframe>
 
-###$scope 와 Controller instance
+### $scope 와 Controller instance
 
 앞에서 view와 데이터를 [양방향 바인딩](/angularjs/2015/08/16/angularjs-two-way-binding/) 해주는 `$watch`, `$digest`, `$apply` 함수들은 `$scope`의 쏘드라고 했다. 그러면 변수를 $scope에 저장하지 않고 `this`에 저장하는 방식은 바인딩에 문제가 생기는것 아닌가 하는 의문이 들 수 있지만, `this`가 생성될 instance이고 이 인스턴스는 `$scope` 객체의 멤버로 할당되어 view에 노출되는 것이므로 `$scope`를 `$digest`할 때 문제없이 함께 업데이트 된다.메
 
-##요약
+## 요약
  - view에서 사용하는 {​{ }} 문법으로는 `$scope` 의 멤버에만 직접 접근 가능하다.
  - `Controller`는 '`$scope`에 뭔가를 추가하는 어떤 것'이 아니고 **생성자 함수** 이다.
  - `Controller as instance` 에서 as 뒤의 단어는 alias가 아니라 생성된 인스턴스객체의 변수명이다.

@@ -7,7 +7,7 @@ published: True
 
 ---
 
-##HTML Form
+## HTML Form
 
 일반적인 form에서 input[type="file"]을 추가하고, post 로 전송하면 파일이 바이너리로 전송된다. 이때 일반적인 폼 데이터가 아닌 바이너리 파일을 전송하기 위해서는 `enctype` attibute를 설정해 주어야 한다.
 
@@ -30,7 +30,7 @@ HTML form은 해당 값에 따라서 다음의 encoding을 제공한다.
  - text/plain  
    공백문자만 인코딩한다.
 
-###HTTP 전송내용
+### HTTP 전송내용
 
 전송시 header와 body에는 다음 내용이 포함된다.
 
@@ -38,10 +38,10 @@ HTML form은 해당 값에 따라서 다음의 encoding을 제공한다.
 POST 전송될 주소
 HTTP/1.1
 Host: 호스트 이름
-Content-Type: multipart/form-data; boundary=------this-is-boundary ###바운더리 경계를 나타낼 문자열. 보통 브라우저에서 임의로 정한다.###
-###여기까지 헤더. 공백 줄을 넣고 body가 시작된다.###
+Content-Type: multipart/form-data; boundary=------this-is-boundary ### 바운더리 경계를 나타낼 문자열. 보통 브라우저에서 임의로 정한다.### 
+### 여기까지 헤더. 공백 줄을 넣고 body가 시작된다.### 
 
-------this-is-boundary ###Content-Type에서 정한 바운더리 문자로 part의 경계를 나눈다.###
+------this-is-boundary ### Content-Type에서 정한 바운더리 문자로 part의 경계를 나눈다.### 
 Content-Disposition: form-data; name="testField"
 
 testValue
@@ -50,13 +50,13 @@ Content-Disposition: form-data; name="file"; filename="sample.png"
 Content-Type: image/png
 
 바이너리 데이터...
-------this-is-boundary-- ###마지막에 "--"가 붙어서 전송내용의 끝을 알린다.###
+------this-is-boundary-- ### 마지막에 "--"가 붙어서 전송내용의 끝을 알린다.### 
 ```
 
-##VanillaJS
+## VanillaJS
 
 
-###파일 접근
+### 파일 접근
 
 일단 js 는 로컬 파일 시스템에 직접 접근할 수 없으므로 파일을 읽어서 뭘 좀 해보려면 html input element 를 사용하는 것이 편하다.
 
@@ -97,7 +97,7 @@ fileInput.files[0].__proto__.__proto__; //Blob
 
 Blob 타입은 FileReader를 통해 읽어들이거나 XMLHttpRequest 를 통해 전송할 수 있다.
 
-####파일 읽기
+#### 파일 읽기
 
 ```js
 var fr = new FileReader();
@@ -111,7 +111,7 @@ fr.readAsBinaryString(fileInput.files[0]); //fr.result 에 string으로 변환�
 ```
 
 
-###파일 전송
+### 파일 전송
 
 전송은 굳이 FileReader 를 사용하지 않고 Blob 타입을 그대로 편리하게 전송할 수 있다.
 
@@ -140,7 +140,7 @@ formData.append("file",file);
         xhr.send(formData);
 ```
 
-###전송 과정 표시
+### 전송 과정 표시
 
 XHR 객체에는 전송 과정에서 계속 발생하는 이벤트 핸들러가 총 세개 있다. 
  - `XMLHttpRequest.upload.onProgress` : 데이터를 브라우저에서 서버로 업로드할 시 발생
@@ -202,7 +202,7 @@ if(xhr.upload){  //upload.onprogress 를 지원하지 않는 브라우저에서 
 return xhr;
 ```
 
-##종합
+## 종합
 
 위의 내용을 모두 적용한 완성된 코드는 다음과 같다.
 

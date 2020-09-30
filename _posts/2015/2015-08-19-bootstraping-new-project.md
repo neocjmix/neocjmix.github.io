@@ -2,11 +2,11 @@
 layout: post
 title: "Step By Step MEAN Stack Dev Environment"
 description: ""
-category: "developement"
-tags: [yeoman, yo, generator]
+category: AngularJs
+tags: yeoman yo AngularJs
 ---
-{% include JB/setup %}
-##Directory
+
+## Directory
 ```sh
 #create base directory
 mkdir dev-mean
@@ -16,7 +16,7 @@ mkdir client
 mkdir e2e
 ```
 
-##Install
+## Install
 필요한 프로그램, 라이브러리 모듈 전부 설치
 
 ```sh
@@ -74,7 +74,7 @@ npm install --save-dev karma-jasmine@2_0
 npm install --save-dev karma-phantomjs-launcher
 ```
 
-##Setting
+## Setting
 설치한 라이브러리에 대한 기본 셋팅
 
 ```sh
@@ -87,7 +87,7 @@ git init
 cat > .gitignore #https://www.gitignore.io/api/node,bower,grunt, bower경로 수정
 ```
 
-##Hello World
+## Hello World
 server/app.js
 
 ```js
@@ -162,7 +162,7 @@ npm start 5000
 	
 http://localhost:5000
 
-##NODE_ENV
+## NODE_ENV
 developement 모드인지 product 모드인지를 나눠서 실행.
 
 app.js
@@ -172,13 +172,13 @@ process.env.NODE_ENV = ( process.env.NODE_ENV && ( process.env.NODE_ENV ).trim()
 ```
 
 
-##Grunt 기본 작업
+## Grunt 기본 작업
 
 ```sh
 cat Gruntfile.js
 ```
 
-###실행할 작업
+### 실행할 작업
  - static html에 의존성 라이브러리를 삽입 -> wiredep
  - js 문법체크 -> jshint
  - 브라우저 오픈 -> open
@@ -186,7 +186,7 @@ cat Gruntfile.js
  - 서버쪽 코드 변경시 재시작 및 새로고침 -> nodemon + watch
  - 디버그시 breakpoint & inspect -> node-inspector
 
-###grunt-concurrent
+### grunt-concurrent
 
 nodemon, node-inspector, watch 등은 동시에 프로세스가 살아있어야 하므로 일반적인 grunt task로는 제대로 실행시킬 수 없다. 이 task들을 동시에 실행하기 위해서 grunt-concurrent 가 필요하다.
 
@@ -236,7 +236,7 @@ function nodemonReloadWithInspector(nodemon) {
 }
 ```
 
-###live reload
+### live reload
 모든 파일에 livereload.js 를 로딩하는 코드를 넣었다가 배포시에는 제거하는 작업은 성가실 수 있다. 이걸 자동화 하기 위해 서버 쪽 코드, express에 미들웨어 'connect-livereload'를 추가한다. 개발모드일 때만 livereload 코드를 로딩한다.
 
 **주의** dynamic routing을 하기 전에 삽입해야 한다.
@@ -251,7 +251,7 @@ if( process.env.NODE_ENV == 'development' ) {
 }
 ```
 
-###Basic Grunt Tasks for dev & debug
+### Basic Grunt Tasks for dev & debug
 
 Gruntfile.js
 
@@ -261,24 +261,24 @@ grunt.registerTask('debug', ['wiredep', 'jshint', 'concurrent:debug']);
 grunt.registerTask('debug-brk', ['wiredep', 'jshint', 'concurrent:debug-brk']);
 ```
 
-###주의할 점
+### 주의할 점
  - wiredep은 bootstrap 3.3.5 버전부터 css를 제대로 삽입 못하는 버그가 있다. bootstrap 3.3.4 버전을 사용하면 일단 해결은 된다.
 
 
-##require.js + AngularJs + ng-ui-Router
+## require.js + AngularJs + ng-ui-Router
 
-###계획
+### 계획
 
 main.js --> app.js --> route.js --> controllers
 
-###라이브러리
+### 라이브러리
 
 ```sh
 bower install require --save
 bower install angular-ui-router --save
 ```
 
-###코드
+### 코드
 
 index.html
 
@@ -376,7 +376,7 @@ define(function() {
 });
 ```
 
-##Settings for Karma test with AngularJs + require.js
+## Settings for Karma test with AngularJs + require.js
 
 ```sh
 karma init
@@ -482,7 +482,7 @@ module.exports = function(config) {
 
 
 
-##Bower componenets -> require.js 자동 등록
+## Bower componenets -> require.js 자동 등록
 
 ```sh
 $ npm install grunt-bower-requirejs --save-dev

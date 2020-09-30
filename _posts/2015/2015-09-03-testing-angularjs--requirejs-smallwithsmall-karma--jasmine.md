@@ -1,19 +1,19 @@
 ---
 layout: post
-title: "Testing AngularJS + Require.js <small>with</small> Karma + Jasmine
+title: "Testing AngularJs + Require.js <small>with</small> Karma + Jasmine
 "
 description: ""
-category: [test, angularjs]
-tags: [test, angularjs, require.js, karma, jasmine]
+category: [test, AngularJs]
+tags: [test, AngularJs, require.js, karma, jasmine]
 ---
 {% include JB/setup %}
 
-AngularJS를 rquire.js 로 구성하는 방법은 여러 가지가 나와 있고, 이를 테스트 가능하게 하는 방법도 여러가지이다. 가능한 심플한 방법으로 테스트 가능한 AngularJS + require.js 앱을 구성해 봤다. 코드가 길어보여도 막상 설명을 위한 주석을 다 지우고 나면 그리 길거나 복잡하진 않다.
+AngularJs를 rquire.js 로 구성하는 방법은 여러 가지가 나와 있고, 이를 테스트 가능하게 하는 방법도 여러가지이다. 가능한 심플한 방법으로 테스트 가능한 AngularJs + require.js 앱을 구성해 봤다. 코드가 길어보여도 막상 설명을 위한 주석을 다 지우고 나면 그리 길거나 복잡하진 않다.
 
-##AngularJS + require.js
+## AngularJs + require.js
 먼저 테스트 이전에 기본 구성을 시작한다.
 
-###folders & files
+### folders & files
 ```
  - js
      + controllers
@@ -29,17 +29,17 @@ AngularJS를 rquire.js 로 구성하는 방법은 여러 가지가 나와 있고
  - index.html
 ```
 
-###index.html
+### index.html
 ```html
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>AngularJS+require.js</title>
+    <title>AngularJs+require.js</title>
     <script src="js/lib/requirejs/require.js" data-main="js/main.js"></script>
 </head>
 <body>
-    <header><h1>AngularJS+require.js</h1></header>
+    <header><h1>AngularJs+require.js</h1></header>
     <main ui-view></main>
 </body>
 </html>
@@ -49,7 +49,7 @@ AngularJS를 rquire.js 로 구성하는 방법은 여러 가지가 나와 있고
 `<script src="js/lib/requirejs/require.js" data-main="js/main.js"></script>`에 주의. 특히 data-main 속성이 중요하다.  
 `index.html` 에서는 `require.js` 만 로드하고, 메인 파일을 지정해준다. 다른 라이브러리는 모두 `main.js`에 의존성 모듈로 설정해서 동적으로 로드한다.
 
-###main.js
+### main.js
 require.js 작동을 위한 기본 설정 파일.
 
 ```js
@@ -83,7 +83,7 @@ requirejs.config({
 });
 ```
 
-###app.js
+### app.js
 여기서 angular의 기본 모듈을 정의하는데, app.js역시 require에서 사용될 모듈이므로 AMD(Asynchronous Module Definition) 형식을 따라 작성되어야 한다. AMD에 관해서는 http://d2.naver.com/helloworld/12864, http://d2.naver.com/helloworld/591319 를 참고.
 
 ```js
@@ -96,7 +96,7 @@ define([
 });
 ```
 
-###controllers/SampleController.js
+### controllers/SampleController.js
 
 앞에서 모듈로 만든 app을 의존성으로 주입받아서 app에서 사용할 controller를 등록한다.
 
@@ -110,7 +110,7 @@ define(['app'],function(app){
 })
 ```
 
-###route.js
+### route.js
 
 ng-route 설정.  
 역시 app을 의존성으로 받아와서 app.config을 통해서 route 설정을 한다.
@@ -140,7 +140,7 @@ define(['app'],function(app){
 ```
 
 
-###partials/main.html
+### partials/main.html
 
 `ui-view`에 들어갈 html 템플릿
 
@@ -151,9 +151,9 @@ Hello, {​{name}}!
 </div>
 ```
 
-###Bootstraping
+### Bootstraping
 
-일반적으로는 angualr.js파일과 app.js를 로딩하면 `body`에  `ng-app` 디렉티브를 걸고, 이걸 통해서 AngularJS가 모듈을 부트스트랩 하고 템플릿을 컴파일 하는데, 지금 의 경우, 모듈들을 동적으로 로딩하므로 `ng-app`을 사용하면 로딩시점이 맞지 않아 에러가 난다. 따라서 다음 코드를 이용해서 수동으로 bootstraping을 해줘야 한다.
+일반적으로는 angualr.js파일과 app.js를 로딩하면 `body`에  `ng-app` 디렉티브를 걸고, 이걸 통해서 AngularJs가 모듈을 부트스트랩 하고 템플릿을 컴파일 하는데, 지금 의 경우, 모듈들을 동적으로 로딩하므로 `ng-app`을 사용하면 로딩시점이 맞지 않아 에러가 난다. 따라서 다음 코드를 이용해서 수동으로 bootstraping을 해줘야 한다.
 
 ```js
 angular.bootstrap(document, ['app']);
@@ -231,10 +231,10 @@ $ python -m SimpleHTTPServer
 ![Imgur](http://i.imgur.com/N0AuNrG.png)
 
 
-##Setting Karma
+## Setting Karma
 angularJS + require.js 를 사용한 앱 구성은 정리가 되었다. 이제 이걸 바탕으로 karma test를 설정해 보자.
 
-###설치
+### 설치
 
 ```sh
 $ npm init #enter를 연속으로 쳐서 설정 완료
@@ -249,7 +249,7 @@ $ npm install karma-phantomjs-launcher --save-dev
 $ bower install angular-mocks
 ```
 
-###설정
+### 설정
 ```sh
 $ karma init #아래 옵션 설정에 주의
 
@@ -262,7 +262,7 @@ $ karma init #아래 옵션 설정에 주의
 
 karma.conf.js 파일과  'bootstrap file for RequireJS', 즉 test-main.js 파일이 만들어 졌다. 세부적으로 설정을 조정하자.
 
-###karma.conf.js
+### karma.conf.js
 주석부분을 삭제하고 나면 아래와 같다. 수정할 부분은 `basePath`, `files` 다.
 
 ```js
@@ -295,7 +295,7 @@ files 옵션을 자세히 볼 필요가 있는데, 여기에 단순히 추가된
 mv test-main.js js
 ```
 
-###js/test-main.js
+### js/test-main.js
 
 이 파일을 열어보면 앞서 만들었던, main.js와 흡사한 구성을 가지고 있다. 즉 karma test시에 사용되는 main 파일이다.
 
@@ -335,7 +335,7 @@ require.config({
 });
 ```
 
-###js/Controllers/SampleController.spec.js
+### js/Controllers/SampleController.spec.js
 
 여기서 테스트 코드를 작성한다. 테스트 코드 역시 require.js 에 의해서 주입되는 모듈이므로, AMD 표준에 맞추어 작성한다.
 
@@ -362,7 +362,7 @@ define(['./SampleController', 'angular', 'angular-mocks'],
 ```
 
 
-###Test 실행
+### Test 실행
 ```sh
 karma start
 ```
@@ -379,7 +379,7 @@ PhantomJS 1.9.8 (Mac OS X 0.0.0): Executed 1 of 1 SUCCESS (0.004 secs / 0.008 se
 
 
 
-##Adding & Testing Directive
+## Adding & Testing Directive
 
 Controller와 마찬가지로 directive도 require.js 로 주입되는 AMD 모듈로 만들 수 있다.
 만들 directive는 name 이라는 attribute로 값을 전달받아서 인사를 하는 element directive다.

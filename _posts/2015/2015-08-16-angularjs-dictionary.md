@@ -1,24 +1,24 @@
 ---
 layout: post
-title: "AngularJS Components for Test"
+title: "AngularJs Components for Test"
 description: ""
 category: [test, AngularJs]
-tags: [AngularJS, test]
+tags: [AngularJs, test]
 ---
 {% include JB/setup %}
 
-##ngMock
+## ngMock
 
 [Mocha](/test/2015/08/06/mocha/) 나 [Jasmine](/test/2015/08/14/karma/#jasmine) 등의 테스트 프레임웍 자체에는 앵귤러 모듈을 로딩하거나 서비스를 주입받는 기능이 없으므로 ngMock을 사용해서 모듈을 로딩하고 의존성을 주입받는다.
 
 Mocha, Jasmine 테스트시에만 사용사능하며, 전역변수에 등록되므로 다음과 같이 Test Hook에서 간단하게 사용할 수 있다.
 
-###module
+### module
 ```js
 beforeEach(module('myApplicationModule'));
 ```
 
-###inject
+### inject
 
 ```js
 beforeEach( inject( function(_myService_){
@@ -42,13 +42,13 @@ beforeEach(inject(function($injector, $sniffer) {
 });
 ```
 
-##$controller
+## $controller
 
 controller 인스턴스를 생성한다.
 
-##angular.element & $compile
+## angular.element & $compile
 
-###element
+### element
 jqLite를 사용할 수 있는 jQuery객체를 리턴하는 **함수**다. 테스트에서는 임의의 DOM을 만드는 용도로 사용할 수 있다.
 
 ```js
@@ -66,7 +66,7 @@ describe('form input element',function(){
         //...아래 코드에 계속
 ```
 
-###$compile
+### $compile
 주어진 DOM이나 HTML String을 Angular Template 으로 컴파일 해주는 **서비스**.
 서비스이므로 DI를 받아서 사용한다.
 
@@ -80,7 +80,7 @@ describe('form input element',function(){
     //...아래 코드에 계속
 ```
 
-###test
+### test
 
 ```js
     it('linked with',function(){

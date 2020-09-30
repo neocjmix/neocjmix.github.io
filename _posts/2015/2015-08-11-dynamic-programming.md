@@ -7,9 +7,9 @@ tags: []
 ---
 {% include JB/setup %}
 
-##Fibonacci
+## Fibonacci
 
-###Recursive
+### Recursive
 
 ```java
 public int recurrsive(int num){
@@ -18,7 +18,7 @@ public int recurrsive(int num){
 }
 ```
 
-###Memoization
+### Memoization
 
 ```java
 long[] resolved = new long[1000];
@@ -33,7 +33,7 @@ public long memoization(int num){
 }
 ```
 
-###Bottom-up
+### Bottom-up
 
 ```java
 public long bottomUp(int num) {

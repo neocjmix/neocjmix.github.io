@@ -8,7 +8,7 @@ tags: [과제, 성능]
 {% include JB/setup %}
 
 
-##Bandwidth와 Latency
+## Bandwidth와 Latency
 
 **Bandwidth란?**
 
@@ -26,7 +26,7 @@ tags: [과제, 성능]
 
 반대로 latency가 작다면 응답을 바로 받을 수는 있지만, bandwidth가 작다면 한 번 데이터를 전송하는데 걸리는 시간이 길어져 대기시간 없이 바쁘게 일해도 한참이 걸리는 결과를 초래하게 된다.
 
-##웹 자원 캐시
+## 웹 자원 캐시
 
 웹 리소스는 서버에서 받아오는데 비용이 들기때문에, 클라이언트 쪽 컴퓨터에 캐시를 해두면 동일한 데이터를 여러번 받아오는 비용을 절감할 수 있다. 이런 동작을 하기 위해서는 서버쪽 데이터가 변경이 되었는지, 캐시를 얼마나 유지해야 하는지 등의 정보가 필요하다. http://example.com에 접속하면서 개발자도구의 network 기능을 이용해서 이러한 과정이 이루어지는 순서를 살펴보면,
 
@@ -110,7 +110,7 @@ tags: [과제, 성능]
 
 
 
-###HTTP 200 Ok (from cache)
+### HTTP 200 Ok (from cache)
 
 이 경우는 브라우저에서 서버쪽으로 요청을 보내지 않고 cache에서 직접 resource를 가져온 후 200 처리한 경우이다. HTTP spec 에 정의된 동작은 아니며 각 브라우저 엔진별 동작에 따라 처리된다. Webkit 엔진의 경우 다음과 같이 처리하는 것으로 알려졌다.
 
@@ -118,7 +118,7 @@ tags: [과제, 성능]
 2. 새로고침할 경우 : Conditional Get Request
 3. 강력 새로고침 또는 개발자 도구 Network 탭에서 Disable Cache 선택시 : 서버에 완전히 새로운 데이터를 요청하며 이때 헤더에 `Cache-Control: no-cache` 를 포함에서 요청한다.
 
-###Expires vs Cache-control
+### Expires vs Cache-control
 
 Expires는 캐시가 만료될 날짜를 지정하게 된다. 날짜는 헤더를 살펴보면 알 수 있듯이, 다음과 같이 로컬 시간이 아닌 그리니치 표준시를 입력해야 한다.  
     
@@ -141,7 +141,7 @@ Expires 에 비해, Cache-Control 은 HTTP 1.1 에서 새롭게 추가된 class 
 
 참고 : [꿀벌개발일지 :: 웹킷의 리소스 캐시 동작](http://ohgyun.com/604), [RFC2616](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html), [Caching Tutorial for Web Authors and Webmasters](https://www.mnot.net/cache_docs/#EXPIRES)
 
-##HTTP 압축
+## HTTP 압축
 앞서 살펴본 최초 [request Header](#section)를 다시 살펴보자. 다음과 같은 필드를 살펴볼 수 있다.
     
     Accept-Encoding: gzip, deflate, sdch
@@ -157,11 +157,11 @@ Expires 에 비해, Cache-Control 은 HTTP 1.1 에서 새롭게 추가된 class 
 데이터 압축을 실행하는 사이트에 접속해서 responsse header를 살펴보면 `Content-Encoding: gzip` 를 확인할 수 있다. gzip을 통해서 데이터를 압축해서 보낸 것이다.
 
 
-###전송량 비교
+### 전송량 비교
 
 실제 압축에 따른 효용성이 있는지 확인하기 위해서 테스트를 진행했다. 테스트는 일정한 결과를 위해서 비교적 정적인 페이지인 [네이버 사전 메인](http://dic.naver.com/) 에서 실행하고, '캐시 비우기 및 강력 새로고침' 기능으로 캐시에 따른 차이를 없앴다.
 
-####압축시
+#### 압축시
 다음은 네이버 사전 메인화면의 html 내용에 대한 response header 이다.
 
     HTTP/1.1 200 OK
@@ -182,7 +182,7 @@ Expires 에 비해, Cache-Control 은 HTTP 1.1 에서 새롭게 추가된 class 
 이때 총 받은 데이터 양을 보면 303KB 를 전송받았다.  
 ![naver dic data compresssed](/images/naver.dic.compresssed.png)
 
-####압축 안할 시
+#### 압축 안할 시
 
 이번에는 크롬 익스텐션 [ModHeader](https://chrome.google.com/webstore/detail/modheader/idgpnmonknjnojddfkpgkljpfnnfcklj/related) 를 통해서 header에서 `Accept-Encoding` 를 빼고 다시 요청을 보내서 header를 살펴보면
 
@@ -204,7 +204,7 @@ Expires 에 비해, Cache-Control 은 HTTP 1.1 에서 새롭게 추가된 class 
 이때 총 전송된 용량을 살펴보면, 967KB 가 전송되어, 압축된 데이터보다 많은 트래픽이 발생한 것을 확인할 수 있다.  
 ![naver dic data uncompresssed](/images/naver.dic.uncompresssed.png)
 
-###실제 운용에서의 효용성
+### 실제 운용에서의 효용성
 
 실제 서버에 데이터 압축을 적용할 때 고려할 것은 두 가지이다.
 
@@ -220,15 +220,15 @@ Expires 에 비해, Cache-Control 은 HTTP 1.1 에서 새롭게 추가된 class 
 
 
 
-##HTTP Connection
+## HTTP Connection
 
 HTTP 통신에서 서버와 클라이언트는 connection 을 맺고 데이터를 전송하게 된다. 하나의 웹페이지를 렌더링하기 위해서는 html 내용뿐 아니라 여기에 로딩되는 수많은 자원들이 필요하다. 그러기 위해서는 수많은 connection을 맺고 끊어야 하는데 이 과정에서 많은 오버헤드가 발생한다. 이를 줄이기 위한 방법들은 다음과 같다.
 
-###parallel Connection
+### parallel Connection
 
 HTTP는 서버와 클라이언트 간에 여러개의 connection을 수립할 수 있도록 한다. 따라서 최초의 html 내용을 로드 한다음에는 그 안에 있는 리소스들을 차례로 요청하는 것이 아니라 한번에 많은 connection을 만들어서 동시에 전송할 수 있다. 하나의 connection이 네트워크의 bandwidth를 전부 활용하지 못할 경우, 여러개의 connection을 활용하게 되면 bandwith를 좀더 효율적으로 활용할 수도 있다. bandwidth가 충분하지 않더라도, 최소한 리소스가 하나씩 하나씩 로딩되지 않고 동시에 로딩되므로 사용자에게 좀더 빠르게 내용을 탐색할 수 있는 기회를 제공한다.
 
-###persistent Connection
+### persistent Connection
 
 위와 같은 parallel Connection 을 사용한다 하더라도, 여전히 하나의 리소스당 하나의 connection을 수립하므로, connection 수립에 따른 오버헤드는 여전하다. 각 리소스의 전송을 위해서는 최초에 3way-handshaking을 통해서 connection 수립하게 되는데 세차례나 데이터의 왕복이 이루어져야 하므로 bandwidth가 충분한 상황에서도 최소한 latency * 3 의 시간이 소요된다. 또 이에 따른 소켓당 포트, 메모리등 시스템 자원의 낭비도 심하게 된다.
 
@@ -249,7 +249,7 @@ persistent Connection을 사용하지 않으려면 아래와 같이 필드를 �
     Connection: close
 
 
-###pipeline Connection
+### pipeline Connection
 
 위의 persistent_connection 모식도를 보면, 하나의 요청에 대한 응답이 끝난 후 다음 요청을 보내고 다시 받는 것을 반복하고 있다. 각 요청과 응답 사이를 자세히 보면, 서버측과 클라이언트측 모두 아무 일도 하지 않고 있는 대기시간이 존재한다. 이는 네트워크에서 발생하는 latency 때문인데, 다음 그림과 같이 요청에 대한 응답을 굳이 기다리지 않고 연속적으로 요청을 보낸다면 이러한 대기시간을 줄일 수 있다.
 ![pipelining](/images/HTTP_pipelining.png)
@@ -270,10 +270,10 @@ persistent connections을 지원하는 클라이언트는 응답을 기다리지
 
 
 
-##Request 줄이기
+## Request 줄이기
 위의 내용에 따르면 여러가지 방법으로 connection 수립에 따른 오버헤드를 줄일 수는 있지만, request와 response자체를 처리하는 비용도 있으므로, request가 많아질 수록 성능이 저하되는 것은 여전히 사실이다. 이를 줄이기 위한 몇몇 대표적인 방법이 있다.
 
-###CSS Sprite 기법
+### CSS Sprite 기법
 웹페이지에 여러개의 이미지를 사용할 때, 이미지 하나하나는 각각의 리소르 요청을 통해 서버에서 받게 된다. 이러한 요청을 묶어서 처리할 수 있다면 성능향상에 훨씬 도움이 될 것이다.
 
 [네이버 아이콘 이미지 파일](http://img.naver.net/static/www/img/sp_main150211.png)
@@ -285,7 +285,7 @@ persistent connections을 지원하는 클라이언트는 응답을 기다리지
 
 <a class="jsbin-embed" href="http://jsbin.com/qoxexoyele/1/embed?css,output">JS Bin on jsbin.com</a><script src="http://static.jsbin.com/js/embed.min.js?3.34.1"></script>
 
-###Javascript, CSS concating & minifying
+### Javascript, CSS concating & minifying
 
 javascript나 css파일은 가독성을 위해서 공백이나, 줄바꿈, 주석등 실제 렌더링에는 관계 없지만 용량을 차지하는 많은 부분이 있다. 또 여러개의 파일에 나누어져 있는 코드를 하나로 합쳐도 동일하게 작동하기 때문에, 소스를 합쳐주고 압축해주는 기능을 하는 툴들이 있다.
 
@@ -293,15 +293,15 @@ javascript나 css파일은 가독성을 위해서 공백이나, 줄바꿈, 주�
 
 일반적으로 웹사이트 방문시 `~.min.js` 식의 파일들은 minified 된 js파일이다. 최근에는 가독성이 떨어지는 minified 된 소스를 디버깅 하기 위해 sourcemap 을 활용하는 방법도 있다.
 
-##Javascript, CSS 파일의 위치
+## Javascript, CSS 파일의 위치
 javascript 파일을 웹페이지의 상단에 위치시킬 경우, 해당되는 js 동작을 완료하기 전에는 그 아래 부분의 html 파싱이 멈춰버리므로, 페이지 로딩에 문제가 될 수 있다. 따라서 js파일은 가급적 페이지 하단, `body` 태그를 닫기 전에 위치하는것이 좋다.
 반면, css 파일은 페이지 하단에 위치할 경우, css 파일이 로드되기 전까지 렌더링이 깨져보일 수 있으므로 가능한 페이지 상단, `head`태그 안쪽에 로딩해야 한다.
 
 
-##Backend Cache
+## Backend Cache
 backend에서도 disk에 대한 access를 줄이기 위해 리소스를 메모리에 올려놓거나, DB access를 통해 생성되는 동적인 페이지라 하더라도, 변경이 잦지 않은 경우, 미리 렌더링해 두고 사용하면, DB access나 비즈니스 로직에 따른 부하를 줄일 수 있어 캐시 사용에 따른 성능향상을 노릴 수 있다.
 
-###Cache되는 데이터의 성격
+### Cache되는 데이터의 성격
 캐시 역시 자원을 소모하므로, 모든 데이터를 캐시할 수는 없다. 주로 변경이 자주 일어나지 않고, 사용자에 의해 요청이 빈번히 일어나는 데이터 위주로 캐시하게 된다. 이러한 데이터를 선별하기 위해서는 다음의 방법들이 사용된다.
  
  - LRU(Least Recently Used)
@@ -313,7 +313,7 @@ backend에서도 disk에 대한 access를 줄이기 위해 리소스를 메모�
  - First In First Out(FIFO)
     가장 오래전에 캐시된 자원을 캐시에서 해제하는 방법이다.
 
-###Cache Libraries
+### Cache Libraries
 각 언어별로는 다음의 캐시 라이브러리가 존재한다.
 
  - Java : [Guava](https://code.google.com/p/guava-libraries/wiki/CachesExplained)

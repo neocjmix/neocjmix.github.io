@@ -45,13 +45,13 @@ tags: [bootstrap, css, html, javascript, framework, responsible, mobile]
 
 부트스트랩은 css 파일과 js 파일, 그리고 아이콘을 나타내기 위한 글꼴 파일들로 이루어져 있습니다. 소스코드를 이용해서 필요한 부분만 설치할 수도 있고, `npm`, `bower` 등을 이용해서 설치할 수도 있지만 여기서는 사전지식이 필요없는 직접 다운로드 방식을 설명합니다.
 
-##다운로드
+## 다운로드
 [http://getbootstrap.com/getting-started/#download](http://getbootstrap.com/getting-started/#download)
 
 위 링크에서 Download Bootstrap 을 클릭하면 zip 파일을 다운받을 수 있습니다.
 압축을 해제하면 `css`, `fonts`, `js` 세개의 디렉토리가 나오는데 모두 작업할 디렉토리에 복사해줍니다.
 
-##기본 템플릿
+## 기본 템플릿
 
 작업 디렉토리에 index.html 을 만들고 기본적인 html 문서의 뼈대를 만듭니다. 
 
@@ -131,7 +131,7 @@ Mobile device를 위한 `viewport` 설정을 합니다.
 </html>
 ```
 
-##테마 적용
+## 테마 적용
 
 부트스트랩의 기본 컴포넌트 이외에 향상된 스타일을 적용하기 위한 추가적인 css를 추가할 수 있습니다. 기본 디자인을 수정하고자 하면 또 다른 css를 추가하거나 이 테마 css를 수정, 또는 작성해서 커스텀 스타일을 적용할 수 있습니다.
 
@@ -141,13 +141,13 @@ Mobile device를 위한 `viewport` 설정을 합니다.
 <link href="css/bootstrap-theme.min.css" rel="stylesheet">
 ```
 
-##기본 요소
+## 기본 요소
 
-###컨테이너
+### 컨테이너
 
 내용 전체를 감싸는 컨테이너. 그리드 시스템을 만들때도 필요합니다.
 
-####반응형 고정폭 컨테이너
+#### 반응형 고정폭 컨테이너
 
 화면 안에서 좌우 여백을 남기고 일정 폭을 유지하는 반응형 div.
 
@@ -155,7 +155,7 @@ Mobile device를 위한 `viewport` 설정을 합니다.
 <div class="container"></div>
 ```
 
-####반응형 유동성 컨테이너
+#### 반응형 유동성 컨테이너
 
 언제나 화면에 꽉 차는 div.
 
@@ -163,9 +163,9 @@ Mobile device를 위한 `viewport` 설정을 합니다.
 <div class="container-fluid"></div>
 ```
 
-###그리드 시스템
+### 그리드 시스템
 
-####row
+#### row
 `row`는 한 행을 나타냅니다.  
 반드시 `container` 또는 `container-fluid` 안에 위치해야 합니다.
 
@@ -178,7 +178,7 @@ Mobile device를 위한 `viewport` 설정을 합니다.
 </div>
 ```
 
-####col
+#### col
 `col`은 열을 나타냅니다.  
 반드시 `row` 안에 위치해야 하며, `row` 바로 밑에는 `col`만이 위치할 수 있습니다.
 
@@ -193,7 +193,7 @@ Mobile device를 위한 `viewport` 설정을 합니다.
 
 각 `col-` 클래스 뒤에 붙는 `xs-숫자` 는 해당 행에서 각 열이 row 를 12칸으로 나누었을 때, 그중에 몇칸 분량의 너비를 차지할 것인지를 나타냅니다. (자세한 사항은 뒤의 항목에서 설명합니다.)
 
-####기본예제
+#### 기본예제
 
 다음과 같이 작성합니다.
 
@@ -309,7 +309,7 @@ div{
   </div>
 </article>
 
-####반응형 예제
+#### 반응형 예제
 위 예제를 다시 보면 `col-` 클래스 뒤에 `xs` 라는 문자열이 보입니다. 이 문자열은 'extra small' 사이즈 일때도 해당되는 폭 비율을 유지하라는 뜻입니다. 여기에 넣을 수 있는 다른 옵션들은 다음과 같습니다.
 
 기기 종류|모바일폰|태블릿|데스크탑|큰 데스크탑
@@ -356,7 +356,7 @@ class|.col-xs-숫자 | .col-sm-숫자 | .col-md-숫자 |.col-lg-숫자
 </article>
 
 
-####Clearfix
+#### Clearfix
 각 컬럼의 높이가 다를 때 clearfix로 처리해주지 않으면 아래처럼 레이아웃이 깨질 수 있습니다.
 
 <article class="demo outline">
@@ -416,13 +416,13 @@ class|.col-xs-숫자 | .col-sm-숫자 | .col-md-숫자 |.col-lg-숫자
   </div>
 </article>
 
-####기타
+#### 기타
 
 그외에도 coloumn 안에 row를 넣어서 중첩한다든지, column의 위치를 offset 한다든지 할 수 있습니다. 이러한 기능은 아래 링크에 자세히 나와 있습니다.
 
 http://bootstrapk.com/css/#grid-offsetting
 
-##기타 CSS styles & Components
+## 기타 CSS styles & Components
 
 [예시 문서](/assets/bootstrap-tutorial/)
 

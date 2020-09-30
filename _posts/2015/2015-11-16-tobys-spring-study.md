@@ -7,7 +7,7 @@ published: True
 
 ---
 
-##1장
+## 1장
 
 |   |   |
 |---|---|
@@ -18,7 +18,7 @@ published: True
 |스프링 빈		| @Bean|
 
 
-###memo
+### memo
 
  - mysql, jdbc 복슴
  	+ resultset, connection, preparedstatement 모두 close 해야 한다.
@@ -51,7 +51,7 @@ published: True
 		 	}
 		```
 
-##2장
+## 2장
  - 예외 발생 테스트 --> `@Test(expected = ExpectedException.class)`
  - test with spring context
  	+ Annotation 설정
@@ -68,13 +68,13 @@ published: True
 	+ 같은 설정파일이면 여러개의 Context가 만들어지지 않고 하나로 공유된다.
 	+ context를 변경할 시 클래스 또는 메소드에 `@DirtiesContext` , `@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)` 를 사용하면 공유하지 않고 다른 테스트에 영향을 끼치지 않도록 새로 만들어준다.
 
-##3장
+## 3장
 
  - 템플릿/콜백 패턴
 
-##4장
+## 4장
 
-###예외
+### 예외
  - 에러
  	+ 시스템 에러. 트라이캐치로 처리 불가능
  - 예외
