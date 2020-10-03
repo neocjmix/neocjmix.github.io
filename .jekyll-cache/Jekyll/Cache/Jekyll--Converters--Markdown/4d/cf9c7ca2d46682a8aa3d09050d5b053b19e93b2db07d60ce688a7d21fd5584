@@ -1,0 +1,533 @@
+I"��<p>p2p 화상채팅 구현을 위해 스터디한 내용을 기록한다.<br />
+이 시리즈에서는 직접 구현해나가면서 경험한 문제와 해결 방법들을 순서대로 기록하기 때문에 좀 돌아갈 수도 있다.<br />
+완성된 코드를 먼저 보고 직접 분석하고 싶다면, 맨 마지막에 있는 깃헙 주소를 참조하기 바란다.
+참조하여 분석하기 용이하게 하기 위해 가급적 주어진 요구사항을 충족하기 위한 최소한의 코드만 작성할 예정이다.</p>
+
+<blockquote>
+  <p>WebRTC is a new front in the long war for an open and unencumbered web<br />
+WebRTC는 개방적이고 방해받지 않는 웹을위한 긴 전쟁의 새로운 전선입니다. 
+- <a href="https://hacks.mozilla.org/2012/03/video-mobile-and-the-open-web/">Brendan Eich</a></p>
+</blockquote>
+
+<h2 id="11-비디오-중계-서비스의-문제">1:1 비디오 중계 서비스의 문제</h2>
+
+<p>철수와 영희가 전형적인 http나 웹 소켓 통을 이용한 서비스를 이용해서 메시지를 주고받는 상황을 모델링해보자.
+일반적으로 사용자간의 데이터 전송을 하기 위해서는 고정된 접근경로(ip / domain)을 가진 웹서버에 여러 사용자가 
+접속하여 서로 통신을 한다.</p>
+
+<div class="mermaid"> 
+sequenceDiagram
+Participant 철수
+Participant server
+Participant 영희
+철수-&gt;&gt;server: 영희야(18byte)
+server-&gt;&gt;영희: 영희야(18byte)
+영희--&gt;&gt;server: 꺼져(6byte)
+server--&gt;&gt;철수: 꺼져(6byte)
+Note over 철수: send: 18byte, recieve: 6byte
+Note over 영희: send: 6byte, recieve: 18byte
+Note over server: send: 24byte, recieve: 24byte 
+</div>
+
+<p>실제 주고 받는 정보의 양에 비해 중계서버의 부담이 상당하다. 만약 실시간 비디오와 같은 대량의 데이터가
+이러한 방식으로 오간다면 상당한 비용이 필요할 뿐 아니라 서버 컨디션에 따라 서비스 품질에도 상당한 영향이 있을것이다.
+반면 데이터를 사용자간에 직접 주고받을 수 있다면 (peer-to-peer) 서버가 부담하는 트래픽은 거의 없어질 수 있고
+많은 비용 절감과 함께 사용자 입장에서도 품질 향상을 이룰 수 있다.</p>
+
+<div class="mermaid"> 
+sequenceDiagram
+Participant 철수
+Participant server
+Participant 영희
+철수-&gt;&gt;영희: 영희야(18byte)
+영희--&gt;&gt;철수: 꺼져(6byte)
+Note over 철수: send: 18byte, recieve: 6byte
+Note over 영희: send: 6byte, recieve: 18byte 
+</div>
+
+<p>하지만 이를 실제 구현하기 위한 여러가지 기술적 과제들은 간단한 문제가 아니며, 브라우저와 서버간의 
+동기/비동기적 통신으로 대표되는 전통적인 웹브라우징 방식으로는 해결하기 쉽지 않다. 
+다행히 이를 해결하기 위한 공통적인 구현이 <a href="https://webrtc.org/">WebRTC</a>라는 이름의 오픈소스 웹 표준으로 정의되어 있고, 
+현재 거의 모든 모던 브라우저에 구현되어 있어, 
+간단한 <a href="https://developer.mozilla.org/ko/docs/Web/API/WebRTC_API">javascript API</a> 사용만으로 접근할 수 있다.</p>
+
+<p>다만 이러한 API 를 사용한다 해도 실제 구현시 발생하는 여러가지 문제들을 best practice로 해결하기란 쉽지 않은 일이며, 
+<a href="https://www.npmjs.com/search?q=webrtc&amp;ranking=popularity">잘 구현된 라이브러리나</a>
+<a href="https://www.html5rocks.com/ko/tutorials/webrtc/infrastructure/#readymade-signaling-servers">웹서비스</a>
+를 사용하는 것이 현명할 수도 있다.
+그러나 관련 라이브러리를 사용한다 하더라도 그 기반을 이루고 있는 기술과 기본적인 프로토콜에 대한 이해는 필수적이다.
+그러므로 WebRTC API를 직접 이용해 가장 단순한 구현부터 시작해보기로 한다.</p>
+
+<p>이 스터디의 목표는 웹캠 화면을 브라우저에 띄우는 것부터 시작해서 
+AWS를 통해 모바일 크로스 플랫폼 간에 1:1 p2p통신을 이용하여 영상 및 채팅 메시지를 전송할수 있도록 구현하는 것 까지이다.</p>
+
+<h2 id="클라이언트-어플리케이션-구성">클라이언트 어플리케이션 구성</h2>
+
+<p>1:1 화상채팅을 연결하는 단계의 로직은 요청하는 쪽과 받는쪽의 로직으로 나눌 수 있다.
+완성단계에서는 하나의 화면으로 합쳐지겠지만 과정의 이해를 쉽게 하기위해 처음에는 caller와 callee 두 화면으로 나누어서 구성한다.
+Boiler Plates 코드를 최소화 하기 위해 별도의 번들러를 이용하지 않고 단순한 스태틱 파일로 작성할 것이다.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/
+└─ client/
+   ├ caller.html
+   ├ caller.js
+   ├ callee.html
+   └ callee.js
+</code></pre></div></div>
+
+<p>이 스태틱 페이지들은 나중에 구현할 Node.js 서버를 통해서 서빙될 예정이다.</p>
+
+<h2 id="화면에-웹캠-스트리밍-표시하기">화면에 웹캠 스트리밍 표시하기</h2>
+
+<p>복잡한 기술적 사항을 다루느라 흥미를 잃기 전에 바로 화면부터 띄워보자.</p>
+
+<p><strong>caller.html</strong>, <strong>callee.html</strong> 동일하게</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;!doctype html&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">"UTF-8"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;title&gt;</span>WebRTC<span class="nt">&lt;/title&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+<span class="c">&lt;!--내 얼굴이 나올 video 요소--&gt;</span>
+<span class="nt">&lt;video</span> <span class="na">id=</span><span class="s">"localVideo"</span> <span class="na">autoplay</span> <span class="na">width=</span><span class="s">"480px"</span><span class="nt">&gt;&lt;/video&gt;</span>
+<span class="c">&lt;!--상대방의 얼굴이 나올 video 요소--&gt;</span>
+<span class="nt">&lt;video</span> <span class="na">id=</span><span class="s">"remoteVideo"</span> <span class="na">autoplay</span> <span class="na">width=</span><span class="s">"480px"</span><span class="nt">&gt;&lt;/video&gt;</span>
+<span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"caller.js(또는 callee.js)"</span><span class="nt">&gt;&lt;/script&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre></div></div>
+
+<p><strong>caller.js</strong>, <strong>callee.js</strong> 동일하게</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">async</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">mediaStream</span> <span class="o">=</span> <span class="k">await</span> <span class="nb">navigator</span><span class="p">.</span><span class="nx">mediaDevices</span><span class="p">.</span><span class="nx">getUserMedia</span><span class="p">({</span> <span class="na">video</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="na">audio</span><span class="p">:</span> <span class="kc">false</span> <span class="p">});</span>
+  <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">localVideo</span><span class="dl">'</span><span class="p">).</span><span class="nx">srcObject</span> <span class="o">=</span> <span class="nx">mediaStream</span><span class="p">;</span>
+
+  <span class="c1">// 이후 코드는 모두 이 async 함수 안에 작성한다.</span>
+<span class="p">})();</span>
+</code></pre></div></div>
+
+<p>위와 같이 작성하고 caller.html 또는 callee.html 을 브라우저로 띄우면 사용자에게 비디오 전송 허용 여부를 묻고
+이후 웹캠 화면이 브라우저에 나타나기 시작한다.</p>
+
+<h2 id="rtc-연결-생성하기-1">RTC 연결 생성하기 (1)</h2>
+
+<p>WebRTC 통신은 <code class="language-plaintext highlighter-rouge">RTCPeerConnection</code> 객체를 통해서 이루어진다. 
+양쪽에서 다음과 같이 <code class="language-plaintext highlighter-rouge">RTCPeerConnection</code>를 생성하고 상대편에게 전송할 미디어 스트림을 연결해줄 수 있다.</p>
+
+<p><strong>caller.js</strong>, <strong>callee.js</strong> 동일하게</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*앞의 async 함수 내부에*/</span>
+<span class="kd">const</span> <span class="nx">rtcPeerConnection</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RTCPeerConnection</span><span class="p">();</span>
+<span class="nx">mediaStream</span><span class="p">.</span><span class="nx">getTracks</span><span class="p">().</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">track</span> <span class="o">=&gt;</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">addTrack</span><span class="p">(</span><span class="nx">track</span><span class="p">));</span>
+</code></pre></div></div>
+
+<p>(간혹 <code class="language-plaintext highlighter-rouge">addStream</code>을 이용한 예제가 있는데 <a href="https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addStream">deprecate</a>되었다.
+api가 최근에 구현된 일부 브라우저에서 작동하지 않는다.)</p>
+
+<p>이제 caller와 callee는 이 객체를 통해서 상대편 단말에 메시지를 보내
+두 가지 정보를 교환해야 하는데</p>
+
+<ul>
+  <li>어떤 경로를 통해서 접근해야 하는지 <strong>(SDP - Session Description Protocol)</strong> 와</li>
+  <li>어떤 형식으로 데이터를 주고 받을지 <strong>(ICE - Interactive Connectivity Establishment)</strong> 를 협의한 후 실제 데이터를 주고 받게 된다.</li>
+</ul>
+
+<p>이러한 과정을 negotiation이라고 하고, 이러한 과정이 필요하다고 판단될 시 (연결 초기 셋업(e.g. addTrack), 
+또는 환경 변화로 재협상이 필요할때) 브라우저는 <code class="language-plaintext highlighter-rouge">negotiationneeded</code> 이벤트를 발생시킨다.</p>
+
+<h3 id="sdp-교환-단계">SDP 교환 단계</h3>
+
+<p><code class="language-plaintext highlighter-rouge">negotiation</code>이 <code class="language-plaintext highlighter-rouge">need</code> 하다고 하니까 이 이벤트의 핸들러에서 먼저 SDP 교환을 구현해준다.
+두 클라이언트는 아래 과정을 거쳐서 서로에게 어떻게 접속해야 할지에 대한 정보 (localDescription, remoteDescription)를 교환한다.</p>
+
+<div class="mermaid"> 
+sequenceDiagram
+caller-&gt;&gt;caller: createOffer()
+Note left of caller: LocalDescription = offer
+caller-&gt;&gt;callee: offerSDP
+Note right of callee: RemoteDescription = offer
+callee-&gt;&gt;callee: createAnswer()
+Note right of callee: LocalDescription = answer
+callee--&gt;&gt;caller: answerSDP
+Note left of caller: RemoteDescription = answer 
+</div>
+
+<p>다이어그램을 보면 caller와 callee가 서로 통신을 하는데 이 통신 자체에 대한 구현은 나중으로 미룰 것이다.
+아래 예제는 클라이언트 간 메시지 교환을 위한 <code class="language-plaintext highlighter-rouge">onMessage</code>, <code class="language-plaintext highlighter-rouge">sendMessage</code> 메소드가 구현되어 있다고 가정하고 작성한다.</p>
+
+<p>메시지 교환 순서의 이해를 돕기 위해 caller, callee 사이에 메시지가 오가는 순서대로 작성한다.</p>
+
+<p>⚠️ 각각 어느 파일에 작성해야 하는지에 주의</p>
+
+<p><strong>caller.js</strong></p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*앞의 예제에 이어서*/</span> 
+<span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">'</span><span class="s1">negotiationneeded</span><span class="dl">'</span><span class="p">,</span> <span class="k">async</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="c1">// 이쪽편에 접속하기 위한 정보를 생성해서 local session description에 설정</span>
+  <span class="kd">const</span> <span class="nx">sdpOffer</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">createOffer</span><span class="p">();</span> <span class="c1">// { type: 'offer', sdp: '...' }</span>
+  <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">setLocalDescription</span><span class="p">(</span><span class="nx">sdpOffer</span><span class="p">);</span>
+  
+  <span class="c1">// 상대편에게 전송 -&gt; callee.js, onMessage('SDP')</span>
+  <span class="nx">sendMessage</span><span class="p">(</span><span class="dl">'</span><span class="s1">SDP</span><span class="dl">'</span><span class="p">,</span> <span class="nx">sdpOffer</span><span class="p">)</span> 
+<span class="p">});</span> 
+</code></pre></div></div>
+
+<p><strong>callee.js</strong></p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*앞의 예제에 이어서*/</span>
+<span class="nx">onMessage</span><span class="p">(</span><span class="dl">'</span><span class="s1">SDP</span><span class="dl">'</span><span class="p">,</span> <span class="k">async</span> <span class="nx">sdpOffer</span> <span class="o">=&gt;</span> <span class="p">{</span>  
+  <span class="c1">// caller 에서 넘어온 sdp 데이터를 이용해서 remote session description을 설정  </span>
+  <span class="k">await</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">setRemoteDescription</span><span class="p">(</span><span class="k">new</span> <span class="nx">RTCSessionDescription</span><span class="p">(</span><span class="nx">sdpOffer</span><span class="p">));</span> 
+
+  <span class="c1">// answer 타입의 session description을 생성해서 local에 설정하고 caller 로 다시 전송</span>
+  <span class="kd">const</span> <span class="nx">sdpAnswer</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">createAnswer</span><span class="p">();</span>
+  <span class="k">await</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">setLocalDescription</span><span class="p">(</span><span class="nx">sdpAnswer</span><span class="p">);</span>
+  <span class="nx">sendMessage</span><span class="p">(</span><span class="dl">'</span><span class="s1">SDP</span><span class="dl">'</span><span class="p">,</span> <span class="nx">sdpAnswer</span><span class="p">);</span>
+<span class="p">});</span> 
+</code></pre></div></div>
+
+<p><strong>다시 caller.js</strong></p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">onMessage</span><span class="p">(</span><span class="dl">'</span><span class="s1">SDP</span><span class="dl">'</span><span class="p">,</span> <span class="nx">sdpAnswer</span> <span class="o">=&gt;</span> <span class="p">{</span> 
+  <span class="c1">// callee 에서 넘어온 sdp 데이터를 이용해서 remote session description을 설정  </span>
+  <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">setRemoteDescription</span><span class="p">(</span><span class="k">new</span> <span class="nx">RTCSessionDescription</span><span class="p">(</span><span class="nx">sdpAnswer</span><span class="p">));</span> 
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">rtcPeerConnection.setRemoteDescription</code>를 호출하여 상대편 브라우저에 연결할 주소정보를 설정해주면 
+이제 서로 상대방을 네트워크 상에서 식별할 준비가 된 것이다. 
+이 상태가 되면 상대편에서 추가한 track이 넘어와 <code class="language-plaintext highlighter-rouge">track</code> 이벤트가 발생한다.</p>
+
+<p><strong>caller.js</strong>, <strong>callee.js</strong> 동일하게</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*앞의 예제에 이어서*/</span>
+<span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">'</span><span class="s1">track</span><span class="dl">'</span><span class="p">,</span> <span class="nx">e</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">remoteVideo</span><span class="dl">'</span><span class="p">).</span><span class="nx">srcObject</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">MediaStream</span><span class="p">([</span><span class="nx">e</span><span class="p">.</span><span class="nx">track</span><span class="p">])</span>
+<span class="p">});</span>
+</code></pre></div></div>
+<p>이 이벤트 객체에 담긴 track을 MediaStream 객체에 담아서 <code class="language-plaintext highlighter-rouge">&lt;video /&gt;</code> 요소의 <code class="language-plaintext highlighter-rouge">srcObject</code>로 지정하면 
+이후 connection이 성립 한 후에 stream을 타고 전송되어 온 remote video data를 화면에 송출할 수 있다.</p>
+
+<p>하지만 아직 몇가지 남은 숙제가 있다. 먼저 앞서 언급했듯이 <code class="language-plaintext highlighter-rouge">onMessage</code>, <code class="language-plaintext highlighter-rouge">sendMessage</code> 두 메소드가 아직 구현되지 않았다. 
+이 두 메소드의 역할과 구현 방식에 대해서 다음 챕터에서 알아보자.</p>
+
+<h2 id="signaling-server-구현">Signaling Server 구현</h2>
+
+<p>위 코드에서 보이는바와 같이 WebRTC로 p2p 통신을 시작하기 전, 서로 어떻게 정보를 주고받아야 할지 협상을 거치는 단계에서도 
+각 클라이언트간에 통신이 필요하다. 현재 구현되지 않은 <code class="language-plaintext highlighter-rouge">onMessage</code>, <code class="language-plaintext highlighter-rouge">sendMessage</code> 메소드가 이 부분이다.</p>
+
+<p>이 메소들이 호출되는 상황에서는 아직 양 클라이언트들은 상대방에게 어떻게 접속해야할지 알지 못하므로 직접 통신을 할 수 없다.
+p2p통신이 불가능한 상황에서 이 메시지들은 어떻게 주고 받아야 할까? signaling server라 불리는 서버가 그 역할을 한다.
+결국 본격적인 비디오 데이터가 오가기 전까지는 본 포스팅 맨 위에 있는 다이어그램과 같이 중계서버를 통한 통신을 해야만 한다.</p>
+
+<p>이 signaling server는 서비스 성격에 따라서 매우 다양한 역할을 수행해야 하기 때문에 표준으로 정해진 구현이 없고, 
+서비스의 요구사항과 상황에 따라 구현하게 된다.
+일반적으로는 서버와 브라우저간 양방향 메시지 전달이 필요하기 때문에, WebSocket등을 이용해서 구현한다.</p>
+
+<p>이 단계에서는 Socket.io를 사용하여 클라이언트끼리 메시지를 상호 전송해주는 단순한 Node.js 서버와, 
+그에 상응하는 <code class="language-plaintext highlighter-rouge">onMessage</code>, <code class="language-plaintext highlighter-rouge">sendMessage</code> 메소드를 브라우저단에 구현할 것이다.</p>
+
+<p>프로젝트 root directory에서 다음 커맨드를 실행하여 npm socket.io package를 설치하고 <code class="language-plaintext highlighter-rouge">server/index.js</code> 파일을 작성한다.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>npm init
+npm <span class="nb">install </span>socket.io node-static
+</code></pre></div></div>
+
+<p><strong>directory</strong></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/  
+├ package.json
+│
+├ server/
+│└index.js
+│
+└ client/
+  ├message.js
+  ├ ...
+</code></pre></div></div>
+
+<p><strong>server/index.js</strong> <a id="server-final-code"></a></p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="kd">static</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">node-static</span><span class="dl">'</span><span class="p">);</span> 
+<span class="kd">const</span> <span class="nx">http</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">http</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">socketIO</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">socket.io</span><span class="dl">'</span><span class="p">);</span>
+
+<span class="c1">// client 파일들을 같은 서버에서 서빙한다.</span>
+<span class="kd">const</span> <span class="nx">file</span> <span class="o">=</span> <span class="k">new</span> <span class="kd">static</span><span class="p">.</span><span class="nx">Server</span><span class="p">(</span><span class="dl">'</span><span class="s1">../client</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">http</span>
+  <span class="p">.</span><span class="nx">createServer</span><span class="p">(</span><span class="nx">file</span><span class="p">.</span><span class="nx">serve</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">file</span><span class="p">))</span>
+  <span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">3000</span><span class="p">);</span>
+
+<span class="c1">// 모든 클라이언트에서 발송된 메시지를 다른 모든 클라이언트에게 무차별적으로 전송한다.</span>
+<span class="nx">socketIO</span>
+  <span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="nx">app</span><span class="p">).</span><span class="nx">sockets</span>
+  <span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">connection</span><span class="dl">'</span><span class="p">,</span> <span class="nx">socket</span> <span class="o">=&gt;</span> <span class="p">(</span>
+    <span class="nx">socket</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">message</span><span class="dl">'</span><span class="p">,</span> <span class="nx">message</span> <span class="o">=&gt;</span> <span class="nx">socket</span><span class="p">.</span><span class="nx">broadcast</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="dl">'</span><span class="s1">message</span><span class="dl">'</span><span class="p">,</span> <span class="nx">message</span><span class="p">))</span>
+  <span class="p">));</span>
+</code></pre></div></div>
+
+<p><strong>caller.html</strong>, <strong>callee.html</strong></p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">&lt;!--body 맨 하단--&gt;</span>
+<span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"/socket.io/socket.io.js"</span><span class="nt">&gt;&lt;/script&gt;</span> <span class="c">&lt;!--서버측 socket.io에서 서빙되는 socket.io.js를 추가--&gt;</span>
+<span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"caller(또는 callee).js"</span> <span class="na">type=</span><span class="s">"module"</span><span class="nt">&gt;&lt;/script&gt;</span> <span class="c">&lt;!--type="module" 추가--&gt;</span>
+</code></pre></div></div>
+
+<p>이제부터 위에서 작성한 웹서버를 통해서 접근할 것이기 때문에 es6 module import를 사용할 수 있다. <br />
+html파일들에 <code class="language-plaintext highlighter-rouge">socket.io.js</code> 의존성을 추가해주고, module import를 사용하기 위해서 <code class="language-plaintext highlighter-rouge">type="module"</code>를 추가해준다.</p>
+
+<p><strong>client/message.js</strong> 를 추가하고 <code class="language-plaintext highlighter-rouge">sendMessage</code>, <code class="language-plaintext highlighter-rouge">onMessage</code> 구현</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">socket</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">io</span><span class="p">();</span>
+
+<span class="k">export</span> <span class="kd">const</span> <span class="nx">sendMessage</span> <span class="o">=</span> <span class="p">(</span><span class="nx">type</span><span class="p">,</span> <span class="nx">payload</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">socket</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="dl">'</span><span class="s1">message</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span><span class="nx">type</span><span class="p">,</span> <span class="nx">payload</span><span class="p">});</span>
+<span class="k">export</span> <span class="kd">const</span> <span class="nx">onMessage</span> <span class="o">=</span> <span class="p">(</span><span class="nx">type</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">socket</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">message</span><span class="dl">'</span><span class="p">,</span> <span class="nx">message</span> <span class="o">=&gt;</span> <span class="p">(</span>
+  <span class="nx">message</span><span class="p">.</span><span class="nx">type</span> <span class="o">===</span> <span class="nx">type</span> <span class="o">&amp;&amp;</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">message</span><span class="p">.</span><span class="nx">payload</span><span class="p">)</span>
+<span class="p">));</span>
+</code></pre></div></div>
+
+<p><strong>client/caller.js</strong> 에 의존성 추가하고 내용 정리</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span><span class="nx">sendMessage</span><span class="p">,</span> <span class="nx">onMessage</span><span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">./message.js</span><span class="dl">"</span><span class="p">;</span>  <span class="c1">// 추가</span>
+
+<span class="p">(</span><span class="k">async</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">mediaStream</span> <span class="o">=</span> <span class="k">await</span> <span class="nb">navigator</span><span class="p">.</span><span class="nx">mediaDevices</span><span class="p">.</span><span class="nx">getUserMedia</span><span class="p">({</span> <span class="na">video</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="na">audio</span><span class="p">:</span> <span class="kc">false</span> <span class="p">});</span>
+  <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">localVideo</span><span class="dl">'</span><span class="p">).</span><span class="nx">srcObject</span> <span class="o">=</span> <span class="nx">mediaStream</span><span class="p">;</span>
+
+  <span class="kd">const</span> <span class="nx">rtcPeerConnection</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RTCPeerConnection</span><span class="p">();</span>
+  <span class="nx">mediaStream</span><span class="p">.</span><span class="nx">getTracks</span><span class="p">().</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">track</span> <span class="o">=&gt;</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">addTrack</span><span class="p">(</span><span class="nx">track</span><span class="p">));</span>
+
+  <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">'</span><span class="s1">negotiationneeded</span><span class="dl">'</span><span class="p">,</span> <span class="k">async</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">sdpOffer</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">createOffer</span><span class="p">();</span>
+    <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">setLocalDescription</span><span class="p">(</span><span class="nx">sdpOffer</span><span class="p">);</span>
+    <span class="nx">sendMessage</span><span class="p">(</span><span class="dl">'</span><span class="s1">SDP</span><span class="dl">'</span><span class="p">,</span> <span class="nx">sdpOffer</span><span class="p">)</span>
+  <span class="p">});</span> 
+  
+  <span class="nx">onMessage</span><span class="p">(</span><span class="dl">'</span><span class="s1">SDP</span><span class="dl">'</span><span class="p">,</span> <span class="nx">sdpAnswer</span> <span class="o">=&gt;</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">setRemoteDescription</span><span class="p">(</span><span class="k">new</span> <span class="nx">RTCSessionDescription</span><span class="p">(</span><span class="nx">sdpAnswer</span><span class="p">)));</span>
+ 
+  <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">'</span><span class="s1">track</span><span class="dl">'</span><span class="p">,</span> <span class="nx">e</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">remoteVideo</span><span class="dl">'</span><span class="p">).</span><span class="nx">srcObject</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">MediaStream</span><span class="p">([</span><span class="nx">e</span><span class="p">.</span><span class="nx">track</span><span class="p">])</span>
+  <span class="p">});</span>
+<span class="p">})();</span>
+</code></pre></div></div>
+
+<p><strong>client/callee.js</strong> 에 의존성 추가하고 내용 정리</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span><span class="nx">sendMessage</span><span class="p">,</span> <span class="nx">onMessage</span><span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">./message.js</span><span class="dl">"</span><span class="p">;</span>  <span class="c1">// 추가</span>
+
+<span class="p">(</span><span class="k">async</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">mediaStream</span> <span class="o">=</span> <span class="k">await</span> <span class="nb">navigator</span><span class="p">.</span><span class="nx">mediaDevices</span><span class="p">.</span><span class="nx">getUserMedia</span><span class="p">({</span> <span class="na">video</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="na">audio</span><span class="p">:</span> <span class="kc">false</span> <span class="p">});</span>
+  <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">localVideo</span><span class="dl">'</span><span class="p">).</span><span class="nx">srcObject</span> <span class="o">=</span> <span class="nx">mediaStream</span><span class="p">;</span>
+
+  <span class="kd">const</span> <span class="nx">rtcPeerConnection</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RTCPeerConnection</span><span class="p">();</span>
+  <span class="nx">mediaStream</span><span class="p">.</span><span class="nx">getTracks</span><span class="p">().</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">track</span> <span class="o">=&gt;</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">addTrack</span><span class="p">(</span><span class="nx">track</span><span class="p">));</span>
+
+  <span class="nx">onMessage</span><span class="p">(</span><span class="dl">'</span><span class="s1">SDP</span><span class="dl">'</span><span class="p">,</span> <span class="k">async</span> <span class="nx">sdpOffer</span> <span class="o">=&gt;</span> <span class="p">{</span>    
+    <span class="k">await</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">setRemoteDescription</span><span class="p">(</span><span class="k">new</span> <span class="nx">RTCSessionDescription</span><span class="p">(</span><span class="nx">sdpOffer</span><span class="p">));</span> 
+    <span class="kd">const</span> <span class="nx">sdpAnswer</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">createAnswer</span><span class="p">();</span>
+    <span class="k">await</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">setLocalDescription</span><span class="p">(</span><span class="nx">sdpAnswer</span><span class="p">);</span>
+    <span class="nx">sendMessage</span><span class="p">(</span><span class="dl">'</span><span class="s1">SDP</span><span class="dl">'</span><span class="p">,</span> <span class="nx">sdpAnswer</span><span class="p">);</span>
+  <span class="p">});</span>
+  
+  <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">'</span><span class="s1">track</span><span class="dl">'</span><span class="p">,</span> <span class="nx">e</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">remoteVideo</span><span class="dl">'</span><span class="p">).</span><span class="nx">srcObject</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">MediaStream</span><span class="p">([</span><span class="nx">e</span><span class="p">.</span><span class="nx">track</span><span class="p">])</span>
+  <span class="p">});</span>
+<span class="p">})();</span>
+</code></pre></div></div>
+
+<p>여기까지 구현을 마치고 <code class="language-plaintext highlighter-rouge">node server</code> 로 웹서버를 구동시키면 
+<a href="http://localhost:3000/caller.html">http://localhost:3000/caller.html</a>,
+<a href="http://localhost:3000/callee.html">http://localhost:3000/callee.html</a> 로 각각 접속 가능하다.</p>
+
+<p>각 탭의 개발자 도구의 네트워크 탭을 보면
+Signaling Server의 WebSocket을 통해서 서로 SDP를 교환하는 내용을 확인할 수 있다.</p>
+
+<p><img src="https://user-images.githubusercontent.com/4980032/94692526-93beb680-036d-11eb-832e-4434958b0d03.png" alt="" /></p>
+
+<p>브라우저가 크롬인 경우, <a href="chrome://webrtc-internals/">chrome://webrtc-internals/</a> 에 접속해보면
+webrtc 관련한 네트워크 상태와 이벤트 발생을 모니터 할 수 있는데, 마지막으로 발생한 <code class="language-plaintext highlighter-rouge">signalingstatechange</code> 이벤트를 살펴보면
+양측에서 상태가 <code class="language-plaintext highlighter-rouge">stable</code>로 변경된 것을 확인할 수 있다.</p>
+
+<h4 id="️주의사항">⚠️주의사항</h4>
+
+<p>지금 구현하는 signaling server는 접속자 식별기능이 없기 때문에 모든 메시지를 broadcasting한다. 로컬에서 테스트시 
+caller, callee 각각 한개씩 이상의 브라우저를 띄울 경우, 각각의 연결 상태와 메시지가 일치하지 않아 정상적으로 작동이 불가능하다.</p>
+
+<h2 id="rtc-연결-생성하기-2">RTC 연결 생성하기 (2)</h2>
+
+<p>이제 Signaling Server까지 구현이 완료되었다! 그러면 이제 두개의 브라우저에 각각
+<a href="http://localhost:3000/caller.html">caller App</a> 과 <a href="http://localhost:3000/callee.html">callee App</a> 을 띄우고 
+서로 전송되는 두개의 화면을 볼수 있는 것일까?!</p>
+
+<p>실제 실행해보면 아직 local video만 나오고 remote video는 나오지 않는다.
+<a href="#rtc-연결-생성하기-1">RTC 연결 생성하기 (1)</a> 에서 언급한 것 처럼 실제 연결이 이루어지고 통신을 하기 위해서는 SDP와 ICE 두가지 정보가 교환되어야 하는데
+아직 어떤 형식으로 데이터를 주고 받을지에 대한 정보를 담고 있는 <strong>(ICE - Interactive Connectivity Establishment)</strong> 를 
+교환하는 단계에 대한 구현이 이루어 지지 않았다.</p>
+
+<p>데이터를 주고받는 형식은 미디어 타입이나 브라우저 상황에 따라 한가지 이상의 방식으로 통신이 가능하기때문에 
+ICE candidates라고 불리는 여러개의 후보군을 주고 받고, 이중에서 서로 가능한 방식이 있을때 최적이라고 판단되는 ICE를
+골라서 협의하게 된다.</p>
+
+<p>이 선택과정은 표준에 의해 구현된 브라우저가 실행하게 되므로 우리는 위에서 구축한 Signaling Server를 통해서
+ICE candidates를 서로 전달해주기만 하면 된다.</p>
+
+<h3 id="ice-교환-단계">ICE 교환 단계</h3>
+
+<p><code class="language-plaintext highlighter-rouge">rtcPeerConnection.setLocalDescription</code>를 호출한 시점 이후로부터 각 <code class="language-plaintext highlighter-rouge">rtcPeerConnection</code>객체는 ICE candidate 를 생성할 수 있고
+그때마다 <code class="language-plaintext highlighter-rouge">icecandidate</code>이벤트를 발생시킨다. 이 이벤트 객체에 ICE candidate 정보가 들어있으므로 이를 상대편에게 메시지로
+전달하고, 또 메시지가 들어오면 <code class="language-plaintext highlighter-rouge">rtcPeerConnection.addIceCandidate</code> 메소드를 호출하여 상대편에서 보내온 ICE candidate를
+로컬 rtcPeerConnection에 등록하면 된다.</p>
+
+<p><strong>caller.js</strong>, <strong>callee.js</strong> 동일하게</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*...앞의 예제 내용에 이어서...*/</span>
+
+<span class="c1">// 실제 로그를 찍어보면 이벤트는 총 세번 발생하는데, </span>
+<span class="c1">// 각각 TCP, UDP 프로토콜 연결에 대한 ICE가 생성되고</span>
+<span class="c1">// 마지막으로 ICE candidate의 끝을 나타내는 null값이 전달된다.</span>
+<span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">'</span><span class="s1">icecandidate</span><span class="dl">'</span><span class="p">,</span> <span class="nx">e</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">candidate</span> <span class="o">===</span> <span class="kc">null</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+    <span class="nx">sendMessage</span><span class="p">(</span><span class="dl">'</span><span class="s1">ICE</span><span class="dl">'</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">candidate</span><span class="p">)</span>  
+<span class="p">});</span>
+
+<span class="nx">onMessage</span><span class="p">(</span><span class="dl">'</span><span class="s1">ICE</span><span class="dl">'</span><span class="p">,</span> <span class="nx">iceCandidate</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">addIceCandidate</span><span class="p">(</span><span class="k">new</span> <span class="nx">RTCIceCandidate</span><span class="p">(</span><span class="nx">iceCandidate</span><span class="p">));</span>
+<span class="p">})</span>
+</code></pre></div></div>
+
+<p>여기까지 수행하면 두개의 브라우저에 각각 local, remote 화면이 출력되는 것을 확인할 수 있으며, 
+서로 다른 프로세스 사이에서 시그널 서버를 통하지 않고 직접 네트워크를 통해 통신하여 비디오 스트림을 전송하는 것을 확인할 수 있다.
+실제 전송되는 데이터에 대한 실시간 모니터링을 <a href="chrome://webrtc-internals/">chrome://webrtc-internals/</a>에서 확인할 수 있다.
+다만 현재까지는 하나의 컴퓨터에서 실행하고 있기 때문에 local 비디오나 remote 비디오나 같은 화면이 보일텐데 
+네트워크를 통하기 때문에 자세히 보면 미세한 레이턴시가 발생하는것을 알 수 있다.</p>
+
+<p>여기까지의 통신과정을 시퀀스 다이어그램으로 정리하면 아래와 같다.</p>
+
+<div class="mermaid"> 
+sequenceDiagram
+Participant caller
+Participant signal server
+Participant callee
+par
+caller-&gt;&gt;caller: createOffer()
+Note left of caller: LocalDescription = offer
+caller-&gt;&gt;signal server: offerSDP
+signal server-&gt;&gt;callee: offerSDP
+Note right of callee: RemoteDescription = offer
+callee-&gt;&gt;callee: createAnswer()
+Note right of callee: LocalDescription = answer
+callee--&gt;&gt;signal server: answerSDP
+signal server--&gt;&gt;caller: answerSDP
+Note left of caller: RemoteDescription = answer
+and
+callee-&gt;&gt;signal server: IceCandidate(callee) x N
+signal server-&gt;&gt;caller: IceCandidate(callee) x N
+Note left of caller: IceCandidates = iceCandidate(callee) x N
+and
+caller-&gt;&gt;signal server: IceCandidate(caller) x N
+signal server-&gt;&gt;callee: IceCandidate(caller) x N
+Note right of callee: IceCandidates = iceCandidate(caller) x N
+end
+
+Note over caller, callee: negotiation end
+
+caller-&gt;&gt;callee: p2p Media streaming(Audio, Video, Data)
+callee-&gt;&gt;caller: p2p Media streaming(Audio, Video, Data)
+</div>
+
+<h2 id="caller-callee-코드-통합-및-정리">Caller, Callee 코드 통합 및 정리</h2>
+
+<p>여태까지 로직 구분을 간단히 하기 위해 <code class="language-plaintext highlighter-rouge">Caller</code>, <code class="language-plaintext highlighter-rouge">Callee</code>를 구분해서 작성했지만, 
+실제 사용시에는 두 역할에 따라 엔드포인트가 구분되어 있지 않는 경우가 많고, 로직도 중복된 부분이 많아서 적당한 UI와 함께
+하나의 App으로 통합해도 무리가 없다.</p>
+
+<p>두 부분을 하나로 통합하고 중복된 부분을 정리한 결과는 다음과 같다.</p>
+
+<p><strong>index.html</strong></p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;!doctype html&gt;</span>
+<span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">"ko"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">"UTF-8"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;title&gt;</span>WebRTC<span class="nt">&lt;/title&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;h1&gt;</span>화상통화<span class="nt">&lt;/h1&gt;</span>
+    <span class="nt">&lt;h2&gt;</span>내 화면<span class="nt">&lt;/h2&gt;</span>
+    <span class="nt">&lt;video</span> <span class="na">id=</span><span class="s">"localVideo"</span> <span class="na">autoplay</span> <span class="na">width=</span><span class="s">"480px"</span><span class="nt">&gt;&lt;/video&gt;</span>
+    <span class="nt">&lt;h2&gt;</span>상대방 화면<span class="nt">&lt;/h2&gt;</span>
+    <span class="nt">&lt;video</span> <span class="na">id=</span><span class="s">"remoteVideo"</span> <span class="na">autoplay</span> <span class="na">width=</span><span class="s">"480px"</span><span class="nt">&gt;&lt;/video&gt;</span>
+    <span class="nt">&lt;button</span> <span class="na">id=</span><span class="s">"call"</span><span class="nt">&gt;</span>📞CALL<span class="nt">&lt;/button&gt;</span>
+    <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"/socket.io/socket.io.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+    <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"script.js"</span> <span class="na">type=</span><span class="s">"module"</span><span class="nt">&gt;&lt;/script&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre></div></div>
+
+<p><strong>script.js</strong></p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span><span class="nx">onMessage</span><span class="p">,</span> <span class="nx">sendMessage</span><span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">./message.js</span><span class="dl">"</span><span class="p">;</span>
+
+<span class="kd">const</span> <span class="nx">callButton</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">call</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">localVideo</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">localVideo</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">remoteVideo</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">remoteVideo</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">rtcPeerConnection</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RTCPeerConnection</span><span class="p">();</span>
+
+<span class="kd">const</span> <span class="nx">sendSdpOffer</span> <span class="o">=</span> <span class="k">async</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">rtcSessionDescriptionInit</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">createOffer</span><span class="p">();</span>
+  <span class="k">await</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">setLocalDescription</span><span class="p">(</span><span class="nx">rtcSessionDescriptionInit</span><span class="p">);</span>
+  <span class="nx">sendMessage</span><span class="p">(</span><span class="dl">'</span><span class="s1">SDP</span><span class="dl">'</span><span class="p">,</span> <span class="nx">rtcSessionDescriptionInit</span><span class="p">)</span>
+<span class="p">};</span>
+
+<span class="kd">const</span> <span class="nx">sendSdpAnswer</span> <span class="o">=</span> <span class="k">async</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">rtcSessionDescriptionInit</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">createAnswer</span><span class="p">();</span>
+  <span class="k">await</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">setLocalDescription</span><span class="p">(</span><span class="nx">rtcSessionDescriptionInit</span><span class="p">);</span>
+  <span class="nx">sendMessage</span><span class="p">(</span><span class="dl">'</span><span class="s1">SDP</span><span class="dl">'</span><span class="p">,</span> <span class="nx">rtcSessionDescriptionInit</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="nb">navigator</span><span class="p">.</span><span class="nx">mediaDevices</span>
+  <span class="p">.</span><span class="nx">getUserMedia</span><span class="p">({</span><span class="na">video</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="na">audio</span><span class="p">:</span> <span class="kc">false</span><span class="p">})</span>
+  <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">mediaStream</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">localVideo</span><span class="p">.</span><span class="nx">srcObject</span> <span class="o">=</span> <span class="nx">mediaStream</span><span class="p">;</span>
+    <span class="nx">mediaStream</span><span class="p">.</span><span class="nx">getTracks</span><span class="p">().</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">track</span> <span class="o">=&gt;</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">addTrack</span><span class="p">(</span><span class="nx">track</span><span class="p">));</span>
+  <span class="p">});</span>
+
+<span class="c1">// exchange SDP</span>
+<span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">'</span><span class="s1">negotiationneeded</span><span class="dl">'</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">callButton</span><span class="p">.</span><span class="nx">disabled</span> <span class="o">=</span> <span class="kc">false</span><span class="p">)</span>
+<span class="nx">callButton</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">'</span><span class="s1">click</span><span class="dl">'</span><span class="p">,</span> <span class="nx">sendSdpOffer</span><span class="p">)</span>
+<span class="nx">onMessage</span><span class="p">(</span><span class="dl">'</span><span class="s1">SDP</span><span class="dl">'</span><span class="p">,</span> <span class="k">async</span> <span class="nx">descriptionInit</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">rtcSessionDescription</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RTCSessionDescription</span><span class="p">(</span><span class="nx">descriptionInit</span><span class="p">);</span>
+  <span class="k">await</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">setRemoteDescription</span><span class="p">(</span><span class="nx">rtcSessionDescription</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">descriptionInit</span><span class="p">.</span><span class="nx">type</span> <span class="o">===</span> <span class="dl">'</span><span class="s1">offer</span><span class="dl">'</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">callButton</span><span class="p">.</span><span class="nx">disabled</span> <span class="o">=</span> <span class="kc">true</span>
+    <span class="k">await</span> <span class="nx">sendSdpAnswer</span><span class="p">();</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+
+<span class="c1">// exchange ICE</span>
+<span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">'</span><span class="s1">icecandidate</span><span class="dl">'</span><span class="p">,</span> <span class="nx">e</span> <span class="o">=&gt;</span> <span class="nx">e</span><span class="p">.</span><span class="nx">candidate</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="nx">sendMessage</span><span class="p">(</span><span class="dl">'</span><span class="s1">ICE</span><span class="dl">'</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">candidate</span><span class="p">));</span>
+<span class="nx">onMessage</span><span class="p">(</span><span class="dl">'</span><span class="s1">ICE</span><span class="dl">'</span><span class="p">,</span> <span class="nx">candidateInit</span> <span class="o">=&gt;</span> <span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">addIceCandidate</span><span class="p">(</span><span class="k">new</span> <span class="nx">RTCIceCandidate</span><span class="p">(</span><span class="nx">candidateInit</span><span class="p">)))</span>
+
+<span class="c1">// handle remote stream</span>
+<span class="nx">rtcPeerConnection</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">'</span><span class="s1">track</span><span class="dl">'</span><span class="p">,</span> <span class="nx">e</span> <span class="o">=&gt;</span> <span class="nx">remoteVideo</span><span class="p">.</span><span class="nx">srcObject</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">MediaStream</span><span class="p">([</span><span class="nx">e</span><span class="p">.</span><span class="nx">track</span><span class="p">]));</span>
+</code></pre></div></div>
+
+<p>위에서 언급한것과 같이 시그널링 서버 구현이 최소한의 구현으로 되어있기 때문에
+실제로 1:1 화상채팅을 서비스 하기에는 아직 무리가 있지만 브라우저의 서로 다른 탭에 두개의 화면을 띄워보면 서로 통신하는 것을 확인할수 있다.</p>
+
+<p>이제 똑같은 화면이 두개씩 나오는 것은 실컷 봤으니 실제 다른 디바이스에서 화면을 보며 확인해보고 싶다.
+다음 커맨드를 터미널에 입력하여 로컬 ip를 알아낸 다음 같은 와이파이 망에 접속된 모바일 기기로 접속해보자.(mac 기준)</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;</span> ifconfig | <span class="nb">grep </span>192 <span class="c">#192.168.0.6 -&gt; http://192.168.0.6:3000 </span>
+</code></pre></div></div>
+
+<p>아마 제대로 작동이 안될 것이다. userMedia를 가져올때 localhost 이외의 주소에서는 https로 접속이 요구된다. 그렇지 않으면
+관련 API가 작동하지 않는다. 그 외에도 모바일 기기 접속을 통해 p2p 비디오스트리밍을 정상 구동하려면 해야할 일들이 몇가지 더 있는데,<br />
+그것은 다음 포스팅에서 이어서 다룰것이다.</p>
+
+<p>여기까지 작성한 코드는 아래 repo에 업로드 되어 있다.<br />
+<a href="https://github.com/neocjmix/WebRTC/tree/p2p-%ED%99%94%EC%83%81%EC%B1%84%ED%8C%85-%EA%B5%AC%ED%98%84-(1)">https://github.com/neocjmix/WebRTC/tree/p2p-화상채팅-구현-(1)</a></p>
+:ET
