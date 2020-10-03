@@ -315,13 +315,12 @@ pre {
 }
 
 .post-full .content img {
-    margin: 1em 4%;
+    margin: 1em auto;
     text-align: center;
     display: block;
-    max-width: 92%;
+    max-width: 100%;
     height: auto;
     border: solid 1px #ddd;
-    max-height: 450px;
 }
 
 .post-full .content iframe {
@@ -394,4 +393,5 @@ pre {
 
 .mermaid{
     text-align: center;
+    margin-bottom: 1em;
 }

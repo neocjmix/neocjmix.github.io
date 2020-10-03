@@ -1,0 +1,41 @@
+I"1
+<h2 id="fibonacci">Fibonacci</h2>
+
+<h3 id="recursive">Recursive</h3>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kt">int</span> <span class="nf">recurrsive</span><span class="o">(</span><span class="kt">int</span> <span class="n">num</span><span class="o">){</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">num</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">)</span> <span class="k">return</span> <span class="n">num</span><span class="o">;</span>
+    <span class="k">return</span> <span class="nf">recurrsive</span><span class="o">(</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">+</span> <span class="n">recurrsive</span><span class="o">(</span><span class="n">num</span><span class="o">-</span><span class="mi">2</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="memoization">Memoization</h3>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">long</span><span class="o">[]</span> <span class="n">resolved</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">long</span><span class="o">[</span><span class="mi">1000</span><span class="o">];</span>
+    
+<span class="kd">public</span> <span class="kt">long</span> <span class="nf">memoization</span><span class="o">(</span><span class="kt">int</span> <span class="n">num</span><span class="o">){</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">resolved</span><span class="o">[</span><span class="n">num</span><span class="o">]==</span><span class="mi">0</span><span class="o">){</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">num</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">)</span> <span class="n">resolved</span><span class="o">[</span><span class="n">num</span><span class="o">]</span> <span class="o">=</span> <span class="n">num</span><span class="o">;</span>
+        <span class="k">else</span> <span class="n">resolved</span><span class="o">[</span><span class="n">num</span><span class="o">]</span> <span class="o">=</span> <span class="n">resolved</span><span class="o">[</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="o">]</span> <span class="o">+</span> <span class="n">resolved</span><span class="o">[</span><span class="n">num</span><span class="o">-</span><span class="mi">2</span><span class="o">];</span>
+    <span class="o">}</span>
+    
+    <span class="k">return</span> <span class="n">resolved</span><span class="o">[</span><span class="n">num</span><span class="o">];</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="bottom-up">Bottom-up</h3>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kt">long</span> <span class="nf">bottomUp</span><span class="o">(</span><span class="kt">int</span> <span class="n">num</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kt">long</span><span class="o">[]</span> <span class="n">resolved</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">long</span><span class="o">[</span><span class="mi">1000</span><span class="o">];</span>
+    
+    <span class="n">resolved</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="n">resolved</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span>
+    
+    <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">num</span><span class="o">;</span> <span class="n">i</span><span class="o">++){</span>
+        <span class="n">resolved</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">resolved</span><span class="o">[</span><span class="n">i</span><span class="o">-</span><span class="mi">2</span><span class="o">]</span> <span class="o">+</span> <span class="n">resolved</span><span class="o">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span>
+    <span class="o">}</span>
+    
+    <span class="k">return</span> <span class="n">resolved</span><span class="o">[</span><span class="n">num</span><span class="o">];</span>
+<span class="o">}</span>
+</code></pre></div></div>
+:ET

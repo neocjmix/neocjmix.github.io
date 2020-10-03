@@ -1,0 +1,104 @@
+I"2%<h2 id="개념">개념</h2>
+<p>| <strong>Object Relation Mapping</strong><br />
+객체를 RDB와 매핑하는 기술.</p>
+
+<h3 id="jpa">jpa</h3>
+<ul>
+  <li>Hibernate를 기반으로 java 표준으로 지정된 ORM 표준 기술.</li>
+  <li>객체를 db상의 테이블과 매핑한다.</li>
+</ul>
+
+<h3 id="구조">구조</h3>
+<ul>
+  <li>Persistent Context</li>
+  <li>Entity Manager Factory</li>
+  <li>Entity Manager</li>
+  <li>Transaction Manager</li>
+  <li>Entity</li>
+</ul>
+
+<h3 id="생명주기">생명주기</h3>
+<ul>
+  <li>New</li>
+  <li>Managed</li>
+  <li>Detached</li>
+  <li>Removed</li>
+</ul>
+
+<h2 id="spring-data-jpa">Spring-data-JPA</h2>
+<h3 id="dependencies">Dependencies</h3>
+<h4 id="gradle">gradle</h4>
+<p><em>mySQL DB</em></p>
+
+<div class="language-groovy highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="n">dependencies</span> <span class="o">{</span>
+  	<span class="n">compile</span><span class="o">(</span><span class="s1">'org.springframework.boot:spring-boot-starter-data-jpa'</span><span class="o">)</span>
+  	<span class="n">compile</span><span class="o">(</span><span class="s1">'org.springframework.boot:spring-boot-starter-jdbc'</span><span class="o">)</span>
+  	<span class="n">runtime</span><span class="o">(</span><span class="s1">'mysql:mysql-connector-java'</span><span class="o">)</span>
+  <span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="두개-이상의-datasource를-연결할-시">두개 이상의 datasource를 연결할 시</h3>
+<p>하나의 datasourc는 한개의 configuration Class에 의해 한개의 entity용 package, 한개의 repository용 package와 매핑된다. 즉,</p>
+
+<ol>
+  <li>서로 다른 datasource와 연관된 entity는 각각 다른 package에 위치해야 한다.</li>
+  <li>서로 다른 datasource와 연관된 repository는 각각 다른 package에 위치해야 한다.</li>
+  <li>각각의 <code class="language-plaintext highlighter-rouge">LocalContainerEntityManagerFactoryBean</code>에 대한 configuration Class가 datasource의 수만큼 필요하다.<br />
+설정에는 해당 entity들이 들어있는 package이름, repository들이 들어있는 package이름, 각 datasource의 설정값이 필요하다.</li>
+</ol>
+
+<h4 id="configuration-class-예시">configuration class 예시</h4>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Configuration</span>
+<span class="nd">@EnableJpaRepositories</span><span class="o">(</span>
+        <span class="n">basePackages</span> <span class="o">=</span> <span class="s">"pe.frank.dao.Features"</span><span class="o">,</span> <span class="c1">//repository가 들어있는 package 이름</span>
+        <span class="n">entityManagerFactoryRef</span> <span class="o">=</span> <span class="s">"dataEntityManager"</span><span class="o">,</span> <span class="c1">//entityManagerFactory래핑 bean이름</span>
+        <span class="n">transactionManagerRef</span> <span class="o">=</span> <span class="s">"dataTransactionManager"</span> <span class="c1">//dataTransactionManager래핑 bean이름</span>
+<span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">DataDBConfiguration</span> <span class="o">{</span>
+
+    <span class="c1">//application-properties등에 설정된 설정값을 참조하기 위한 bean</span>
+    <span class="nd">@Autowired</span>
+    <span class="kd">private</span> <span class="n">org</span><span class="o">.</span><span class="na">springframework</span><span class="o">.</span><span class="na">core</span><span class="o">.</span><span class="na">env</span><span class="o">.</span><span class="na">Environment</span> <span class="n">env</span><span class="o">;</span>
+
+    <span class="c1">//entityManagerFactory래핑 bean</span>
+    <span class="nd">@Bean</span>
+    <span class="kd">public</span> <span class="nc">LocalContainerEntityManagerFactoryBean</span> <span class="nf">dataEntityManager</span><span class="o">(</span><span class="nc">EntityManagerFactoryBuilder</span> <span class="n">builder</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">LocalContainerEntityManagerFactoryBean</span> <span class="n">em</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="na">dataSource</span><span class="o">(</span><span class="n">dataDataSource</span><span class="o">())</span>
+                <span class="o">.</span><span class="na">persistenceUnit</span><span class="o">(</span><span class="s">"primary"</span><span class="o">)</span> <span class="c1">//엔티티매니저팩토리의 유닛 이름(선택적)</span>
+                <span class="o">.</span><span class="na">packages</span><span class="o">(</span><span class="s">"pe.frank.model.Features"</span><span class="o">)</span> <span class="c1">//entity class가 들어있는 package 이름</span>
+                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+
+        <span class="c1">//hibernate 설정</span>
+        <span class="n">em</span><span class="o">.</span><span class="na">setJpaPropertyMap</span><span class="o">(</span><span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Object</span><span class="o">&gt;(){</span>
+            <span class="o">{</span>
+                <span class="n">put</span><span class="o">(</span><span class="n">org</span><span class="o">.</span><span class="na">hibernate</span><span class="o">.</span><span class="na">cfg</span><span class="o">.</span><span class="na">Environment</span><span class="o">.</span><span class="na">HBM2DDL_AUTO</span><span class="o">,</span> <span class="n">env</span><span class="o">.</span><span class="na">getProperty</span><span class="o">(</span><span class="s">"hibernate.hbm2ddl.auto"</span><span class="o">));</span>
+                <span class="n">put</span><span class="o">(</span><span class="n">org</span><span class="o">.</span><span class="na">hibernate</span><span class="o">.</span><span class="na">cfg</span><span class="o">.</span><span class="na">Environment</span><span class="o">.</span><span class="na">DIALECT</span><span class="o">,</span> <span class="n">env</span><span class="o">.</span><span class="na">getProperty</span><span class="o">(</span><span class="s">"data.hibernate.dialect"</span><span class="o">));</span>
+            <span class="o">}</span>
+        <span class="o">});</span>
+
+        <span class="k">return</span> <span class="n">em</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Bean</span>
+    <span class="kd">public</span> <span class="nc">DataSource</span> <span class="nf">dataDataSource</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">//env.getProperty를 이용해서 각 datasource에 대한 설정을 한다.</span>
+        <span class="k">return</span> <span class="nc">DataSourceBuilder</span>
+                <span class="o">.</span><span class="na">create</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">driverClassName</span><span class="o">(</span><span class="n">env</span><span class="o">.</span><span class="na">getProperty</span><span class="o">(</span><span class="s">"Features.jdbc.driverClassName"</span><span class="o">))</span>
+                <span class="o">.</span><span class="na">url</span><span class="o">(</span><span class="n">env</span><span class="o">.</span><span class="na">getProperty</span><span class="o">(</span><span class="s">"Features.jdbc.url"</span><span class="o">))</span>
+                <span class="o">.</span><span class="na">username</span><span class="o">(</span><span class="n">env</span><span class="o">.</span><span class="na">getProperty</span><span class="o">(</span><span class="s">"Features.jdbc.user"</span><span class="o">))</span>
+                <span class="o">.</span><span class="na">password</span><span class="o">(</span><span class="n">env</span><span class="o">.</span><span class="na">getProperty</span><span class="o">(</span><span class="s">"Features.jdbc.pass"</span><span class="o">))</span>
+                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="c1">//dataTransactionManager래핑 bean</span>
+    <span class="nd">@Bean</span>
+    <span class="kd">public</span> <span class="nc">PlatformTransactionManager</span> <span class="nf">dataTransactionManager</span><span class="o">(</span><span class="nc">EntityManagerFactoryBuilder</span> <span class="n">builder</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">JpaTransactionManager</span> <span class="n">jpaTransactionManager</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">JpaTransactionManager</span><span class="o">();</span>
+        <span class="n">jpaTransactionManager</span><span class="o">.</span><span class="na">setEntityManagerFactory</span><span class="o">(</span><span class="n">dataEntityManager</span><span class="o">(</span><span class="n">builder</span><span class="o">).</span><span class="na">getObject</span><span class="o">());</span>
+        <span class="k">return</span> <span class="n">jpaTransactionManager</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+:ET

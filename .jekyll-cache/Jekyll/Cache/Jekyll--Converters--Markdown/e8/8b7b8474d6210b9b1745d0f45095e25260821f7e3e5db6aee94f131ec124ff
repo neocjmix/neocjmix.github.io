@@ -1,0 +1,86 @@
+I"
+<h2 id="ngmock">ngMock</h2>
+
+<p><a href="/test/2015/08/06/mocha/">Mocha</a> 나 <a href="/test/2015/08/14/karma/#jasmine">Jasmine</a> 등의 테스트 프레임웍 자체에는 앵귤러 모듈을 로딩하거나 서비스를 주입받는 기능이 없으므로 ngMock을 사용해서 모듈을 로딩하고 의존성을 주입받는다.</p>
+
+<p>Mocha, Jasmine 테스트시에만 사용사능하며, 전역변수에 등록되므로 다음과 같이 Test Hook에서 간단하게 사용할 수 있다.</p>
+
+<h3 id="module">module</h3>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">beforeEach</span><span class="p">(</span><span class="nx">module</span><span class="p">(</span><span class="dl">'</span><span class="s1">myApplicationModule</span><span class="dl">'</span><span class="p">));</span>
+</code></pre></div></div>
+
+<h3 id="inject">inject</h3>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">beforeEach</span><span class="p">(</span> <span class="nx">inject</span><span class="p">(</span> <span class="kd">function</span><span class="p">(</span><span class="nx">_myService_</span><span class="p">){</span>
+  <span class="nx">myService</span> <span class="o">=</span> <span class="nx">_myService_</span><span class="p">;</span>
+<span class="p">}));</span>
+
+<span class="nx">it</span><span class="p">(</span><span class="dl">'</span><span class="s1">use Service</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">myService</span><span class="p">.</span><span class="nx">doStuff</span><span class="p">();</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>위의 예에서 보듯이, 나중에 서비스를 할당할때의 변수이름 짓기의 편리함을 위해서, 서비스를 주입받을 파라미터 이름은 <code class="language-plaintext highlighter-rouge">_</code> 로 감싸서 받을 수도 있다.</p>
+
+<p>아래처럼 $injector 서비스를 주입받아서 다른 서비스를 주입하는 패턴으로, 파라미터 수를 줄일 수도 있다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">scope</span><span class="p">;</span>
+
+<span class="nx">beforeEach</span><span class="p">(</span><span class="nx">inject</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">$injector</span><span class="p">,</span> <span class="nx">$sniffer</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">scope</span> <span class="o">=</span> <span class="nx">$injector</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="dl">'</span><span class="s1">$rootScope</span><span class="dl">'</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h2 id="controller">$controller</h2>
+
+<p>controller 인스턴스를 생성한다.</p>
+
+<h2 id="angularelement--compile">angular.element &amp; $compile</h2>
+
+<h3 id="element">element</h3>
+<p>jqLite를 사용할 수 있는 jQuery객체를 리턴하는 <strong>함수</strong>다. 테스트에서는 임의의 DOM을 만드는 용도로 사용할 수 있다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">doc</span><span class="p">,</span> <span class="nx">elem</span><span class="p">;</span>
+<span class="nx">describe</span><span class="p">(</span><span class="dl">'</span><span class="s1">form input element</span><span class="dl">'</span><span class="p">,</span><span class="kd">function</span><span class="p">(){</span>
+    <span class="nx">beforeEach</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">doc</span> <span class="o">=</span> <span class="nx">angular</span><span class="p">.</span><span class="nx">element</span><span class="p">(</span>
+            <span class="dl">'</span><span class="s1">&lt;form name="form"&gt;</span><span class="dl">'</span> <span class="o">+</span>
+            <span class="dl">'</span><span class="s1">&lt;input type="text" ng-model="item" name="item" /&gt;</span><span class="dl">'</span> <span class="o">+</span>
+            <span class="dl">'</span><span class="s1">&lt;/form&gt;</span><span class="dl">'</span>
+            <span class="p">);</span>
+
+        <span class="nx">elm</span> <span class="o">=</span> <span class="nx">doc</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="dl">'</span><span class="s1">input</span><span class="dl">'</span><span class="p">).</span><span class="nx">eq</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    
+        <span class="c1">//...아래 코드에 계속</span>
+</code></pre></div></div>
+
+<h3 id="compile">$compile</h3>
+<p>주어진 DOM이나 HTML String을 Angular Template 으로 컴파일 해주는 <strong>서비스</strong>.
+서비스이므로 DI를 받아서 사용한다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        <span class="c1">//위의 코드에 이어서...</span>
+        <span class="nx">scope</span> <span class="o">=</span> <span class="nx">$injector</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="dl">'</span><span class="s1">$rootScope</span><span class="dl">'</span><span class="p">);</span>
+        <span class="nx">$compile</span> <span class="o">=</span> <span class="nx">$injector</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="dl">'</span><span class="s1">$compile</span><span class="dl">'</span><span class="p">);</span>
+        <span class="nx">$compile</span><span class="p">(</span><span class="nx">doc</span><span class="p">)(</span><span class="nx">scope</span><span class="p">);</span>
+    <span class="p">});</span>
+
+    <span class="c1">//...아래 코드에 계속</span>
+</code></pre></div></div>
+
+<h3 id="test">test</h3>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nx">it</span><span class="p">(</span><span class="dl">'</span><span class="s1">linked with</span><span class="dl">'</span><span class="p">,</span><span class="kd">function</span><span class="p">(){</span>
+        <span class="kd">var</span> <span class="nx">testString</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">item1</span><span class="dl">"</span><span class="p">;</span>
+        <span class="nx">scope</span><span class="p">.</span><span class="nx">item</span> <span class="o">=</span> <span class="nx">testString</span><span class="p">;</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">elm</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="nx">testString</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>DOM을 compile 한 후에는 위와 같이 scope에 연결시킬 수 있다.</p>
+
+<p>browserTrigger
+$sniffer
+changeInputValue</p>
+
+:ET

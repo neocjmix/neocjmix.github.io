@@ -1,0 +1,289 @@
+I"nj
+<p>앞의 <a href="/test/angularjs/2015/09/03/testing-angularjs--requirejs-smallwithsmall-karma--jasmine/">Testing AngularJs + Require.js with Karma + Jasmine</a> 에 이어서 e2e 테스트 하는 방법을 기록한다.</p>
+
+<p>테스트 툴은 <a href="https://angular.github.io/protractor">Protractor</a>를 사용한다.<br />
+e2e test를 위한 전체 구조는 다음과 같다.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[테스트 서버](angular앱 구동)
+   ↑
+____________protractor________
+[브라우저]
+   ↑
+[브라우저 드라이버]
+   ↑
+[셀레니움 서버]
+   ↑
+[테스트코드](~.spec.js)
+______________________________
+   ↑
+[설정파일](protractor.conf.js)
+</code></pre></div></div>
+
+<h2 id="quick-start">Quick Start</h2>
+
+<h3 id="protractor--wabdriver-install">Protractor &amp; Wabdriver Install</h3>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>npm <span class="nb">install</span> <span class="nt">-g</span> protractor
+</code></pre></div></div>
+
+<p>위 명령어는 툴을 두개 설치하는데 하나는 물론 <strong>Protractor</strong> 이고, 추가로 <strong>webdriver-manager</strong>를 설치한다.</p>
+
+<h4 id="webdriver-manager">webdriver-manager</h4>
+<p>webdriver-manager는 브라우저 자동화를 지원하는 <a href="http://www.seleniumhq.org/">Selenium</a> 서버를 쉽게 실행시켜주는 매니저다. 다음과 같이 필요한 binary를 다운받아야 한다.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>webdriver-manager update
+</code></pre></div></div>
+
+<p>서버를 시작해본다.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>webdriver-manager start
+</code></pre></div></div>
+
+<p>엔터를 치면 서버가 종료되므로 가만히 두고, http://localhost:4444/wd/hub 로 접속하면 현재 가동되고 있는 Selenium 서버의 상태를 알 수 있다.</p>
+
+<h3 id="test-code-작성">Test Code 작성</h3>
+<p><a href="/test/angularjs/2015/09/03/testing-angularjs--requirejs-smallwithsmall-karma--jasmine/">Testing AngularJs + Require.js with Karma + Jasmine</a> 를 수행했다면 angularJS를 사용한 간단한 어플리케이션이 존재할 것이다.</p>
+
+<p>프로젝트 루트 디렉토리에 e2e 테스트 파일을 저장할 디렉토리를 생성하고, <code class="language-plaintext highlighter-rouge">app.spec.js</code> 파일을 작성한다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">describe</span><span class="p">(</span><span class="dl">'</span><span class="s1">Protractor Demo App</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">it</span><span class="p">(</span><span class="dl">'</span><span class="s1">should have a title</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">browser</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="dl">'</span><span class="s1">http://localhost:5000</span><span class="dl">'</span><span class="p">);</span>  <span class="c1">//테스트할 앱이 구동됳 주소</span>
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">browser</span><span class="p">.</span><span class="nx">getTitle</span><span class="p">()).</span><span class="nx">toEqual</span><span class="p">(</span><span class="dl">'</span><span class="s1">Hello World!</span><span class="dl">'</span><span class="p">);</span> <span class="c1">//browser title test</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h3 id="config-파일-작성">config 파일 작성</h3>
+<p>karma와 마찬가지로 config가 필요하다.</p>
+
+<p>protractor.conf.js</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">exports</span><span class="p">.</span><span class="nx">config</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">framework</span><span class="p">:</span> <span class="dl">'</span><span class="s1">jasmine2</span><span class="dl">'</span><span class="p">,</span>
+  <span class="na">seleniumAddress</span><span class="p">:</span> <span class="dl">'</span><span class="s1">http://localhost:4444/wd/hub</span><span class="dl">'</span><span class="p">,</span> <span class="c1">//위 selenium 서버 주소를 적어준다.</span>
+  <span class="na">specs</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">e2e/*.spec.js</span><span class="dl">'</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>e2e 디렉토리의 모든 *.spec.js 파일들에 대해서 테스트를 진행한다.</p>
+
+<h3 id="run-test">run test</h3>
+
+<p>여기까지 했으면 테스트를 진행할 수 있다. 테스트를 진행하기 위해서는 테스트할 앱이 서버에서 돌아가고 있어야 한다. express app이면 node로 구동시켜도 되고 아무튼 test code에 설정한 주소인 http://localhost:5000로 테스트할 angular app에 접속 가능하도록 한다.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python <span class="nt">-m</span> SimpleHTTPServer 5000
+</code></pre></div></div>
+
+<p>다음과 같이 config 파일을 이용해서 protractor를 구동시키면 seleniumAddress에 설정한 주소로 selenium server를 자동으로 띄우고, test를 실행한다.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>protractor protractor.conf.js
+</code></pre></div></div>
+
+<p>test가 진행되면 chrome 브라우저가 잠깐 떴다가 테스트를 마치고 종료되고, 콘솔에 테스트 결과가 출력된다.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1 spec, 0 failures
+Finished <span class="k">in </span>1.543 seconds
+</code></pre></div></div>
+
+<p>만약에 index.html이 다음과 같이 제대로 설정 되어 있다면 test는 무사히 통과할 것이다.</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">"ko"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">"UTF-8"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;title&gt;</span>Hello World!<span class="nt">&lt;/title&gt;</span>
+    ...
+</code></pre></div></div>
+
+<h2 id="좀더-간편하게">좀더 간편하게..</h2>
+
+<p>위의 예제에서는 일단 서버를 띄우고, config 파일 경로를 맞춰서 protractor를 실행해야 하는 번거로움이 있다. grunt를 통해 과정을 자동화 해 보자. 이미 기본적으로 앱을 서버에 올리기 위한 Gruntfile이 어느정도 셋팅 되어있다는 가정하에 진행한다.</p>
+
+<p>일단 필요한 protractor 를 구동하는데 필요한 grunt 모듈을 설치한다.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>npm <span class="nb">install </span>grunt-protractor-runner <span class="nt">--save-dev</span>
+</code></pre></div></div>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*Gruntfile.js*/</span>
+<span class="nx">grunt</span><span class="p">.</span><span class="nx">initConfig</span><span class="p">({</span>
+    <span class="p">...</span>
+    <span class="na">protractor</span><span class="p">:</span> <span class="p">{</span>
+      <span class="na">dev</span> <span class="p">:</span> <span class="p">{</span>
+        <span class="na">options</span><span class="p">:</span> <span class="p">{</span>
+          <span class="na">configFile</span><span class="p">:</span> <span class="dl">"</span><span class="s2">protractor.conf.js</span><span class="dl">"</span><span class="p">,</span>
+          <span class="na">keepAlive</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="c1">//test가 실패해도 grunt task를 중단시키지 않는다.</span>
+          <span class="na">noColor</span><span class="p">:</span> <span class="kc">false</span> <span class="c1">//console에 color를 출력한다.</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">...</span>
+<span class="p">});</span>
+<span class="p">...</span>
+<span class="nx">grunt</span><span class="p">.</span><span class="nx">loadNpmTasks</span><span class="p">(</span><span class="dl">'</span><span class="s1">grunt-protractor-runner</span><span class="dl">'</span><span class="p">);</span>
+<span class="p">...</span>
+</code></pre></div></div>
+
+<p>protractor는 실제 앱 구동과 동시에 실행시켜야 하기때문에 서버를 구동시킬 <code class="language-plaintext highlighter-rouge">grunt-nodemon</code>(서버측 프로그램이 node가 아니면 다른 모듈로 서버를 구동해야 한다), <code class="language-plaintext highlighter-rouge">grunt-concurrent</code>가 필요하고, 코드 수정시에 자동으로 다시 테스트 하려면 <code class="language-plaintext highlighter-rouge">grunt-watch</code>도 필요하다. 다음은 이런 모듈들을 연동해서 구성한 Gruntfile.js 예시이다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">...</span>
+<span class="nx">grunt</span><span class="p">.</span><span class="nx">initConfig</span><span class="p">({</span>
+  <span class="p">...</span>
+  <span class="c1">//tasks에 등록된 task들을 동시에 병렬적으로 실행시킨다. (실행 순서는 array 순서대로)</span>
+  <span class="na">concurrent</span><span class="p">:</span> <span class="p">{</span>
+    <span class="dl">"</span><span class="s2">test-e2e</span><span class="dl">"</span><span class="p">:{</span>
+      <span class="na">tasks</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">nodemon:test</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">protractor</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">watch:test-e2e</span><span class="dl">'</span><span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+
+  <span class="c1">//node script를 실행한다. 소스에 변화가 생기면 재시작한다.</span>
+  <span class="na">nodemon</span><span class="p">:</span> <span class="p">{</span>
+    <span class="na">test</span><span class="p">:</span> <span class="p">{</span>
+      <span class="na">script</span><span class="p">:</span> <span class="nx">config</span><span class="p">.</span><span class="nx">express</span><span class="p">.</span><span class="nx">serverPath</span><span class="p">,</span>
+      <span class="na">options</span><span class="p">:</span> <span class="p">{</span>
+        <span class="na">callback</span><span class="p">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">nodemon</span><span class="p">)</span> <span class="p">{</span>
+          <span class="c1">//nodemon 재시작시 임의의 파일(.rebooted)을 변경해서 grunt-watch에 알려준다.</span>
+          <span class="nx">nodemon</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">restart</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+            <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+              <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">fs</span><span class="dl">'</span><span class="p">).</span><span class="nx">writeFileSync</span><span class="p">(</span><span class="dl">'</span><span class="s1">.rebooted</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">rebooted</span><span class="dl">'</span><span class="p">);</span>
+            <span class="p">},</span> <span class="mi">500</span><span class="p">);</span>
+          <span class="p">});</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+
+  <span class="c1">//protractor test 구동 task</span>
+  <span class="na">protractor</span><span class="p">:</span> <span class="p">{</span>
+    <span class="na">dev</span> <span class="p">:</span> <span class="p">{</span>
+      <span class="na">options</span><span class="p">:</span> <span class="p">{</span>
+        <span class="na">configFile</span><span class="p">:</span> <span class="dl">"</span><span class="s2">protractor.conf.js</span><span class="dl">"</span><span class="p">,</span>
+        <span class="na">keepAlive</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="na">noColor</span><span class="p">:</span> <span class="kc">false</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+
+  <span class="c1">//위에서 nodemon이 restart될 때마다 변경하는 파일(.rebooted)을 watch하다가 test를 재시작해줌.</span>
+  <span class="na">watch</span><span class="p">:</span> <span class="p">{</span>
+    <span class="dl">"</span><span class="s2">test-e2e</span><span class="dl">"</span><span class="p">:</span> <span class="p">{</span>
+      <span class="na">files</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">.rebooted</span><span class="dl">'</span><span class="p">,</span> <span class="nx">front</span><span class="o">-</span><span class="nx">end</span><span class="o">-</span><span class="nx">file</span><span class="o">-</span><span class="nx">Path</span> <span class="o">+</span> <span class="dl">'</span><span class="s1">/**/*</span><span class="dl">'</span><span class="p">],</span>
+      <span class="na">tasks</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">protractor</span><span class="dl">'</span><span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="p">...</span>  
+<span class="p">})</span>
+
+<span class="p">...</span>
+<span class="nx">grunt</span><span class="p">.</span><span class="nx">loadNpmTasks</span><span class="p">(</span><span class="dl">'</span><span class="s1">grunt-contrib-watch</span><span class="dl">'</span><span class="p">);</span>
+<span class="nx">grunt</span><span class="p">.</span><span class="nx">loadNpmTasks</span><span class="p">(</span><span class="dl">'</span><span class="s1">grunt-concurrent</span><span class="dl">'</span><span class="p">);</span>
+<span class="nx">grunt</span><span class="p">.</span><span class="nx">loadNpmTasks</span><span class="p">(</span><span class="dl">'</span><span class="s1">grunt-protractor-runner</span><span class="dl">'</span><span class="p">);</span>
+<span class="nx">grunt</span><span class="p">.</span><span class="nx">loadNpmTasks</span><span class="p">(</span><span class="dl">'</span><span class="s1">grunt-nodemon</span><span class="dl">'</span><span class="p">);</span>
+<span class="p">...</span>
+
+<span class="nx">grunt</span><span class="p">.</span><span class="nx">registerTask</span><span class="p">(</span><span class="dl">'</span><span class="s1">test-e2e</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span><span class="dl">'</span><span class="s1">concurrent:test-e2e</span><span class="dl">'</span><span class="p">]);</span>
+</code></pre></div></div>
+
+<p>위와 같이 구성하면 concurrent가 nodemon을 띄우고나서 protractor 테스트를 실행하고, watch까지 동시에 띄워준다. 서버 코드가 변경돼서, nodemon의 callback함수가 .rebooted파일을 다시 쓰거나, front-end 파일이 변경되면 watch가 protractor를 다시 실행해준다.</p>
+
+<p>즉, 다음과 같이 실행하면,</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>grunt test-e2e
+</code></pre></div></div>
+
+<p>서버를 띄운 후 최초 한 번 e2e 테스트를 실행하고, 백엔드나 프론트엔드 코드가 변경될 때마다 테스트를 자동으로 다시 실행시켜준다.</p>
+
+<h2 id="브라우저-다루기">브라우저 다루기</h2>
+<p><a href="http://angular.github.io/protractor/#/api">Protractor api</a>를 이용해서 다양한 유저 동작 시나리오를 만들고 결과를 테스트할 수 있다. 앞에서의 test code는 title만 확인하는 간단한 테스트였다. 좀더 확실한 테스트를 하기 위해서 <a href="/test/angularjs/2015/09/03/testing-angularjs--requirejs-smallwithsmall-karma--jasmine/">Testing AngularJs + Require.js with Karma + Jasmine</a>에서 작성한 앱에 기반해서 route와, controller와 directive가 잘 작동하는지 확인해보겠다.</p>
+
+<p>Protractor api를 사용해서 일련의 테스트 코드를 작성한 예</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="cm">/*e2e/app.spec.js*/</span>
+
+<span class="nx">describe</span><span class="p">(</span><span class="dl">'</span><span class="s1">Protractor Demo App</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  
+  <span class="nx">beforeEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+    <span class="nx">browser</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="dl">'</span><span class="s1">http://localhost:5000</span><span class="dl">'</span><span class="p">);</span>
+  <span class="p">});</span>
+
+
+  <span class="nx">it</span><span class="p">(</span><span class="dl">'</span><span class="s1">should have a title</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">browser</span><span class="p">.</span><span class="nx">getTitle</span><span class="p">()).</span><span class="nx">toEqual</span><span class="p">(</span><span class="dl">'</span><span class="s1">Hello World!</span><span class="dl">'</span><span class="p">);</span>
+  <span class="p">});</span>
+
+
+  <span class="nx">it</span><span class="p">(</span><span class="dl">'</span><span class="s1">should route paths</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">browser</span><span class="p">.</span><span class="nx">setLocation</span><span class="p">(</span><span class="dl">'</span><span class="s1">user</span><span class="dl">'</span><span class="p">);</span>
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">browser</span><span class="p">.</span><span class="nx">getCurrentUrl</span><span class="p">())</span>
+    <span class="p">.</span><span class="nx">toBe</span><span class="p">(</span><span class="dl">'</span><span class="s1">http://localhost:5000/user</span><span class="dl">'</span><span class="p">);</span>
+
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="dl">"</span><span class="s2">main &gt; span</span><span class="dl">"</span><span class="p">).</span><span class="nx">getText</span><span class="p">())</span>
+    <span class="p">.</span><span class="nx">toBe</span><span class="p">(</span><span class="dl">'</span><span class="s1">User</span><span class="dl">'</span><span class="p">);</span>    
+  <span class="p">});</span>
+
+  <span class="nx">it</span><span class="p">(</span><span class="dl">'</span><span class="s1">should present default value of name input</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">nameModel</span> <span class="o">=</span> <span class="nx">element</span><span class="p">(</span><span class="nx">by</span><span class="p">.</span><span class="nx">model</span><span class="p">(</span><span class="dl">"</span><span class="s2">sampleController.name</span><span class="dl">"</span><span class="p">));</span>
+  
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">nameModel</span><span class="p">.</span><span class="nx">isPresent</span><span class="p">())</span>
+    <span class="p">.</span><span class="nx">toBe</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">nameModel</span><span class="p">.</span><span class="nx">getAttribute</span><span class="p">(</span><span class="dl">'</span><span class="s1">value</span><span class="dl">'</span><span class="p">))</span>
+    <span class="p">.</span><span class="nx">toBe</span><span class="p">(</span><span class="dl">'</span><span class="s1">World</span><span class="dl">'</span><span class="p">);</span>
+  <span class="p">});</span>
+
+  <span class="nx">it</span><span class="p">(</span><span class="dl">'</span><span class="s1">present name and greets correctly when name is entered.</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">nameModel</span> <span class="o">=</span> <span class="nx">element</span><span class="p">(</span><span class="nx">by</span><span class="p">.</span><span class="nx">model</span><span class="p">(</span><span class="dl">"</span><span class="s2">sampleController.name</span><span class="dl">"</span><span class="p">));</span>
+    <span class="nx">nameModel</span><span class="p">.</span><span class="nx">clear</span><span class="p">().</span><span class="nx">sendKeys</span><span class="p">(</span><span class="dl">"</span><span class="s2">BoB</span><span class="dl">"</span><span class="p">);</span>
+
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">nameModel</span><span class="p">.</span><span class="nx">getAttribute</span><span class="p">(</span><span class="dl">'</span><span class="s1">value</span><span class="dl">'</span><span class="p">))</span>
+    <span class="p">.</span><span class="nx">toBe</span><span class="p">(</span><span class="dl">'</span><span class="s1">BoB</span><span class="dl">'</span><span class="p">);</span>
+
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">#name</span><span class="dl">'</span><span class="p">).</span><span class="nx">getText</span><span class="p">())</span>
+    <span class="p">.</span><span class="nx">toBe</span><span class="p">(</span><span class="dl">'</span><span class="s1">BoB</span><span class="dl">'</span><span class="p">);</span>
+
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">Sample-directive</span><span class="dl">'</span><span class="p">).</span><span class="nx">getText</span><span class="p">())</span>
+    <span class="p">.</span><span class="nx">toBe</span><span class="p">(</span><span class="dl">'</span><span class="s1">Hello, BoB!</span><span class="dl">'</span><span class="p">);</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>위의 테스트를 통과하려면 기존 소스를 다음과 같이 고쳐야 한다.</p>
+
+<p>partial/main.html</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">ng-model=</span><span class="s">"sampleController.name"</span><span class="nt">&gt;&lt;br&gt;</span>
+<span class="nt">&lt;span</span> <span class="na">id=</span><span class="s">"name"</span><span class="nt">&gt;&lt;/span&gt;&lt;br&gt;</span>
+<span class="nt">&lt;sample-directive</span> <span class="na">person=</span><span class="s">"sampleController"</span> <span class="nt">/&gt;</span>
+</code></pre></div></div>
+
+<p>directives/sampleDirective.html</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">define</span><span class="p">([</span><span class="dl">'</span><span class="s1">app</span><span class="dl">'</span><span class="p">],</span><span class="kd">function</span><span class="p">(</span><span class="nx">app</span><span class="p">){</span>
+  <span class="kd">function</span> <span class="nx">sampleDirective</span><span class="p">(){</span>
+    <span class="k">return</span> <span class="p">{</span>
+      <span class="na">restrict</span><span class="p">:</span> <span class="dl">'</span><span class="s1">E</span><span class="dl">'</span><span class="p">,</span>
+      <span class="na">template</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Hello, !</span><span class="dl">'</span><span class="p">,</span>
+      <span class="na">scope</span> <span class="p">:</span> <span class="p">{</span>
+        <span class="na">person</span> <span class="p">:</span> <span class="dl">'</span><span class="s1">=</span><span class="dl">'</span>
+      <span class="p">}</span>
+    <span class="p">};</span>
+    
+  <span class="p">}</span>
+
+  <span class="nx">app</span><span class="p">.</span><span class="nx">directive</span><span class="p">(</span><span class="dl">'</span><span class="s1">sampleDirective</span><span class="dl">'</span><span class="p">,</span> <span class="nx">sampleDirective</span><span class="p">);</span>
+  
+  <span class="k">return</span> <span class="nx">sampleDirective</span><span class="p">;</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>테스트 결과</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>4 specs, 0 failures
+    Finished <span class="k">in </span>3.058 seconds
+    <span class="o">[</span>launcher] 0 instance<span class="o">(</span>s<span class="o">)</span> of WebDriver still running
+    <span class="o">[</span>launcher] chrome <span class="c">#1 passed</span>
+</code></pre></div></div>
+
+<p>ctrl+c를 눌러 테스트를 종료하면 된다.</p>
+:ET

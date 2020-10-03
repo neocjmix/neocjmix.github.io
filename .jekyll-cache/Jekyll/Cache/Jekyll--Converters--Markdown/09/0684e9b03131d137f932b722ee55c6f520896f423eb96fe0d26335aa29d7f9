@@ -1,0 +1,450 @@
+I"p�
+<p>AngularJs를 rquire.js 로 구성하는 방법은 여러 가지가 나와 있고, 이를 테스트 가능하게 하는 방법도 여러가지이다. 가능한 심플한 방법으로 테스트 가능한 AngularJs + require.js 앱을 구성해 봤다. 코드가 길어보여도 막상 설명을 위한 주석을 다 지우고 나면 그리 길거나 복잡하진 않다.</p>
+
+<h2 id="angularjs--requirejs">AngularJs + require.js</h2>
+<p>먼저 테스트 이전에 기본 구성을 시작한다.</p>
+
+<h3 id="folders--files">folders &amp; files</h3>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> - js
+     + controllers
+         * SampleController.js .....테스트할 컨트롤러
+     + lib .........................라이브러리 디렉토리
+         * angular/...
+         * angular-ui-router/...
+         * requirejs/...
+     + app.js ......................angular 모듈
+     + main.js .....................require.js 설정
+ - partials ........................ng-route 파트
+     + sample.html .................메인페이지
+ - index.html
+</code></pre></div></div>
+
+<h3 id="indexhtml">index.html</h3>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">"ko"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">"UTF-8"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;title&gt;</span>AngularJs+require.js<span class="nt">&lt;/title&gt;</span>
+    <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"js/lib/requirejs/require.js"</span> <span class="na">data-main=</span><span class="s">"js/main.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;header&gt;&lt;h1&gt;</span>AngularJs+require.js<span class="nt">&lt;/h1&gt;&lt;/header&gt;</span>
+    <span class="nt">&lt;main</span> <span class="na">ui-view</span><span class="nt">&gt;&lt;/main&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">&lt;script src="js/lib/requirejs/require.js" data-main="js/main.js"&gt;&lt;/script&gt;</code>에 주의. 특히 data-main 속성이 중요하다.<br />
+<code class="language-plaintext highlighter-rouge">index.html</code> 에서는 <code class="language-plaintext highlighter-rouge">require.js</code> 만 로드하고, 메인 파일을 지정해준다. 다른 라이브러리는 모두 <code class="language-plaintext highlighter-rouge">main.js</code>에 의존성 모듈로 설정해서 동적으로 로드한다.</p>
+
+<h3 id="mainjs">main.js</h3>
+<p>require.js 작동을 위한 기본 설정 파일.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">requirejs</span><span class="p">.</span><span class="nx">config</span><span class="p">({</span>
+    <span class="c1">//다른 상대경로들의 베이스가 될 경로. </span>
+    <span class="c1">//'js' 디렉토리 안에 js파일들이 다 들어있으므로 'js'로 설정.</span>
+    <span class="na">baseUrl</span><span class="p">:</span> <span class="dl">"</span><span class="s2">js</span><span class="dl">"</span><span class="p">,</span>
+
+    <span class="c1">//사용할 모듈들</span>
+    <span class="c1">//이름 : 상대 경로</span>
+    <span class="na">paths</span><span class="p">:</span> <span class="p">{</span>
+        <span class="na">app</span>         <span class="p">:</span> <span class="dl">"</span><span class="s2">app</span><span class="dl">"</span><span class="p">,</span>
+        <span class="na">angular</span>     <span class="p">:</span> <span class="dl">"</span><span class="s2">./lib/angular/angular</span><span class="dl">"</span><span class="p">,</span>
+        <span class="na">jquery</span>      <span class="p">:</span> <span class="dl">"</span><span class="s2">./lib/jquery/dist/jquery</span><span class="dl">"</span><span class="p">,</span>
+        <span class="dl">"</span><span class="s2">angular-ui-router</span><span class="dl">"</span> <span class="p">:</span> <span class="dl">"</span><span class="s2">./lib/angular-ui-router/release/angular-ui-router</span><span class="dl">"</span>
+    <span class="p">},</span>
+    <span class="na">packages</span><span class="p">:</span> <span class="p">[],</span>
+
+    <span class="c1">//AMD를 따르지 않는 모듈들을 AMD 형식으로 노멀라이징 해준다.</span>
+    <span class="na">shim</span><span class="p">:</span> <span class="p">{</span>
+        <span class="na">angular</span><span class="p">:</span> <span class="p">{</span>
+            <span class="na">exports</span><span class="p">:</span> <span class="dl">"</span><span class="s2">angular</span><span class="dl">"</span> <span class="c1">//파라메터에 주입될 객체나 변수</span>
+        <span class="p">},</span>
+        <span class="na">jquery</span> <span class="p">:{</span>
+            <span class="na">exports</span><span class="p">:</span> <span class="dl">"</span><span class="s2">jQuery</span><span class="dl">"</span>   
+        <span class="p">},</span>
+        <span class="dl">"</span><span class="s2">angular-ui-router</span><span class="dl">"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="na">deps</span><span class="p">:</span> <span class="p">[</span><span class="dl">"</span><span class="s2">angular</span><span class="dl">"</span><span class="p">]</span> <span class="c1">//해당 모듈의 의존성</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h3 id="appjs">app.js</h3>
+<p>여기서 angular의 기본 모듈을 정의하는데, app.js역시 require에서 사용될 모듈이므로 AMD(Asynchronous Module Definition) 형식을 따라 작성되어야 한다. AMD에 관해서는 http://d2.naver.com/helloworld/12864, http://d2.naver.com/helloworld/591319 를 참고.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//ui-route를 사용할 것이므로 main.js에서 미리 정의해둔 'angular-ui-router'를 의존성에 추가해준다.</span>
+<span class="nx">define</span><span class="p">([</span>
+    <span class="dl">'</span><span class="s1">angular</span><span class="dl">'</span><span class="p">,</span>             <span class="c1">//의존성 모듈 목록</span>
+    <span class="dl">'</span><span class="s1">angular-ui-router</span><span class="dl">'</span>
+<span class="p">],</span> <span class="kd">function</span><span class="p">(</span><span class="nx">angular</span><span class="p">){</span>      <span class="c1">//팩토리 함수. 의존성 모듈을 파라키터로 순서대로 받는다.</span>
+    <span class="k">return</span> <span class="nx">angular</span><span class="p">.</span><span class="nx">module</span><span class="p">(</span><span class="dl">'</span><span class="s1">app</span><span class="dl">'</span><span class="p">,[</span><span class="dl">'</span><span class="s1">ui.router</span><span class="dl">'</span><span class="p">]);</span> <span class="c1">//외부에 노출될 모듈을 리턴한다.</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h3 id="controllerssamplecontrollerjs">controllers/SampleController.js</h3>
+
+<p>앞에서 모듈로 만든 app을 의존성으로 주입받아서 app에서 사용할 controller를 등록한다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">define</span><span class="p">([</span><span class="dl">'</span><span class="s1">app</span><span class="dl">'</span><span class="p">],</span><span class="kd">function</span><span class="p">(</span><span class="nx">app</span><span class="p">){</span>   
+    <span class="kd">function</span> <span class="nx">Controller</span><span class="p">(</span><span class="nx">$scope</span><span class="p">){</span>
+        <span class="nx">$scope</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">World</span><span class="dl">"</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nx">app</span><span class="p">.</span><span class="nx">controller</span><span class="p">(</span><span class="dl">'</span><span class="s1">SampleController</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span><span class="dl">'</span><span class="s1">$scope</span><span class="dl">'</span><span class="p">,</span> <span class="nx">Controller</span><span class="p">]);</span>
+<span class="p">})</span>
+</code></pre></div></div>
+
+<h3 id="routejs">route.js</h3>
+
+<p>ng-route 설정.<br />
+역시 app을 의존성으로 받아와서 app.config을 통해서 route 설정을 한다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">define</span><span class="p">([</span><span class="dl">'</span><span class="s1">app</span><span class="dl">'</span><span class="p">],</span><span class="kd">function</span><span class="p">(</span><span class="nx">app</span><span class="p">){</span>
+
+    <span class="c1">//ui-route 관련 설정</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nx">config</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">$urlRouterProvider</span><span class="p">,</span> <span class="nx">$locationProvider</span><span class="p">,</span> <span class="nx">$stateProvider</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="nx">$locationProvider</span><span class="p">.</span><span class="nx">html5Mode</span><span class="p">({</span>
+            <span class="na">enabled</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+            <span class="na">requireBase</span><span class="p">:</span> <span class="kc">false</span>
+        <span class="p">});</span>
+
+        <span class="nx">$urlRouterProvider</span><span class="p">.</span><span class="nx">otherwise</span><span class="p">(</span><span class="dl">'</span><span class="s1">/</span><span class="dl">'</span><span class="p">);</span>
+        
+        <span class="nx">$stateProvider</span>
+        <span class="p">.</span><span class="nx">state</span><span class="p">(</span><span class="dl">'</span><span class="s1">main</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span>
+            <span class="na">url</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/</span><span class="dl">'</span><span class="p">,</span>
+            <span class="na">templateUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">partials/main.html</span><span class="dl">'</span><span class="p">,</span> <span class="c1">//`ui-view`에 들어갈 html 템플릿. 템플릿 파일은 뒤에서 작성한다.</span>
+            <span class="na">controller</span><span class="p">:</span> <span class="dl">'</span><span class="s1">SampleController</span><span class="dl">'</span> 
+            <span class="c1">//여기서 controller를 지정하려면, SampleController가 app에 등록되어 있어야 한다. 이 다음에 나오는 SampleController.js에서 등록한다.</span>
+        <span class="p">});</span>
+    <span class="p">});</span>
+<span class="p">})</span>
+</code></pre></div></div>
+
+<h3 id="partialsmainhtml">partials/main.html</h3>
+
+<p><code class="language-plaintext highlighter-rouge">ui-view</code>에 들어갈 html 템플릿</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;div&gt;</span>
+this is main Page.<span class="nt">&lt;br</span> <span class="nt">/&gt;</span>
+Hello, {​{name}}!
+<span class="nt">&lt;/div&gt;</span>
+</code></pre></div></div>
+
+<h3 id="bootstraping">Bootstraping</h3>
+
+<p>일반적으로는 angualr.js파일과 app.js를 로딩하면 <code class="language-plaintext highlighter-rouge">body</code>에  <code class="language-plaintext highlighter-rouge">ng-app</code> 디렉티브를 걸고, 이걸 통해서 AngularJs가 모듈을 부트스트랩 하고 템플릿을 컴파일 하는데, 지금 의 경우, 모듈들을 동적으로 로딩하므로 <code class="language-plaintext highlighter-rouge">ng-app</code>을 사용하면 로딩시점이 맞지 않아 에러가 난다. 따라서 다음 코드를 이용해서 수동으로 bootstraping을 해줘야 한다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">angular</span><span class="p">.</span><span class="nx">bootstrap</span><span class="p">(</span><span class="nb">document</span><span class="p">,</span> <span class="p">[</span><span class="dl">'</span><span class="s1">app</span><span class="dl">'</span><span class="p">]);</span>
+</code></pre></div></div>
+
+<p>이 코드를 언제, 어디에서 실행할 지 정하기 전에 잠깐 정리를 해보면 js 파일을 4개 만들었는데, 각각 역할은 다음과 같다.</p>
+
+<ul>
+  <li>main       : require 설정. 라이브러리등 의존성 모듈들을 등록.</li>
+  <li>app        : 앵귤러 모듈정의</li>
+  <li>controller : 컨트롤러를 모듈에 등록</li>
+  <li>route      : 모듈에 route 설정. 등록된 컨트롤러를 route에 할당함.</li>
+</ul>
+
+<p>여기서 한가지 짚고 넘어갈 것은, route.js에서 <code class="language-plaintext highlighter-rouge">app.config</code>에 넘긴 설정을 담당하는 콜백 함수는 bootstrap 시점에서 실행된다는 것이다. 그러므로 bootstrap 하기 이전에 미리 app.config을 실행해 두어야 bootstrap할 때 제대로 실행된다. 그리고 방금 말한 callback 함수에서 controller를 url에 매핑하므로 controller등록도 bootstrap 하기 이전에만 하면 된다. (route.js보다는 빠르든 늦든 상관 없다. route.js 실행시점에 controller들을 바로 참조해서 매핑하는것이 아니라 콜백함수만 넘기기 때문이다.) 이를 바탕으로 위 코드들의 올바른 실행 순서를 살펴보면 다음과 같이 실행되어야 맞을 것이다.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>main -&gt; app -&gt; (controller, route) -&gt; bootstrap
+</code></pre></div></div>
+<p>현재 상태를 보면 실제로 실행되는 것은 main.js뿐이다. require.js가 로드하도록 <code class="language-plaintext highlighter-rouge">data-main</code>에 지정해두었으므로 가장 먼저 실행이 될 것이다. 그리고 app은 controller와 route에 의존성 설정을 해두었으므로 controller나 route가 실행되면 실행 되도록 되어 있다. bootstraping을 하려면 이 모든 모듈이 로딩 되어 있어야 하므로, 필요한 의존성 모듈을 주입 받아서 다음과 같이 실행하면 된다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">requirejs</span><span class="p">([</span>
+    <span class="dl">'</span><span class="s1">angular</span><span class="dl">'</span><span class="p">,</span>
+    <span class="dl">'</span><span class="s1">app</span><span class="dl">'</span><span class="p">,</span>
+    <span class="dl">'</span><span class="s1">route</span><span class="dl">'</span><span class="p">,</span>
+    <span class="dl">'</span><span class="s1">./controllers/SampleController</span><span class="dl">'</span>
+<span class="p">],</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">angular</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">angular</span><span class="p">.</span><span class="nx">bootstrap</span><span class="p">(</span><span class="nb">document</span><span class="p">,</span> <span class="p">[</span><span class="dl">'</span><span class="s1">app</span><span class="dl">'</span><span class="p">]);</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>위의 내용은, require.js가 main.js를 동적으로 로딩해서 config를 실행한 이후에 실행되어야 하므로 <code class="language-plaintext highlighter-rouge">main.js</code>의 config 뒤쪽에 넣어준다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*main.js*/</span>
+<span class="nx">requirejs</span><span class="p">.</span><span class="nx">config</span><span class="p">({</span>
+    <span class="na">baseUrl</span><span class="p">:</span> <span class="dl">"</span><span class="s2">js</span><span class="dl">"</span><span class="p">,</span>
+    <span class="na">paths</span><span class="p">:</span> <span class="p">{</span>
+        <span class="na">app</span>         <span class="p">:</span> <span class="dl">"</span><span class="s2">app</span><span class="dl">"</span><span class="p">,</span>
+        <span class="na">route</span>       <span class="p">:</span> <span class="dl">"</span><span class="s2">route</span><span class="dl">"</span><span class="p">,</span>
+        <span class="na">angular</span>     <span class="p">:</span> <span class="dl">"</span><span class="s2">./lib/angular/angular</span><span class="dl">"</span><span class="p">,</span>
+        <span class="na">jquery</span>      <span class="p">:</span> <span class="dl">"</span><span class="s2">./lib/jquery/dist/jquery</span><span class="dl">"</span><span class="p">,</span>
+        <span class="dl">"</span><span class="s2">angular-ui-router</span><span class="dl">"</span> <span class="p">:</span> <span class="dl">"</span><span class="s2">./lib/angular-ui-router/release/angular-ui-router</span><span class="dl">"</span>
+    <span class="p">},</span>
+    <span class="na">packages</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="na">shim</span><span class="p">:</span> <span class="p">{</span>
+        <span class="na">angular</span><span class="p">:</span> <span class="p">{</span>
+            <span class="na">exports</span><span class="p">:</span> <span class="dl">"</span><span class="s2">angular</span><span class="dl">"</span>
+        <span class="p">},</span>
+        <span class="na">jquery</span> <span class="p">:{</span>
+            <span class="na">exports</span><span class="p">:</span> <span class="dl">"</span><span class="s2">jQuery</span><span class="dl">"</span>   
+        <span class="p">},</span>
+        <span class="dl">"</span><span class="s2">angular-ui-router</span><span class="dl">"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="na">deps</span><span class="p">:</span> <span class="p">[</span><span class="dl">"</span><span class="s2">angular</span><span class="dl">"</span><span class="p">]</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="nx">requirejs</span><span class="p">([</span>
+    <span class="dl">'</span><span class="s1">angular</span><span class="dl">'</span><span class="p">,</span>
+    <span class="dl">'</span><span class="s1">app</span><span class="dl">'</span><span class="p">,</span>
+    <span class="dl">'</span><span class="s1">route</span><span class="dl">'</span><span class="p">,</span>
+    <span class="dl">'</span><span class="s1">./controllers/SampleController</span><span class="dl">'</span>
+<span class="p">],</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">angular</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">angular</span><span class="p">.</span><span class="nx">bootstrap</span><span class="p">(</span><span class="nb">document</span><span class="p">,</span> <span class="p">[</span><span class="dl">'</span><span class="s1">app</span><span class="dl">'</span><span class="p">]);</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>일단 이와 같이 완료하고 간단한 서버를 구동시키면 다음과 같이 작동하는 angularJS app을 확인할 수 있다.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>python <span class="nt">-m</span> SimpleHTTPServer
+</code></pre></div></div>
+
+<p><img src="http://i.imgur.com/N0AuNrG.png" alt="Imgur" /></p>
+
+<h2 id="setting-karma">Setting Karma</h2>
+<p>angularJS + require.js 를 사용한 앱 구성은 정리가 되었다. 이제 이걸 바탕으로 karma test를 설정해 보자.</p>
+
+<h3 id="설치">설치</h3>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>npm init <span class="c">#enter를 연속으로 쳐서 설정 완료</span>
+
+<span class="nv">$ </span>npm <span class="nb">install</span> <span class="nt">-g</span> jasmine
+<span class="nv">$ </span>npm <span class="nb">install</span> <span class="nt">-g</span> karma-cli
+<span class="nv">$ </span>npm <span class="nb">install</span> <span class="nt">-g</span> phantomjs
+<span class="nv">$ </span>npm <span class="nb">install </span>karma <span class="nt">--save-dev</span>
+<span class="nv">$ </span>npm <span class="nb">install </span>karma-jasmine@2_0 <span class="nt">--save-dev</span>
+<span class="nv">$ </span>npm <span class="nb">install </span>karma-phantomjs-launcher <span class="nt">--save-dev</span>
+
+<span class="nv">$ </span>bower <span class="nb">install </span>angular-mocks
+</code></pre></div></div>
+
+<h3 id="설정">설정</h3>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>karma init <span class="c">#아래 옵션 설정에 주의</span>
+
+<span class="c">#Do you want to use Require.js ?</span>
+<span class="c">#&gt; yes</span>
+
+<span class="c">#Do you wanna generate a bootstrap file for RequireJS?</span>
+<span class="c">#&gt; yes</span>
+</code></pre></div></div>
+
+<p>karma.conf.js 파일과  ‘bootstrap file for RequireJS’, 즉 test-main.js 파일이 만들어 졌다. 세부적으로 설정을 조정하자.</p>
+
+<h3 id="karmaconfjs">karma.conf.js</h3>
+<p>주석부분을 삭제하고 나면 아래와 같다. 수정할 부분은 <code class="language-plaintext highlighter-rouge">basePath</code>, <code class="language-plaintext highlighter-rouge">files</code> 다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">config</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">config</span><span class="p">.</span><span class="kd">set</span><span class="p">({</span>
+    <span class="na">basePath</span><span class="p">:</span> <span class="dl">'</span><span class="s1">js</span><span class="dl">'</span><span class="p">,</span> <span class="c1">//모든 설정의 상대경로 기준이 될 경로이다.</span>
+    <span class="na">frameworks</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">jasmine</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">requirejs</span><span class="dl">'</span><span class="p">],</span>
+    <span class="na">files</span><span class="p">:</span> <span class="p">[</span>
+      <span class="dl">'</span><span class="s1">test-main.js</span><span class="dl">'</span><span class="p">,</span> <span class="c1">//테스트에 직접 사용될 파일</span>
+      <span class="p">{</span><span class="na">pattern</span><span class="p">:</span> <span class="dl">'</span><span class="s1">**/*.js</span><span class="dl">'</span><span class="p">,</span> <span class="na">included</span><span class="p">:</span> <span class="kc">false</span><span class="p">}</span> <span class="c1">//서버에서 제공만 할 파일</span>
+    <span class="p">],</span>
+    <span class="na">exclude</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="na">preprocessors</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="na">reporters</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">progress</span><span class="dl">'</span><span class="p">],</span>
+    <span class="na">port</span><span class="p">:</span> <span class="mi">9876</span><span class="p">,</span>
+    <span class="na">colors</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="na">logLevel</span><span class="p">:</span> <span class="nx">config</span><span class="p">.</span><span class="nx">LOG_INFO</span><span class="p">,</span>
+    <span class="na">autoWatch</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="na">browsers</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">PhantomJS</span><span class="dl">'</span><span class="p">],</span>
+    <span class="na">singleRun</span><span class="p">:</span> <span class="kc">false</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>files 옵션을 자세히 볼 필요가 있는데, 여기에 단순히 추가된 경로는 테스트할때 브라우저에 <code class="language-plaintext highlighter-rouge">&lt;script&gt;</code> 태그로 직접 코드가 삽입되어 로딩 되지만 <code class="language-plaintext highlighter-rouge">included:false</code> 옵션을 추가하게 되면 서버에서 serve 하기만 하고 직접 삽입 하지는 않는다. 이렇게 하는 이유는 <code class="language-plaintext highlighter-rouge">test-main.js</code> 파일만 테스트에 직접 삽입하고, library 등 다른 의존성 파일들을 <code class="language-plaintext highlighter-rouge">test-main.js</code> 에서 동적으로 삽입할 것이기 때문이다.</p>
+
+<p><code class="language-plaintext highlighter-rouge">basepath</code>를 <code class="language-plaintext highlighter-rouge">js</code>로 설정했으므로 test-main.js를 js 폴더로 이동시킨다.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mv </span>test-main.js js
+</code></pre></div></div>
+
+<h3 id="jstest-mainjs">js/test-main.js</h3>
+
+<p>이 파일을 열어보면 앞서 만들었던, main.js와 흡사한 구성을 가지고 있다. 즉 karma test시에 사용되는 main 파일이다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="c1">//앞부분은 테스트 파일을 모두 가져와서 allTestFiles라는 배열에 넣는 부분이다.</span>
+<span class="c1">//TEST_REGEXP를 보면 **/*spec.js, **/*test.js 파일들을 로딩하게 되어 있다.</span>
+
+<span class="kd">var</span> <span class="nx">allTestFiles</span> <span class="o">=</span> <span class="p">[];</span>
+<span class="kd">var</span> <span class="nx">TEST_REGEXP</span> <span class="o">=</span> <span class="sr">/</span><span class="se">(</span><span class="sr">spec|test</span><span class="se">)\.</span><span class="sr">js$/i</span><span class="p">;</span> <span class="c1">//다른 형식을 원하면 이 부분의 정규표현식을 변경하면 된다.</span>
+
+<span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nb">window</span><span class="p">.</span><span class="nx">__karma__</span><span class="p">.</span><span class="nx">files</span><span class="p">).</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">file</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">TEST_REGEXP</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">file</span><span class="p">))</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">normalizedTestModule</span> <span class="o">=</span> <span class="nx">file</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/^</span><span class="se">\/</span><span class="sr">base</span><span class="se">\/</span><span class="sr">|</span><span class="se">\.</span><span class="sr">js$/g</span><span class="p">,</span> <span class="dl">''</span><span class="p">);</span>
+    <span class="nx">allTestFiles</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">normalizedTestModule</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+
+
+<span class="c1">//앞서 main.js에서 했던 설정과 유사하게 require.js 설정을 수행한다.</span>
+<span class="nx">require</span><span class="p">.</span><span class="nx">config</span><span class="p">({</span>
+  
+  <span class="na">baseUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/base</span><span class="dl">'</span><span class="p">,</span> <span class="c1">//karma.conf.js에서 basePath로 설정한 Path의, 서버에서의 주소이다.</span>
+  <span class="na">deps</span><span class="p">:</span> <span class="nx">allTestFiles</span><span class="p">,</span> <span class="c1">//앞에서 만든 allTestFiles 를 로딩하는 부분</span>
+  <span class="na">callback</span><span class="p">:</span> <span class="nb">window</span><span class="p">.</span><span class="nx">__karma__</span><span class="p">.</span><span class="nx">start</span><span class="p">,</span>
+
+  <span class="c1">//테스트에서 사용할 의존성을 설정한다.</span>
+  <span class="na">paths</span><span class="p">:</span> <span class="p">{</span>
+    <span class="na">angular</span><span class="p">:</span> <span class="dl">"</span><span class="s2">lib/angular/angular</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">angular-mocks</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">lib/angular-mocks/angular-mocks</span><span class="dl">"</span><span class="p">,</span>
+  <span class="p">},</span>
+  <span class="na">shim</span><span class="p">:</span> <span class="p">{</span>
+    <span class="na">angular</span><span class="p">:</span> <span class="p">{</span> <span class="na">exports</span><span class="p">:</span> <span class="dl">'</span><span class="s1">angular</span><span class="dl">'</span> <span class="p">},</span>
+    <span class="na">jquery</span><span class="p">:</span> <span class="p">{</span> <span class="na">exports</span><span class="p">:</span> <span class="dl">'</span><span class="s1">jQuery</span><span class="dl">'</span> <span class="p">},</span>
+    <span class="dl">"</span><span class="s2">angular-mocks</span><span class="dl">"</span><span class="p">:</span> <span class="p">{</span> <span class="na">deps</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">angular</span><span class="dl">'</span><span class="p">]</span> <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h3 id="jscontrollerssamplecontrollerspecjs">js/Controllers/SampleController.spec.js</h3>
+
+<p>여기서 테스트 코드를 작성한다. 테스트 코드 역시 require.js 에 의해서 주입되는 모듈이므로, AMD 표준에 맞추어 작성한다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//필요한 "AMD"의존성을 주입받는다.</span>
+<span class="nx">define</span><span class="p">([</span><span class="dl">'</span><span class="s1">./SampleController</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">angular</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">angular-mocks</span><span class="dl">'</span><span class="p">],</span>
+  <span class="kd">function</span><span class="p">(</span><span class="nx">SampleController</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="c1">//test code 시작</span>
+    <span class="nx">describe</span><span class="p">(</span><span class="dl">'</span><span class="s1">SampleController</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">ctrl</span><span class="p">,</span> <span class="nx">scope</span><span class="p">;</span>
+      
+      <span class="c1">//각각 테스트를 시작하기 전에 필요한 "angular모듈"들을 주입받는다.</span>
+      <span class="nx">beforeEach</span><span class="p">(</span><span class="nx">inject</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">$controller</span><span class="p">,</span> <span class="nx">$rootScope</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">scope</span> <span class="o">=</span> <span class="nx">$rootScope</span><span class="p">.</span><span class="nx">$new</span><span class="p">();</span> <span class="c1">//매번 새로운 scope에서 깔끔하게 테스트</span>
+        <span class="nx">ctrl</span> <span class="o">=</span> <span class="nx">$controller</span><span class="p">(</span><span class="nx">SampleController</span><span class="p">,</span> <span class="p">{</span><span class="na">$scope</span><span class="p">:</span> <span class="nx">scope</span><span class="p">});</span> <span class="c1">//방금 생성한 scope 기반으로 controller를 mocking한다.</span>
+      <span class="p">}));</span>
+
+      <span class="nx">it</span><span class="p">(</span><span class="dl">'</span><span class="s1">has default name "World"</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">scope</span><span class="p">.</span><span class="nx">name</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="dl">"</span><span class="s2">World</span><span class="dl">"</span><span class="p">);</span> <span class="c1">//beforeEach에서 생성한 scope에 대해서 controller가 제대로 작동했는지 test.</span>
+      <span class="p">});</span>
+    <span class="p">});</span>
+  <span class="p">});</span>
+</code></pre></div></div>
+
+<h3 id="test-실행">Test 실행</h3>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>karma start
+</code></pre></div></div>
+
+<p>아래와 같이 success 메시지가 나오면 성공이다.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>04 09 2015 16:08:13.058:WARN <span class="o">[</span>karma]: No captured browser, open http://localhost:9876/
+04 09 2015 16:08:13.069:INFO <span class="o">[</span>karma]: Karma v0.13.9 server started at http://localhost:9876/
+04 09 2015 16:08:13.076:INFO <span class="o">[</span>launcher]: Starting browser PhantomJS
+04 09 2015 16:08:14.332:INFO <span class="o">[</span>PhantomJS 1.9.8 <span class="o">(</span>Mac OS X 0.0.0<span class="o">)]</span>: Connected on socket wUYW1RIdLF6EYQjBAAAA with <span class="nb">id </span>17804098
+PhantomJS 1.9.8 <span class="o">(</span>Mac OS X 0.0.0<span class="o">)</span>: Executed 1 of 1 SUCCESS <span class="o">(</span>0.004 secs / 0.008 secs<span class="o">)</span>
+</code></pre></div></div>
+
+<h2 id="adding--testing-directive">Adding &amp; Testing Directive</h2>
+
+<p>Controller와 마찬가지로 directive도 require.js 로 주입되는 AMD 모듈로 만들 수 있다.
+만들 directive는 name 이라는 attribute로 값을 전달받아서 인사를 하는 element directive다.</p>
+
+<p>이번에는 test코드를 먼저 작성해보자. 일단 빈 directive를 등록하는 AMD를 만들자. 앞의 Samplecontroller와 유사하다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*js/directives/SampleDirective.js*/</span>
+<span class="nx">define</span><span class="p">([</span><span class="dl">'</span><span class="s1">app</span><span class="dl">'</span><span class="p">],</span><span class="kd">function</span><span class="p">(</span><span class="nx">app</span><span class="p">){</span>
+  <span class="kd">function</span> <span class="nx">sampleDirective</span><span class="p">(){</span>
+    <span class="k">return</span> <span class="p">{};</span>
+  <span class="p">}</span>
+
+  <span class="nx">app</span><span class="p">.</span><span class="nx">directive</span><span class="p">(</span><span class="dl">'</span><span class="s1">sampleDirective</span><span class="dl">'</span><span class="p">,</span> <span class="nx">sampleDirective</span><span class="p">);</span>
+  
+  <span class="k">return</span> <span class="nx">sampleDirective</span><span class="p">;</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>test code</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*js/directives/SampleDirective.spec.js*/</span>
+
+<span class="c1">//directive와 필요한 AMD를 로드</span>
+<span class="nx">define</span><span class="p">([</span><span class="dl">'</span><span class="s1">./sampleDirective</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">angular</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">angular-mocks</span><span class="dl">'</span><span class="p">],</span>
+<span class="kd">function</span><span class="p">(</span><span class="nx">sampleDirective</span><span class="p">)</span> <span class="p">{</span>
+
+  <span class="nx">describe</span><span class="p">(</span><span class="dl">'</span><span class="s1">sampleDirective</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="c1">//테스트에 사용할 전역변수</span>
+    <span class="kd">var</span> <span class="nx">$compile</span><span class="p">,</span> <span class="nx">$rootScope</span><span class="p">,</span> <span class="nx">element</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">name</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">World</span><span class="dl">'</span><span class="p">;</span>
+
+    <span class="c1">//directive를 테스트하기 위해서는 html을 compile해야 하므로 module이 필요하다.</span>
+    <span class="c1">//app.js는 test-main.js에 등록이 되어있고, SampleDirective에 의존성으로 설정했으므로  </span>
+    <span class="c1">//이미 로드되어있다. ng-mock.module로 mocking할 수 있다.</span>
+    <span class="nx">beforeEach</span><span class="p">(</span><span class="nx">module</span><span class="p">(</span><span class="dl">"</span><span class="s2">app</span><span class="dl">"</span><span class="p">));</span> 
+
+    <span class="c1">//inject로 angular 모듈을 주입받을 때, 나중에 집어넣을 변수이름을 짓기 용이하게 하기 위해서</span>
+    <span class="c1">//앞뒤로 _를 붙여서 주입받을 수 있다.(자동으로 _를 제거해서 모듈을 주입해준다.)</span>
+    <span class="nx">beforeEach</span><span class="p">(</span><span class="nx">inject</span><span class="p">(</span> <span class="kd">function</span><span class="p">(</span><span class="nx">_$compile_</span><span class="p">,</span> <span class="nx">_$rootScope_</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1">//따라서 아래와 같이 저장할 변수명을 좀더 편하게 지정할 수 있다.</span>
+      <span class="nx">$compile</span> <span class="o">=</span> <span class="nx">_$compile_</span><span class="p">;</span>
+      <span class="nx">$rootScope</span> <span class="o">=</span> <span class="nx">_$rootScope_</span><span class="p">;</span>
+
+      <span class="c1">//매 테스트 하기 전마다 html을 compile하고 scope를 digest해준다.</span>
+      <span class="nx">element</span> <span class="o">=</span> <span class="nx">$compile</span><span class="p">(</span><span class="dl">'</span><span class="s1">&lt;sample-directive name="</span><span class="dl">'</span><span class="o">+</span><span class="nx">name</span><span class="o">+</span><span class="dl">'</span><span class="s1">"&gt;&lt;/sample-directive&gt;</span><span class="dl">'</span><span class="p">)(</span><span class="nx">$rootScope</span><span class="p">);</span>
+      <span class="nx">$rootScope</span><span class="p">.</span><span class="nx">$digest</span><span class="p">();</span>
+    <span class="p">}));</span>
+
+    <span class="c1">//directive가 잘 작동하는지 테스트한다.</span>
+    <span class="nx">it</span><span class="p">(</span><span class="dl">'</span><span class="s1">gets attr value</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="nx">expect</span><span class="p">(</span><span class="nx">$rootScope</span><span class="p">.</span><span class="nx">name</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="nx">name</span><span class="p">);</span>
+    <span class="p">});</span>
+
+    <span class="nx">it</span><span class="p">(</span><span class="dl">'</span><span class="s1">compile template correctly</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="nx">expect</span><span class="p">(</span><span class="nx">element</span><span class="p">.</span><span class="nx">html</span><span class="p">()).</span><span class="nx">toContain</span><span class="p">(</span><span class="dl">"</span><span class="s2">Hello, </span><span class="dl">"</span><span class="o">+</span><span class="nx">name</span><span class="p">);</span>
+    <span class="p">});</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">karma start</code>로 테스트를 실행해보면</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PhantomJS 1.9.8 <span class="o">(</span>Mac OS X 0.0.0<span class="o">)</span> sampleDirective compile template correctly FAILED
+  Expected <span class="s1">''</span> to contain <span class="s1">'Hello, World'</span><span class="nb">.</span>
+  Error: Expected <span class="s1">''</span> to contain <span class="s1">'Hello, World'</span><span class="nb">.</span>
+
+  ...
+
+PhantomJS 1.9.8 <span class="o">(</span>Mac OS X 0.0.0<span class="o">)</span>: Executed 3 of 3 <span class="o">(</span>2 FAILED<span class="o">)</span> <span class="o">(</span>0.005 secs / 0.02 secs<span class="o">)</span>
+</code></pre></div></div>
+
+<p>통과하지 못한다. <code class="language-plaintext highlighter-rouge">ctrl-c</code> 로 테스트를 <strong>종료하지 말고</strong> 별도의 에디터로 테스트에 맞도록 디렉티브 로직을 작성한다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+  <span class="dl">'</span><span class="s1">use strict</span><span class="dl">'</span><span class="p">;</span>
+  <span class="nx">define</span><span class="p">([</span><span class="dl">'</span><span class="s1">app</span><span class="dl">'</span><span class="p">],</span><span class="kd">function</span><span class="p">(</span><span class="nx">app</span><span class="p">){</span>
+    <span class="kd">function</span> <span class="nx">sampleDirective</span><span class="p">(){</span>
+      <span class="k">return</span> <span class="p">{</span>
+        <span class="na">restrict</span><span class="p">:</span> <span class="dl">'</span><span class="s1">E</span><span class="dl">'</span><span class="p">,</span> <span class="c1">//element directive</span>
+        <span class="na">template</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Hello, {​{name}}!</span><span class="dl">'</span><span class="p">,</span> <span class="c1">//scope의 name에게 인사하는 내용을 집어넣는다.</span>
+        <span class="na">link</span><span class="p">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">scope</span><span class="p">,</span> <span class="nx">element</span><span class="p">,</span> <span class="nx">attr</span><span class="p">){</span>
+          <span class="nx">scope</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">attr</span><span class="p">.</span><span class="nx">name</span><span class="p">;</span> <span class="c1">// name attr을 받아서 scope에 넣는다.</span>
+        <span class="p">}</span>
+      <span class="p">};</span>
+      
+    <span class="p">}</span>
+
+    <span class="nx">app</span><span class="p">.</span><span class="nx">directive</span><span class="p">(</span><span class="dl">'</span><span class="s1">sampleDirective</span><span class="dl">'</span><span class="p">,</span> <span class="nx">sampleDirective</span><span class="p">);</span>
+    
+    <span class="k">return</span> <span class="nx">sampleDirective</span><span class="p">;</span>
+  <span class="p">});</span>
+<span class="p">})();</span>
+</code></pre></div></div>
+
+<p>다 작성하고 파일을 저장하면 karma가 파일을 watch하고 있다가 자동으로 테스트를 재수행 해준다.<br />
+(karma.conf.js의 <code class="language-plaintext highlighter-rouge">autoWatch: true</code> 설정) <br />
+로직을 제대로 작성했다면, 다음과 같이 success 메시지가 뜬다.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PhantomJS 1.9.8 <span class="o">(</span>Mac OS X 0.0.0<span class="o">)</span>: Executed 3 of 3 SUCCESS <span class="o">(</span>0.001 secs / 0.021 secs<span class="o">)</span>
+</code></pre></div></div>
+
+:ET

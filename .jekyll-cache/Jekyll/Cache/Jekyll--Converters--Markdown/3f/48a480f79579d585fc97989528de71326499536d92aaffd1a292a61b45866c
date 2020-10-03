@@ -1,0 +1,448 @@
+I"��<h2 id="directory">Directory</h2>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#create base directory</span>
+<span class="nb">mkdir </span>dev-mean
+<span class="nb">cd </span>dev-mean
+<span class="nb">mkdir </span>server
+<span class="nb">mkdir </span>client
+<span class="nb">mkdir </span>e2e
+</code></pre></div></div>
+
+<h2 id="install">Install</h2>
+<p>필요한 프로그램, 라이브러리 모듈 전부 설치</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#install global modules</span>
+brew <span class="nb">install </span>node
+brew <span class="nb">install </span>mongodb
+npm <span class="nb">install</span> <span class="nt">-g</span> grunt-cli
+npm <span class="nb">install</span> <span class="nt">-g</span> nodemon
+npm <span class="nb">install</span> <span class="nt">-g</span> protractor
+npm <span class="nb">install</span> <span class="nt">-g</span> karma
+
+<span class="c">#create package.json</span>
+npm init
+
+<span class="c">#bower and frontend libraries</span>
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> <span class="nt">-g</span> bower 
+bower init
+bower <span class="nb">install </span>angular bootstrap jquery <span class="nt">--save</span>
+bower <span class="nb">install </span>angular-mocks <span class="nt">--save-dev</span>
+bower <span class="nb">install </span>require <span class="nt">--save</span>
+bower <span class="nb">install </span>angular-ui-router <span class="nt">--save</span>
+
+<span class="c">#grunt and plugins</span>
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> load-grunt-tasks
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> grunt
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> <span class="nt">-g</span> grunt-cli
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> grunt-contrib-jshint
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> grunt-concurrent
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> grunt-contrib-watch
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> grunt-node-inspector
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> grunt-nodemon
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> grunt-open
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> grunt-bower-install
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> grunt-wiredep
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> grunt-express-server
+
+
+<span class="c">#open</span>
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> open
+
+<span class="c">#mongoose</span>
+npm <span class="nb">install</span> <span class="nt">--save</span> mongoose
+
+<span class="c">#express</span>
+npm <span class="nb">install</span> <span class="nt">--save</span> express
+
+<span class="c">#test tools</span>
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> supertest
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> mocha
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> chai
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> <span class="nt">-g</span> karma-cli
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> jasmine
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> phantomjs
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> karma-jasmine@2_0
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> karma-phantomjs-launcher
+</code></pre></div></div>
+
+<h2 id="setting">Setting</h2>
+<p>설치한 라이브러리에 대한 기본 셋팅</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#bower</span>
+bower init
+<span class="nb">cat</span> <span class="o">&gt;</span> .bowerrc <span class="c">#{"directory" : "client/lib"} #client</span>
+
+<span class="c">#git</span>
+git init
+<span class="nb">cat</span> <span class="o">&gt;</span> .gitignore <span class="c">#https://www.gitignore.io/api/node,bower,grunt, bower경로 수정</span>
+</code></pre></div></div>
+
+<h2 id="hello-world">Hello World</h2>
+<p>server/app.js</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">express</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+<span class="kd">var</span> <span class="nx">server</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">http</span><span class="dl">'</span><span class="p">).</span><span class="nx">createServer</span><span class="p">(</span><span class="nx">app</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">port</span> <span class="o">=</span> <span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">[</span><span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">.</span><span class="nx">length</span><span class="o">-</span><span class="mi">1</span><span class="p">];</span> <span class="c1">//get port number from argument</span>
+
+<span class="c1">//error message</span>
+<span class="kd">function</span> <span class="nx">onError</span><span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">switch</span> <span class="p">(</span><span class="nx">error</span><span class="p">.</span><span class="nx">code</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="dl">'</span><span class="s1">EACCES</span><span class="dl">'</span><span class="p">:</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="dl">'</span><span class="s1">port </span><span class="dl">'</span> <span class="o">+</span> <span class="nx">port</span> <span class="o">+</span> <span class="dl">'</span><span class="s1"> requires elevated privileges</span><span class="dl">'</span><span class="p">);</span>
+      <span class="nx">process</span><span class="p">.</span><span class="nx">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+      <span class="k">break</span><span class="p">;</span>
+    <span class="k">case</span> <span class="dl">'</span><span class="s1">EADDRINUSE</span><span class="dl">'</span><span class="p">:</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="dl">'</span><span class="s1">port </span><span class="dl">'</span> <span class="o">+</span> <span class="nx">port</span> <span class="o">+</span> <span class="dl">'</span><span class="s1"> is already in use</span><span class="dl">'</span><span class="p">);</span>
+      <span class="nx">process</span><span class="p">.</span><span class="nx">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+      <span class="k">break</span><span class="p">;</span>
+    <span class="nl">default</span><span class="p">:</span>
+      <span class="k">throw</span> <span class="nx">error</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">//success message</span>
+<span class="kd">function</span> <span class="nx">onListening</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">addr</span> <span class="o">=</span> <span class="nx">server</span><span class="p">.</span><span class="nx">address</span><span class="p">();</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">Listening on </span><span class="dl">'</span><span class="o">+</span> <span class="nx">addr</span><span class="p">.</span><span class="nx">address</span> <span class="o">+</span> <span class="nx">addr</span><span class="p">.</span><span class="nx">port</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">//serve static file (relative from running path)</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">.</span><span class="kd">static</span><span class="p">(</span><span class="dl">'</span><span class="s1">client</span><span class="dl">'</span><span class="p">));</span>
+
+<span class="nx">server</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">error</span><span class="dl">'</span><span class="p">,</span> <span class="nx">onError</span><span class="p">);</span>
+<span class="nx">server</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">listening</span><span class="dl">'</span><span class="p">,</span> <span class="nx">onListening</span><span class="p">);</span>
+<span class="nx">server</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="nx">port</span><span class="p">);</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">app</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>client/index.html</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">"ko"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+	<span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">"UTF-8"</span><span class="nt">&gt;</span>
+	<span class="nt">&lt;title&gt;</span>Hello World!<span class="nt">&lt;/title&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+	<span class="nt">&lt;h1&gt;</span>Hello World!<span class="nt">&lt;/h1&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre></div></div>
+
+<p>package.js</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">...</span>
+<span class="dl">"</span><span class="s2">scripts</span><span class="dl">"</span><span class="p">:</span> <span class="p">{</span>
+  <span class="dl">"</span><span class="s2">test</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">echo </span><span class="se">\"</span><span class="s2">Error: no test specified</span><span class="se">\"</span><span class="s2"> &amp;&amp; exit 1</span><span class="dl">"</span><span class="p">,</span>
+  <span class="dl">"</span><span class="s2">start</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">node ./server/app.js</span><span class="dl">"</span>
+<span class="p">},</span>
+<span class="p">...</span>
+</code></pre></div></div>
+
+<p>프로젝트 루트에서 다음과 같이 실행</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>npm start 5000
+</code></pre></div></div>
+
+<p>http://localhost:5000</p>
+
+<h2 id="node_env">NODE_ENV</h2>
+<p>developement 모드인지 product 모드인지를 나눠서 실행.</p>
+
+<p>app.js</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">=</span> <span class="p">(</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">&amp;&amp;</span> <span class="p">(</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="p">).</span><span class="nx">trim</span><span class="p">().</span><span class="nx">toLowerCase</span><span class="p">()</span> <span class="o">==</span> <span class="dl">'</span><span class="s1">production</span><span class="dl">'</span> <span class="p">)</span> <span class="p">?</span> <span class="dl">'</span><span class="s1">production</span><span class="dl">'</span> <span class="p">:</span> <span class="dl">'</span><span class="s1">development</span><span class="dl">'</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h2 id="grunt-기본-작업">Grunt 기본 작업</h2>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat </span>Gruntfile.js
+</code></pre></div></div>
+
+<h3 id="실행할-작업">실행할 작업</h3>
+<ul>
+  <li>static html에 의존성 라이브러리를 삽입 -&gt; wiredep</li>
+  <li>js 문법체크 -&gt; jshint</li>
+  <li>브라우저 오픈 -&gt; open</li>
+  <li>클라이언트 코드 변경시 새로고침 -&gt; watch</li>
+  <li>서버쪽 코드 변경시 재시작 및 새로고침 -&gt; nodemon + watch</li>
+  <li>디버그시 breakpoint &amp; inspect -&gt; node-inspector</li>
+</ul>
+
+<h3 id="grunt-concurrent">grunt-concurrent</h3>
+
+<p>nodemon, node-inspector, watch 등은 동시에 프로세스가 살아있어야 하므로 일반적인 grunt task로는 제대로 실행시킬 수 없다. 이 task들을 동시에 실행하기 위해서 grunt-concurrent 가 필요하다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">concurrent</span><span class="p">:</span> <span class="p">{</span>
+  <span class="nl">options</span><span class="p">:</span> <span class="p">{</span>
+    <span class="na">logConcurrentOutput</span><span class="p">:</span> <span class="kc">true</span>
+  <span class="p">},</span>
+  <span class="nx">dev</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nl">tasks</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">nodemon:dev</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">watch</span><span class="dl">'</span><span class="p">]</span>
+  <span class="p">},</span>
+  <span class="nx">debug</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nl">tasks</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">nodemon:debug</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">node-inspector</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">watch</span><span class="dl">'</span><span class="p">]</span>
+  <span class="p">},</span>
+  <span class="dl">"</span><span class="s2">debug-brk</span><span class="dl">"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nl">tasks</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">nodemon:debug-brk</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">node-inspector</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">watch</span><span class="dl">'</span><span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">},</span>
+
+   <span class="p">...</span>
+
+<span class="kd">function</span> <span class="nx">nodemonReload</span><span class="p">(</span><span class="nx">nodemon</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">nodemon</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">log</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">colour</span><span class="p">);</span>
+  <span class="p">});</span>
+
+  <span class="nx">nodemon</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">config:update</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">open</span><span class="dl">'</span><span class="p">)(</span><span class="dl">'</span><span class="s1">http://</span><span class="dl">'</span><span class="o">+</span><span class="nx">serverConf</span><span class="p">.</span><span class="nx">express</span><span class="p">.</span><span class="nx">host</span> <span class="o">+</span> <span class="dl">'</span><span class="s1">:</span><span class="dl">'</span> <span class="o">+</span> <span class="nx">serverConf</span><span class="p">.</span><span class="nx">express</span><span class="p">.</span><span class="nx">serverPort</span><span class="p">);</span>
+    <span class="p">},</span> <span class="mi">1000</span><span class="p">);</span>
+  <span class="p">});</span>
+
+  <span class="nx">nodemon</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">restart</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">fs</span><span class="dl">'</span><span class="p">).</span><span class="nx">writeFileSync</span><span class="p">(</span><span class="dl">'</span><span class="s1">.rebooted</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">rebooted</span><span class="dl">'</span><span class="p">);</span>
+    <span class="p">},</span> <span class="mi">1000</span><span class="p">);</span>
+  <span class="p">});</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">nodemonReloadWithInspector</span><span class="p">(</span><span class="nx">nodemon</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">nodemonReload</span><span class="p">(</span><span class="nx">nodemon</span><span class="p">);</span>
+  <span class="nx">nodemon</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">config:update</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">open</span><span class="dl">'</span><span class="p">)(</span><span class="dl">'</span><span class="s1">http://</span><span class="dl">'</span><span class="o">+</span><span class="nx">serverConf</span><span class="p">.</span><span class="nx">express</span><span class="p">.</span><span class="nx">host</span> <span class="o">+</span> <span class="dl">'</span><span class="s1">:</span><span class="dl">'</span> <span class="o">+</span> <span class="nx">serverConf</span><span class="p">.</span><span class="nx">express</span><span class="p">.</span><span class="nx">inspectorPort</span><span class="p">);</span>
+    <span class="p">},</span> <span class="mi">1000</span><span class="p">);</span>
+  <span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="live-reload">live reload</h3>
+<p>모든 파일에 livereload.js 를 로딩하는 코드를 넣었다가 배포시에는 제거하는 작업은 성가실 수 있다. 이걸 자동화 하기 위해 서버 쪽 코드, express에 미들웨어 ‘connect-livereload’를 추가한다. 개발모드일 때만 livereload 코드를 로딩한다.</p>
+
+<p><strong>주의</strong> dynamic routing을 하기 전에 삽입해야 한다.</p>
+
+<p>app.js</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span><span class="p">(</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">==</span> <span class="dl">'</span><span class="s1">development</span><span class="dl">'</span> <span class="p">)</span> <span class="p">{</span>
+  <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">connect-livereload</span><span class="dl">'</span><span class="p">)({</span>
+    <span class="na">port</span><span class="p">:</span> <span class="nx">liveReloadPort</span>
+  <span class="p">}));</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="basic-grunt-tasks-for-dev--debug">Basic Grunt Tasks for dev &amp; debug</h3>
+
+<p>Gruntfile.js</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">grunt</span><span class="p">.</span><span class="nx">registerTask</span><span class="p">(</span><span class="dl">'</span><span class="s1">dev</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span><span class="dl">'</span><span class="s1">wiredep</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">jshint</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">concurrent:dev</span><span class="dl">'</span><span class="p">]);</span>
+<span class="nx">grunt</span><span class="p">.</span><span class="nx">registerTask</span><span class="p">(</span><span class="dl">'</span><span class="s1">debug</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span><span class="dl">'</span><span class="s1">wiredep</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">jshint</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">concurrent:debug</span><span class="dl">'</span><span class="p">]);</span>
+<span class="nx">grunt</span><span class="p">.</span><span class="nx">registerTask</span><span class="p">(</span><span class="dl">'</span><span class="s1">debug-brk</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span><span class="dl">'</span><span class="s1">wiredep</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">jshint</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">concurrent:debug-brk</span><span class="dl">'</span><span class="p">]);</span>
+</code></pre></div></div>
+
+<h3 id="주의할-점">주의할 점</h3>
+<ul>
+  <li>wiredep은 bootstrap 3.3.5 버전부터 css를 제대로 삽입 못하는 버그가 있다. bootstrap 3.3.4 버전을 사용하면 일단 해결은 된다.</li>
+</ul>
+
+<h2 id="requirejs--angularjs--ng-ui-router">require.js + AngularJs + ng-ui-Router</h2>
+
+<h3 id="계획">계획</h3>
+
+<p>main.js –&gt; app.js –&gt; route.js –&gt; controllers</p>
+
+<h3 id="라이브러리">라이브러리</h3>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bower <span class="nb">install </span>require <span class="nt">--save</span>
+bower <span class="nb">install </span>angular-ui-router <span class="nt">--save</span>
+</code></pre></div></div>
+
+<h3 id="코드">코드</h3>
+
+<p>index.html</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+
+<span class="c">&lt;!--ng-app 을 넣지 않고 angualr.bootstrap() 을 이용--&gt;</span>
+<span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">"ko"</span><span class="nt">&gt;</span> 
+<span class="nt">&lt;head&gt;</span>
+  <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">"UTF-8"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;title&gt;</span>Hello World!<span class="nt">&lt;/title&gt;</span>
+
+  <span class="c">&lt;!--grunt-wiredep 으로 의존성을 로드한다.--&gt;</span>
+  <span class="c">&lt;!-- bower:css --&gt;&lt;!-- endbower --&gt;</span>
+  <span class="c">&lt;!-- bower:js --&gt;&lt;!-- endbower --&gt;</span>
+
+  <span class="c">&lt;!--require setup &amp; angualr.bootstrap()--&gt;</span>
+  <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"js/main.js"</span><span class="nt">&gt;&lt;/script&gt;</span> 
+
+<span class="nt">&lt;/script&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+  <span class="nt">&lt;header&gt;</span>
+    <span class="nt">&lt;h1&gt;</span>The Wall<span class="nt">&lt;/h1&gt;</span>
+    <span class="nt">&lt;nav&gt;</span>
+      <span class="nt">&lt;ul&gt;</span>
+        <span class="nt">&lt;li&gt;&lt;a</span> <span class="na">href=</span><span class="s">"/"</span><span class="nt">&gt;</span>home<span class="nt">&lt;/a&gt;&lt;/li&gt;</span>
+        <span class="nt">&lt;li&gt;&lt;a</span> <span class="na">href=</span><span class="s">"/user"</span><span class="nt">&gt;</span>user<span class="nt">&lt;/a&gt;&lt;/li&gt;</span>
+      <span class="nt">&lt;/ul&gt;</span>
+    <span class="nt">&lt;/nav&gt;</span>
+  <span class="nt">&lt;/header&gt;</span>
+  <span class="c">&lt;!--ng-ui-router 작동을 위한 ng-view directive--&gt;</span>
+  <span class="nt">&lt;main</span> <span class="na">ui-view</span><span class="nt">&gt;&lt;/main&gt;</span>
+  <span class="nt">&lt;footer&gt;&lt;/footer&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre></div></div>
+
+<p>js/main.js</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+  <span class="dl">'</span><span class="s1">use strict</span><span class="dl">'</span><span class="p">;</span>
+
+  <span class="nx">requirejs</span><span class="p">.</span><span class="nx">config</span><span class="p">({</span>
+    <span class="na">baseUrl</span><span class="p">:</span><span class="dl">'</span><span class="s1">js</span><span class="dl">'</span>
+  <span class="p">});</span>
+  
+  <span class="c1">//app.js 로딩 &amp;&amp; 문서 로딩후 bootstrap 수행</span>
+  <span class="nx">requirejs</span><span class="p">([</span><span class="dl">'</span><span class="s1">app</span><span class="dl">'</span><span class="p">],</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span> 
+    <span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ready</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span> 
+      <span class="nx">angular</span><span class="p">.</span><span class="nx">bootstrap</span><span class="p">(</span><span class="nb">document</span><span class="p">,</span> <span class="p">[</span><span class="dl">'</span><span class="s1">theWall</span><span class="dl">'</span><span class="p">]);</span>
+    <span class="p">});</span>
+  <span class="p">});</span>
+<span class="p">})();</span>
+</code></pre></div></div>
+
+<p>js/app.js</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//route.js 로딩, 의존성 주입</span>
+<span class="nx">define</span><span class="p">([</span><span class="dl">'</span><span class="s1">route</span><span class="dl">'</span><span class="p">],</span><span class="kd">function</span><span class="p">(</span><span class="nx">route</span><span class="p">){</span>
+  <span class="kd">var</span> <span class="nx">theWall</span> <span class="o">=</span> <span class="nx">angular</span><span class="p">.</span><span class="nx">module</span><span class="p">(</span><span class="dl">'</span><span class="s1">theWall</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span><span class="dl">'</span><span class="s1">ui.router</span><span class="dl">'</span><span class="p">]);</span>
+  <span class="nx">route</span><span class="p">(</span><span class="nx">theWall</span><span class="p">);</span>
+  <span class="k">return</span> <span class="nx">theWall</span><span class="p">;</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>js/route.js</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">define</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">function</span> <span class="nx">route</span><span class="p">(</span><span class="nx">app</span><span class="p">){</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nx">config</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">$urlRouterProvider</span><span class="p">,</span> <span class="nx">$locationProvider</span><span class="p">,</span> <span class="nx">$stateProvider</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">$locationProvider</span><span class="p">.</span><span class="nx">html5Mode</span><span class="p">({</span>
+        <span class="na">enabled</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+          <span class="na">requireBase</span><span class="p">:</span> <span class="kc">false</span>
+      <span class="p">});</span>
+
+      <span class="nx">$urlRouterProvider</span><span class="p">.</span><span class="nx">otherwise</span><span class="p">(</span><span class="dl">'</span><span class="s1">/</span><span class="dl">'</span><span class="p">);</span>
+      
+      <span class="nx">$stateProvider</span>
+      <span class="p">.</span><span class="nx">state</span><span class="p">(</span><span class="dl">'</span><span class="s1">main</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span>
+        <span class="na">url</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/</span><span class="dl">'</span><span class="p">,</span>
+        <span class="na">templateUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">html/main.html</span><span class="dl">'</span>
+      <span class="p">})</span>
+      <span class="p">.</span><span class="nx">state</span><span class="p">(</span><span class="dl">'</span><span class="s1">user</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span>
+        <span class="na">url</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/user</span><span class="dl">'</span><span class="p">,</span>
+        <span class="na">templateUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">html/user.html</span><span class="dl">'</span>
+      <span class="p">});</span>
+    <span class="p">});</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="nx">route</span><span class="p">;</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h2 id="settings-for-karma-test-with-angularjs--requirejs">Settings for Karma test with AngularJs + require.js</h2>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>karma init
+
+Which testing framework <span class="k">do </span>you want to use ?
+<span class="o">&gt;</span> jasmine
+
+Do you want to use Require.js ?
+<span class="o">&gt;</span> <span class="nb">yes
+
+</span>Do you want to capture any browsers automatically ?
+<span class="o">&gt;</span> PhantomJS
+
+What is the location of your <span class="nb">source </span>and <span class="nb">test </span>files ?
+<span class="o">&gt;</span> <span class="k">**</span>/<span class="k">*</span>spec.js
+
+Should any of the files included by the previous patterns be excluded ?
+<span class="o">&gt;</span>
+
+Do you wanna generate a bootstrap file <span class="k">for</span><span class="o">)</span> RequireJS?
+<span class="o">&gt;</span> <span class="nb">yes
+
+</span>Do you want Karma to watch all the files and run the tests on change ?
+<span class="o">&gt;</span> <span class="nb">yes</span>
+</code></pre></div></div>
+
+<p>server/config/express.js</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">...</span>
+    <span class="na">testMain</span>        <span class="p">:</span> <span class="dl">"</span><span class="s2">test-main.js</span><span class="dl">"</span><span class="p">,</span>
+    <span class="p">...</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>Gruntfile.js</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="nx">bowerRequirejs</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nl">app</span> <span class="p">:</span> <span class="p">{</span>
+      <span class="na">rjsConfig</span><span class="p">:</span> <span class="nx">serverConf</span><span class="p">.</span><span class="nx">clientPath</span> <span class="o">+</span> <span class="dl">'</span><span class="s1">/js/main.js</span><span class="dl">'</span>
+    <span class="p">},</span>
+    <span class="nx">test</span> <span class="p">:</span> <span class="p">{</span>
+      <span class="nl">rjsConfig</span><span class="p">:</span> <span class="nx">serverConf</span><span class="p">.</span><span class="nx">testMain</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+</code></pre></div></div>
+
+<p>karma.conf.js</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">config</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">server/config</span><span class="dl">"</span><span class="p">).</span><span class="nx">express</span><span class="p">;</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">config</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">config</span><span class="p">.</span><span class="kd">set</span><span class="p">({</span>
+    <span class="na">basePath</span><span class="p">:</span> <span class="dl">''</span><span class="p">,</span>
+    <span class="na">frameworks</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">jasmine</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">requirejs</span><span class="dl">'</span><span class="p">],</span>
+    <span class="na">files</span><span class="p">:</span> <span class="p">[</span>
+      <span class="nx">config</span><span class="p">.</span><span class="nx">testMain</span><span class="p">,</span>
+      <span class="p">{</span><span class="na">pattern</span><span class="p">:</span> <span class="nx">config</span><span class="p">.</span><span class="nx">clientPath</span> <span class="o">+</span> <span class="dl">'</span><span class="s1">/**/*.js</span><span class="dl">'</span><span class="p">,</span> <span class="na">included</span><span class="p">:</span> <span class="kc">false</span><span class="p">},</span>
+      <span class="p">{</span><span class="na">pattern</span><span class="p">:</span> <span class="dl">'</span><span class="s1">**/*spec.js</span><span class="dl">'</span><span class="p">,</span> <span class="na">included</span><span class="p">:</span> <span class="kc">false</span><span class="p">}</span>
+    <span class="p">],</span>
+    <span class="na">exclude</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="na">preprocessors</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="na">reporters</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">progress</span><span class="dl">'</span><span class="p">],</span>
+    <span class="na">port</span><span class="p">:</span> <span class="mi">9876</span><span class="p">,</span>
+    <span class="na">colors</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="na">logLevel</span><span class="p">:</span> <span class="nx">config</span><span class="p">.</span><span class="nx">LOG_DEBUG</span><span class="p">,</span>
+    <span class="na">autoWatch</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="na">browsers</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">PhantomJS</span><span class="dl">'</span><span class="p">],</span>
+    <span class="na">singleRun</span><span class="p">:</span> <span class="kc">false</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="bower-componenets---requirejs-자동-등록">Bower componenets -&gt; require.js 자동 등록</h2>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>npm <span class="nb">install </span>grunt-bower-requirejs <span class="nt">--save-dev</span>
+</code></pre></div></div>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*Gruntfile.js*/</span>
+<span class="nx">grunt</span><span class="p">.</span><span class="nx">initConfig</span><span class="p">({</span>
+  <span class="na">bower</span><span class="p">:</span> <span class="p">{</span>
+    <span class="na">target</span><span class="p">:</span> <span class="p">{</span>
+      <span class="na">rjsConfig</span><span class="p">:</span> <span class="dl">'</span><span class="s1">app/config.js</span><span class="dl">'</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+ 
+<span class="nx">grunt</span><span class="p">.</span><span class="nx">loadNpmTasks</span><span class="p">(</span><span class="dl">'</span><span class="s1">grunt-bower-requirejs</span><span class="dl">'</span><span class="p">);</span>
+ 
+<span class="nx">grunt</span><span class="p">.</span><span class="nx">registerTask</span><span class="p">(</span><span class="dl">'</span><span class="s1">default</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span><span class="dl">'</span><span class="s1">bower</span><span class="dl">'</span><span class="p">]);</span>
+</code></pre></div></div>
+
+:ET

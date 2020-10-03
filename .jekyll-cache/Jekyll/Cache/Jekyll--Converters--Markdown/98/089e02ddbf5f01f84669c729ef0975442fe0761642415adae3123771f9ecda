@@ -1,0 +1,78 @@
+I"�
+<h2 id="intellij">Intellij</h2>
+<ul>
+  <li>resource 파일들은 수정되지 않으면 target으로 복사되지 않는다.
+    <ul>
+      <li>make 하기 전에 maven:clean 하도록 하면 해결된다.</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="jsp">jsp</h2>
+<ul>
+  <li>spring boot run configuration은 jsp를 사용할 때, 제대로 작동하지 않는다.
+    <ul>
+      <li>jar packaging을 통해서 embded tomcat으로 실행할 시 jsp가 안되는 버그가 있다.</li>
+      <li>maven의 spring-boot 플러그인의 run goal 을 사용해서 실행하거나</li>
+      <li>war packaging 을 하고 톰캣 모듈로 실행시킨다.</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="velocity">Velocity</h2>
+<ul>
+  <li>처음에 설정할 때 template에 있는 velocity를 선택한다.</li>
+  <li>maven 이든 gradle 이든 dependency 설정이 되면 자동으로 설정이 된다.</li>
+  <li>application.properties에서 문자셋 설정</li>
+</ul>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">spring</span><span class="o">.</span><span class="na">velocity</span><span class="o">.</span><span class="na">charset</span><span class="o">=</span><span class="no">UTF</span><span class="o">-</span><span class="mi">8</span>
+<span class="n">spring</span><span class="o">.</span><span class="na">velocity</span><span class="o">.</span><span class="na">properties</span><span class="o">.</span><span class="na">input</span><span class="o">.</span><span class="na">encoding</span><span class="o">=</span><span class="no">UTF</span><span class="o">-</span><span class="mi">8</span>
+<span class="n">spring</span><span class="o">.</span><span class="na">velocity</span><span class="o">.</span><span class="na">output</span><span class="o">.</span><span class="na">encoding</span><span class="o">=</span><span class="no">UTF</span><span class="o">-</span><span class="mi">8</span>
+</code></pre></div></div>
+
+<ul>
+  <li>resources/templates 디렉토리 안에 *.vm 파일로 저장한다.</li>
+  <li>error.vm 에러 났을 때 나오는 템플릿</li>
+  <li>spring-boot는 기본적으로 web.xml이 없으니까 xml 없이 하려면 컨트롤러를 하나 만드는게 편할 수도 있다.</li>
+</ul>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Controller</span>
+<span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">"/"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MainController</span> <span class="o">{</span>
+
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">"/"</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">index</span><span class="o">(){</span>
+        <span class="k">return</span> <span class="s">"index"</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">"/{template}.vm"</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">index</span><span class="o">(</span><span class="nd">@PathVariable</span><span class="o">(</span><span class="s">"template"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">template</span><span class="o">){</span>
+        <span class="k">return</span> <span class="n">template</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="datasource">Datasource</h2>
+<ul>
+  <li>application.properties</li>
+</ul>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">spring</span><span class="o">.</span><span class="na">datasource</span><span class="o">.</span><span class="na">url</span><span class="o">=</span><span class="nl">jdbc:mysql:</span><span class="c1">//localhost/test</span>
+<span class="n">spring</span><span class="o">.</span><span class="na">datasource</span><span class="o">.</span><span class="na">username</span><span class="o">=</span><span class="n">test</span>
+<span class="n">spring</span><span class="o">.</span><span class="na">datasource</span><span class="o">.</span><span class="na">password</span><span class="o">=</span><span class="n">test</span>
+<span class="n">spring</span><span class="o">.</span><span class="na">datasource</span><span class="o">.</span><span class="na">driver</span><span class="o">-</span><span class="kd">class</span><span class="err">-</span><span class="nc">name</span><span class="o">=</span><span class="n">com</span><span class="o">.</span><span class="na">mysql</span><span class="o">.</span><span class="na">jdbc</span><span class="o">.</span><span class="na">Driver</span>
+</code></pre></div></div>
+
+<h2 id="gradle">Gradle</h2>
+<p>프로젝트 시작할 때 인텔리제이가 그래들을 인식할려고 하는 알림 메시지가 뜬다. 이때를 놓치면, 프로젝트를 다시 임포트하면서 그래들 프로젝트로 임포트 하면 된다.</p>
+
+<h2 id="lombok">Lombok</h2>
+
+<p>getter/setter 자동생성해주는 등의 기능이 있는 플러그인</p>
+
+<ol>
+  <li>Lombok 사용시 preferences-&gt; Compiler -&gt; Annotation Processors에서 enable annotation processing 을 활성화 시켜줘야 한다.</li>
+  <li>1번 조치를 한 후에는 Build -&gt; rebuild project 를 해야 적용이 된다.</li>
+</ol>
+:ET

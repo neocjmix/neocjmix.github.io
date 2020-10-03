@@ -1,0 +1,89 @@
+I"�
+<h2 id="data-path">Data Path</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/data/db
+</code></pre></div></div>
+
+<h2 id="shell-start">Shell Start</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ mongo
+</code></pre></div></div>
+
+<h2 id="database">Database</h2>
+
+<h3 id="create">Create</h3>
+
+<p>db를 새로 만드는 커맨드는 없다. 대신 새로운 db name 을 <code class="language-plaintext highlighter-rouge">use</code>한 다음에 collection을 만들고 document 를한 개 이상 생성하면 db가 만들어진다.</p>
+
+<h3 id="etc">ETC</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">db</code> : 현재 db 확인</li>
+  <li><code class="language-plaintext highlighter-rouge">show dbs</code> : db 목록</li>
+  <li><code class="language-plaintext highlighter-rouge">use db이름</code> : db 사용</li>
+  <li><code class="language-plaintext highlighter-rouge">db.dropDatabase()</code> : db 삭제</li>
+</ul>
+
+<h2 id="collection">Collection</h2>
+
+<h3 id="create-1">Create</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>db.createCollection(&lt;name&gt;, { capped: &lt;boolean&gt;,
+                              autoIndexId: &lt;boolean&gt;,
+                              size: &lt;number&gt;,
+                              max: &lt;number&gt;,
+                              storageEngine: &lt;document&gt; } )
+</code></pre></div></div>
+
+<h3 id="etc-1">ETC</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">show collections</code></li>
+  <li><code class="language-plaintext highlighter-rouge">db.collection</code></li>
+  <li><code class="language-plaintext highlighter-rouge">db["collection"]</code></li>
+  <li><code class="language-plaintext highlighter-rouge">db.getCollection("collection")</code></li>
+  <li><code class="language-plaintext highlighter-rouge">db.collection.drop()</code></li>
+</ul>
+
+<h2 id="document">Document</h2>
+
+<h3 id="create-2">create</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>db.collection.insert({
+    name: { first: 'Dennis', last: 'Ritchie'},
+    birth: new Date('Sep 09, 1941'),
+    death: new Date('Oct 12, 2011'),
+    contribs: [ 'UNIX', 'C' ]
+});
+</code></pre></div></div>
+
+<h3 id="read">read</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">db.collection.find({name:'joe'})</code> : joe 찾기</li>
+  <li><code class="language-plaintext highlighter-rouge">db.collection.find({name:'joe'},{age :true})</code> : joe의 나이</li>
+  <li><code class="language-plaintext highlighter-rouge">db.collection.find({}).sort({age:1})</code> : 전체를 나이순으로 정렬</li>
+  <li><code class="language-plaintext highlighter-rouge">db.collection.find({}).limit(10).skip(10)</code> : 11번째부터 20번째까지</li>
+  <li><code class="language-plaintext highlighter-rouge">db.collection.count()</code> : 갯수</li>
+  <li><code class="language-plaintext highlighter-rouge">db.collection.findOne({name:'joe'})</code> : joe 하나만 찾기</li>
+</ul>
+
+<h3 id="update">update</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">db.collection.update({name:'joe'}, {age: 30})</code> : joe 한명의 나이를 30으로 업데이트</li>
+  <li><code class="language-plaintext highlighter-rouge">db.collection.update({name:'joe'}, {age: 30}, true)</code> : joe 한명의 나이를 30으로 업데이트 하는데 만약에 없으면 30살의 joe를 새로 insert.</li>
+  <li><code class="language-plaintext highlighter-rouge">db.collection.update({name:'joe'}, {age: 30}, false, true)</code> : 모든 joe 의 나이를 30으로 업데이트.</li>
+  <li><code class="language-plaintext highlighter-rouge">db.collection.save({_id:100, name:'joe', age: 30})</code> 해당 아이디를 업데이트</li>
+  <li><code class="language-plaintext highlighter-rouge">db.collection.save({name:'joe', age: 30})</code> 아이디가 없으면 insert</li>
+</ul>
+
+<h3 id="delete">delete</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">db.collection.remove( { age: { $gt: 20 } } )</code> : 20살이 넘으면 삭제</li>
+  <li><code class="language-plaintext highlighter-rouge">db.collection.remove( { age: 20 }, 1 )</code> : 20살짜리중 하나만 삭제</li>
+  <li><code class="language-plaintext highlighter-rouge">db.collection.remove( { age: 20, $isolated: 1  })</code> : isolating</li>
+</ul>
+
+:ET

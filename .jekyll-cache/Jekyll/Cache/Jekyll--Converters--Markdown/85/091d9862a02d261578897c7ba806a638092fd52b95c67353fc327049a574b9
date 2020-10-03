@@ -1,0 +1,203 @@
+I"D/
+<h2 id="tutorial">Tutorial</h2>
+
+<h3 id="assert-engine">Assert engine</h3>
+
+<ul>
+  <li><a href="https://nodejs.org/api/assert.html">Basic Node Assert</a></li>
+  <li><a href="http://chaijs.com/api/bdd/">Chai</a> : BDD style 지원</li>
+</ul>
+
+<h3 id="준비">준비</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mkdir tutorial
+cd tutorial
+npm init
+mkdir app
+mkdir test
+npm install mocha --save
+npm install chai --save
+</code></pre></div></div>
+
+<h3 id="test-code">Test Code</h3>
+
+<p>test/myTest.js</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">expect</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">chai</span><span class="dl">"</span><span class="p">).</span><span class="nx">expect</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">testModule</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">../app/testModule</span><span class="dl">"</span><span class="p">);</span>
+
+<span class="nx">describe</span><span class="p">(</span><span class="dl">"</span><span class="s2">testModule should</span><span class="dl">"</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">input</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">expectedResult</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+
+    <span class="nx">it</span><span class="p">(</span><span class="dl">"</span><span class="s2">do something</span><span class="dl">"</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="nx">expect</span><span class="p">(</span><span class="nx">testModule</span><span class="p">.</span><span class="nx">doSomething</span><span class="p">()).</span><span class="nx">to</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="nx">expectedResult</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h3 id="구현">구현</h3>
+
+<p>app/testModule.js</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">doSomething</span><span class="p">(</span><span class="nx">input</span><span class="p">){</span>
+    <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span><span class="p">.</span><span class="nx">doSomething</span> <span class="o">=</span> <span class="nx">doSomething</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h3 id="테스트-실행">테스트 실행</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ mocha
+</code></pre></div></div>
+
+<p>또는</p>
+
+<p>package.json</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
+  <span class="p">...</span>
+
+  <span class="dl">"</span><span class="s2">scripts</span><span class="dl">"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="dl">"</span><span class="s2">test</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">./node_modules/.bin/mocha --reporter spec</span><span class="dl">"</span>
+  <span class="p">},</span>
+  
+  <span class="p">...</span>
+
+  <span class="dl">"</span><span class="s2">dependencies</span><span class="dl">"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="dl">"</span><span class="s2">chai</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">^3.2.0</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">express</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">^4.13.3</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">mocha</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">^2.2.5</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">request</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">^2.60.0</span><span class="dl">"</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ npm test
+</code></pre></div></div>
+
+<h3 id="테스트-자동-실행-with-gruntfilejs">테스트 자동 실행 with Gruntfile.js</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ npm install grunt-mocha-test --save-dev
+</code></pre></div></div>
+
+<p>Gruntfile.js</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">grunt</span><span class="p">.</span><span class="nx">loadNpmTasks</span><span class="p">(</span><span class="dl">'</span><span class="s1">grunt-mocha-test</span><span class="dl">'</span><span class="p">);</span>
+
+<span class="nx">grunt</span><span class="p">.</span><span class="nx">initConfig</span><span class="p">({</span>
+    <span class="na">watch</span><span class="p">:</span> <span class="p">{</span>
+          <span class="na">mochaTest</span><span class="p">:</span> <span class="p">{</span>
+            <span class="na">files</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">test/**/*.js</span><span class="dl">'</span><span class="p">],</span>
+            <span class="na">tasks</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">mochaTest</span><span class="dl">'</span><span class="p">]</span>
+          <span class="p">}</span>
+    <span class="p">},</span>      
+    <span class="na">mochaTest</span><span class="p">:</span> <span class="p">{</span>
+      <span class="na">options</span><span class="p">:</span> <span class="p">{</span>
+        <span class="na">reporter</span><span class="p">:</span> <span class="dl">'</span><span class="s1">spec</span><span class="dl">'</span><span class="p">,</span>
+        <span class="na">captureFile</span><span class="p">:</span> <span class="dl">'</span><span class="s1">results.txt</span><span class="dl">'</span><span class="p">,</span>
+        <span class="na">quiet</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+        <span class="na">clearRequireCache</span><span class="p">:</span> <span class="kc">false</span>
+      <span class="p">},</span>
+      <span class="na">src</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">test/**/*.js</span><span class="dl">'</span><span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>테스트파일 변경시 자동 재실행</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ grunt watch
+</code></pre></div></div>
+
+<p>테스트 실행</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ grunt mochaTest
+</code></pre></div></div>
+
+<h3 id="node-inspector--grunt--mocha">Node-inspector + Grunt + Mocha</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$node-debug $(which grunt) mochaTest
+</code></pre></div></div>
+
+<h3 id="async-test">Async Test</h3>
+
+<p>테스트 할 때, it 에다가 done 이라는 파라미터를 받으면 done() 하고 실행될때 까지 기다렸다가 테스트 결과를 판단한다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">expect</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">chai</span><span class="dl">'</span><span class="p">).</span><span class="nx">expect</span><span class="p">;</span>
+
+<span class="nx">describe</span><span class="p">(</span><span class="dl">"</span><span class="s2">async test</span><span class="dl">"</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+ <span class="nx">it</span><span class="p">(</span><span class="dl">"</span><span class="s2">should works!</span><span class="dl">"</span> <span class="p">,</span><span class="kd">function</span><span class="p">(</span><span class="nx">done</span><span class="p">){</span>
+   <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">time goes by..</span><span class="dl">"</span><span class="p">);</span>
+     <span class="nx">expect</span><span class="p">(</span><span class="kc">true</span><span class="p">).</span><span class="nx">to</span><span class="p">.</span><span class="nx">be</span><span class="p">.</span><span class="kc">true</span><span class="p">;</span>
+     <span class="nx">done</span><span class="p">();</span>
+   <span class="p">},</span><span class="mi">2000</span><span class="p">);</span>
+ <span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>테스트가 2초 이상 걸리면 타임아웃 에러가 나므로 다음과 같이 타임 리미트를 늘려주면 된다.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$mocha --timeout 15000
+</code></pre></div></div>
+
+<h3 id="chai-api"><a href="http://chaijs.com/api/bdd/">Chai api</a></h3>
+<ul>
+  <li>Chains
+    <ul>
+      <li>to</li>
+      <li>be</li>
+      <li>been</li>
+      <li>is</li>
+      <li>that</li>
+      <li>which</li>
+      <li>and</li>
+      <li>has</li>
+      <li>have</li>
+      <li>with</li>
+      <li>at</li>
+      <li>of</li>
+      <li>same</li>
+    </ul>
+  </li>
+  <li>not</li>
+  <li>deep</li>
+  <li>any</li>
+  <li>all</li>
+  <li>a / an(type)</li>
+  <li>include / contain / includes / contains (value)</li>
+  <li>ok</li>
+  <li>true</li>
+  <li>false</li>
+  <li>null</li>
+  <li>undefined</li>
+  <li>exist</li>
+  <li>empty</li>
+  <li>arguments / Arguments</li>
+  <li>equal / equals / eq / deep.equal (value) : ===</li>
+  <li>eql / eqls (value) : deep</li>
+  <li>above / gt / greaterThan (value)</li>
+  <li>least / gte (value)</li>
+  <li>below / lt / lessThan (value)</li>
+  <li>most / lte (value)</li>
+  <li>within (start, finish)</li>
+  <li>instanceof / instanceOf (constructor)</li>
+  <li>property / deep.property (name, [value])</li>
+  <li>ownProperty / haveOwnProperty (name)</li>
+  <li>length / lengthOf (value)</li>
+  <li>match (regexp)</li>
+  <li>string (string)</li>
+  <li>keys / key (key1, [key2], […])</li>
+  <li>throw / throws / Throw (constructor)</li>
+  <li>respondTo (method)</li>
+  <li>itself</li>
+  <li>satisfy(method)</li>
+  <li>closeTo(expected, delta) : delta 범위 안에서 근사</li>
+  <li>members (set)</li>
+  <li>change / changes / Change (function)</li>
+  <li>increase / increases / Increase : <code class="language-plaintext highlighter-rouge">expect(fn).to.increase(obj, 'val');</code></li>
+  <li>decrease / decreases / Decrease : <code class="language-plaintext highlighter-rouge">expect(fn).to.decrease(obj, 'val');</code></li>
+</ul>
+
+:ET

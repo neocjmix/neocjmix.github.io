@@ -1,0 +1,80 @@
+I"`<h2 id="준비">준비</h2>
+<h3 id="사용할-환경">사용할 환경</h3>
+<blockquote>
+  <p>CentOS, JDK1.8, Apache Tomcat 8, nginx</p>
+</blockquote>
+
+<p>당연하지만, jdk 대신 jre를 설치해도 톰캣을 구동하는데는 문제 없다.</p>
+
+<h3 id="사용될-명령어">사용될 명령어</h3>
+<ul>
+  <li>네트워크 파일 복사
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">scp</code> : ssh 파일 복사</li>
+      <li><code class="language-plaintext highlighter-rouge">wget</code> : http 다운로드</li>
+    </ul>
+  </li>
+  <li>압축 &amp; 아카이브
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">tar</code> : 아카이브 (여러 파일을 합침)
+        <ul>
+          <li><code class="language-plaintext highlighter-rouge">-v</code> : verbose, <code class="language-plaintext highlighter-rouge">-x</code> : 압축해제, <code class="language-plaintext highlighter-rouge">-f</code> : 파일</li>
+          <li>ex)
+            <ul>
+              <li><code class="language-plaintext highlighter-rouge">$ tar -xvf 파일이름 .</code> : 압축해제</li>
+              <li><code class="language-plaintext highlighter-rouge">$ tar -cf 파일이름</code> : 압축하기</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li><code class="language-plaintext highlighter-rouge">gunzip</code> : 압축 (용량 줄이기)</li>
+      <li><code class="language-plaintext highlighter-rouge">filename.tar.gz</code>
+        <ul>
+          <li>
+            <h2 id="압축--아카이브">압축 + 아카이브</h2>
+            <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">gunzip </span>filename.tar.gz
+<span class="nv">$ </span><span class="nb">tar</span> <span class="nt">-xvf</span> filename.tar.gz
+</code></pre></div>            </div>
+          </li>
+          <li><code class="language-plaintext highlighter-rouge">tar -xvzf filename.tar.gz</code></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>링크 : <code class="language-plaintext highlighter-rouge">ln</code></li>
+  <li>프로파일 적용 : <code class="language-plaintext highlighter-rouge">source</code></li>
+</ul>
+
+<h2 id="jdk-18">JDK 1.8</h2>
+
+<h3 id="download">Download</h3>
+<p>http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html</p>
+
+<ol>
+  <li>
+    <p>다음과 같이 wget으로 받을 수 있으면 편하다.
+<code class="language-plaintext highlighter-rouge">wget http://download.oracle.com/otn-pub/java/jdk/8u91-b14/jdk-8u91-linux-x64.tar.gz</code><br />
+ 그게 안되는 환경이라면 <code class="language-plaintext highlighter-rouge">scp</code> 로 올리든지 <code class="language-plaintext highlighter-rouge">ftp</code>로 하든지 해야 한다. <code class="language-plaintext highlighter-rouge">scp</code>를 사용하려면 외부에서 현재 단말에 원격 접속(ssh)이 가능해야 하는데 맥에서는 <strong>preference -&gt; 공유</strong> 로 가서 원격 로그인 옵션을 켜둬야 한다.<br />
+ <img src="images/2016/06/스크린샷 2016-06-07 오후 12.52.40.png" alt="ㄴㄹㅇㅎ" /></p>
+  </li>
+  <li><code class="language-plaintext highlighter-rouge">tar</code> 로 압축을 푼 후에 디렉토리를 <code class="language-plaintext highlighter-rouge">/usr/local</code>과 같이 적당한 위치로 옮긴다.</li>
+  <li>여러 버전을 설치할 경우를 대비해서 해당 디렉토리에 대한 symbolic link 를 만든다. 나중에 설정을 유지하면서 버전만 바꿀때 유용하다.<br />
+<code class="language-plaintext highlighter-rouge">ln -s jdk1.8.0 java</code> 이렇게 해두면 profile 설정 같은 곳에서 <code class="language-plaintext highlighter-rouge">/usr/local/java</code>와 같이 참조해서 설정할 수 있다.</li>
+</ol>
+
+<h3 id="프로파일-설정">프로파일 설정</h3>
+
+<p>환경변수를 설정해야 제대로 작동한다.<br />
+<code class="language-plaintext highlighter-rouge">vim /etc/profile</code> 아래 내용을 추가한다.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">JAVA_HOME</span><span class="o">=</span>/usr/local/java             <span class="c">#위에서 만든 jdk디렉토리에 대한 심볼릭 링크 path</span>
+<span class="nv">CLASSPATH</span><span class="o">=</span>.:<span class="nv">$JAVA_HOME</span>/lib/tools.jar
+<span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$JAVA_HOME</span>/bin             <span class="c">#java, javac 파일에 실행을 위한 path 설정</span>
+<span class="nb">export </span>JAVA_HOME CLASSPATH PATH       <span class="c">#쉘 변수를 환경변수화 시킨다</span>
+</code></pre></div></div>
+<p>만약에 jre를 설치했다면 <code class="language-plaintext highlighter-rouge">JAVA_HOME</code>을 <code class="language-plaintext highlighter-rouge">JRE_HOME</code>으로 바꿔야한다. <code class="language-plaintext highlighter-rouge">$JAVA_HOME/bin/java</code>에 대한 path 설정이 있지만 만약 기본으로 설치된 <code class="language-plaintext highlighter-rouge">java</code> 가 있다면 잘못 인식될 수 있으므로 <code class="language-plaintext highlighter-rouge">which java</code>등을 이용해서 기본 java 파일의 위치를 확인하고 이름을 바꾸어두는 것이 필요할 수 있다.</p>
+
+<p>쉘을 재시작 하지 않아도 <code class="language-plaintext highlighter-rouge">source /etc/profile</code> 하면 프로파일을 바로 적용할 수 있다.</p>
+
+<p>…계속</p>
+:ET

@@ -1,0 +1,181 @@
+I"3;
+<h2 id="ibatis">iBatis</h2>
+
+<h3 id="maven-dependency">maven dependency</h3>
+
+<p>Spring Framework에 포함되어 있다.</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>org.springframework<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>spring-ibatis<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>2.0.8<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+</code></pre></div></div>
+
+<h3 id="configjava">Config(java)</h3>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyAppSqlConfig</span> <span class="o">{</span>
+
+    <span class="c1">//static 변수로 SqlMapClient를 설정해둔다.</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="nc">SqlMapClient</span> <span class="n">sqlMap</span><span class="o">;</span>
+
+    <span class="kd">static</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="c1">//실제 설정은 xml로..</span>
+            <span class="nc">String</span> <span class="n">resource</span> <span class="o">=</span> <span class="s">"sqlMapConfig.xml"</span><span class="o">;</span>   
+            <span class="nc">Reader</span> <span class="n">reader</span> <span class="o">=</span> <span class="nc">Resources</span><span class="o">.</span><span class="na">getResourceAsReader</span><span class="o">(</span><span class="n">resource</span><span class="o">);</span>
+            <span class="n">sqlMap</span> <span class="o">=</span> <span class="nc">SqlMapClientBuilder</span><span class="o">.</span><span class="na">buildSqlMapClient</span><span class="o">(</span><span class="n">reader</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="o">...</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">RuntimeException</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="c1">//getter</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="nc">SqlMapClient</span> <span class="nf">getSqlMapInstance</span> <span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">sqlMap</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="configxml">config(xml)</h3>
+
+<p>기존 튜토리얼 중에는 DOCTYPE decalairation 이 틀리게 되어 있는 것들이 있다. ibatis 사이트는 
+더이상 운영을 안하기 때문에 아래 url로 설정해야 한다.</p>
+
+<p><code class="language-plaintext highlighter-rouge">&lt;!DOCTYPE sqlMapConfig PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN" "http://ibatis.apache.org/dtd/.... .dtd"&gt;</code></p>
+
+<h4 id="전체-설정-xml">전체 설정 xml</h4>
+
+<p>sqlMapConfig.xml</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="UTF-8" ?&gt;</span>
+<span class="cp">&lt;!DOCTYPE sqlMapConfig PUBLIC
+        "-//iBATIS.com//DTD SQL Map Config 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-config-2.dtd"&gt;</span>
+
+<span class="nt">&lt;sqlMapConfig&gt;</span>
+    <span class="c">&lt;!--datasource 셋팅에 들어가는 설정값을 저장할 properties 파일 --&gt;</span>
+    <span class="nt">&lt;properties</span> <span class="na">resource=</span><span class="s">"SqlMapConfig.properties"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;transactionManager</span> <span class="na">type=</span><span class="s">"JDBC"</span> <span class="nt">&gt;</span>
+        <span class="nt">&lt;dataSource</span> <span class="na">type=</span><span class="s">"SIMPLE"</span><span class="nt">&gt;</span>
+            <span class="nt">&lt;property</span> <span class="na">name=</span><span class="s">"JDBC.Driver"</span> <span class="na">value=</span><span class="s">"${driver}"</span><span class="nt">/&gt;</span>
+            <span class="nt">&lt;property</span> <span class="na">name=</span><span class="s">"JDBC.ConnectionURL"</span> <span class="na">value=</span><span class="s">"${url}"</span><span class="nt">/&gt;</span>
+            <span class="nt">&lt;property</span> <span class="na">name=</span><span class="s">"JDBC.Username"</span> <span class="na">value=</span><span class="s">"${username}"</span><span class="nt">/&gt;</span>
+            <span class="nt">&lt;property</span> <span class="na">name=</span><span class="s">"JDBC.Password"</span> <span class="na">value=</span><span class="s">"${password}"</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;/dataSource&gt;</span>
+    <span class="nt">&lt;/transactionManager&gt;</span>
+
+    <span class="nt">&lt;sqlMap</span> <span class="na">resource=</span><span class="s">"Person.xml"</span> <span class="nt">/&gt;</span> <span class="c">&lt;!--각 오브젝트별 sqlmap 설정 파--&gt;</span>
+<span class="nt">&lt;/sqlMapConfig&gt;</span>
+</code></pre></div></div>
+
+<h5 id="optional-fields">optional fields</h5>
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nt">&lt;settings</span>
+            <span class="na">cacheModelsEnabled=</span><span class="s">"true"</span>
+            <span class="na">enhancementEnabled=</span><span class="s">"true"</span>
+            <span class="na">lazyLoadingEnabled=</span><span class="s">"true"</span>
+            <span class="na">maxRequests=</span><span class="s">"32"</span>
+            <span class="na">maxSessions=</span><span class="s">"10"</span>
+            <span class="na">maxTransactions=</span><span class="s">"5"</span>
+            <span class="na">useStatementNamespaces=</span><span class="s">"false"</span>
+            <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;typeAlias</span> <span class="na">alias=</span><span class="s">"order"</span> <span class="na">type=</span><span class="s">"testdomain.Order"</span><span class="nt">/&gt;</span>
+</code></pre></div></div>
+
+<h4 id="objectjava-별-설정-xml">Object(java) 별 설정 (xml)</h4>
+
+<p>Person.java</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Person</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">id</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">firstName</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">lastName</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nc">Date</span> <span class="n">birthDate</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kt">double</span> <span class="n">weightInKilograms</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kt">double</span> <span class="n">heightInMeters</span><span class="o">;</span>
+
+    <span class="c1">//...getter 와 setter 메소드들을 아래 작성한다.</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>Person.xml (여기에 각 오브젝트별 쿼리문을 작성한다.)</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="UTF-8" ?&gt;</span>
+<span class="cp">&lt;!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd"&gt;</span>
+<span class="nt">&lt;sqlMap</span> <span class="na">namespace=</span><span class="s">"Person"</span><span class="nt">&gt;</span>
+
+
+    <span class="c">&lt;!--결과 테이블의 컬럼을 객체의 필드에 매핑--&gt;</span>
+    <span class="nt">&lt;resultMap</span> <span class="na">id=</span><span class="s">"PersonResult"</span> <span class="na">class=</span><span class="s">"pe.neocjmix.Person"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;result</span> <span class="na">property=</span><span class="s">"id"</span> <span class="na">column=</span><span class="s">"PER_ID"</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;result</span> <span class="na">property=</span><span class="s">"firstName"</span> <span class="na">column=</span><span class="s">"PER_FIRST_NAME"</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;result</span> <span class="na">property=</span><span class="s">"lastName"</span> <span class="na">column=</span><span class="s">"PER_LAST_NAME"</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;result</span> <span class="na">property=</span><span class="s">"birthDate"</span> <span class="na">column=</span><span class="s">"PER_BIRTH_DATE"</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;result</span> <span class="na">property=</span><span class="s">"weightInKilograms"</span> <span class="na">column=</span><span class="s">"PER_WEIGHT_KG"</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;result</span> <span class="na">property=</span><span class="s">"heightInMeters"</span> <span class="na">column=</span><span class="s">"PER_HEIGHT_M"</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/resultMap&gt;</span>
+
+    <span class="nt">&lt;select</span> <span class="na">id=</span><span class="s">"selectAllPersons"</span> <span class="na">resultMap=</span><span class="s">"PersonResult"</span><span class="nt">&gt;</span>
+        select * from PERSON
+    <span class="nt">&lt;/select&gt;</span>
+
+    <span class="c">&lt;!--#value# 는 javaBean 객체인 parameterClass 인스턴스의 properties 이다. resultClass에 return 할 타입의 full path 를 적는다..--&gt;</span>
+    <span class="nt">&lt;select</span> <span class="na">id=</span><span class="s">"getPerson"</span> <span class="na">parameterClass=</span><span class="s">"int"</span> <span class="na">resultClass=</span><span class="s">"pe.neocjmix.Person"</span><span class="nt">&gt;</span>
+    SELECT
+    PER_ID as id,
+    PER_FIRST_NAME as firstName, PER_LAST_NAME as lastName, PER_BIRTH_DATE as birthDate, PER_WEIGHT_KG as weightInKilograms,
+    PER_HEIGHT_M as heightInMeters
+    FROM PERSON
+    WHERE PER_ID = #value#
+    <span class="nt">&lt;/select&gt;</span>
+
+    <span class="nt">&lt;insert</span> <span class="na">id=</span><span class="s">"insertPerson"</span> <span class="na">parameterClass=</span><span class="s">"pe.neocjmix.Person"</span><span class="nt">&gt;</span>
+    INSERT INTO
+    PERSON (PER_ID, PER_FIRST_NAME, PER_LAST_NAME,
+    PER_BIRTH_DATE, PER_WEIGHT_KG, PER_HEIGHT_M) VALUES (#id#, #firstName#, #lastName#,
+    #birthDate#, #weightInKilograms#, #heightInMeters#) <span class="nt">&lt;/insert&gt;</span>
+
+    <span class="nt">&lt;update</span> <span class="na">id=</span><span class="s">"updatePerson"</span> <span class="na">parameterClass=</span><span class="s">"pe.neocjmix.Person"</span><span class="nt">&gt;</span>
+    UPDATE PERSON
+    SET PER_FIRST_NAME = #firstName#,
+    PER_LAST_NAME = #lastName#, PER_BIRTH_DATE = #birthDate#, PER_WEIGHT_KG = #weightInKilograms#,
+    PER_HEIGHT_M = #heightInMeters#
+    WHERE PER_ID = #id# <span class="nt">&lt;/update&gt;</span>
+
+    <span class="nt">&lt;delete</span> <span class="na">id=</span><span class="s">"deletePerson"</span> <span class="na">parameterClass=</span><span class="s">"pe.neocjmix.Person"</span><span class="nt">&gt;</span>
+    DELETE from PERSON
+    WHERE PER_ID = #id# <span class="nt">&lt;/delete&gt;</span>
+<span class="nt">&lt;/sqlMap&gt;</span>
+</code></pre></div></div>
+
+<h3 id="사용java">사용(java)</h3>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nc">SqlMapClient</span> <span class="n">sqlMap</span> <span class="o">=</span> <span class="nc">MyAppSqlConfig</span><span class="o">.</span><span class="na">getSqlMapInstance</span><span class="o">();</span>
+
+    <span class="c1">//get Object</span>
+    <span class="nc">Person</span> <span class="n">person</span> <span class="o">=</span> <span class="o">(</span><span class="nc">Person</span><span class="o">)</span> <span class="n">sqlMap</span><span class="o">.</span><span class="na">queryForObject</span> <span class="o">(</span><span class="s">"getPerson"</span><span class="o">,</span> <span class="mi">0</span><span class="o">);</span>
+
+    <span class="c1">//update object</span>
+    <span class="n">person</span><span class="o">.</span><span class="na">setHeightInMeters</span><span class="o">(</span><span class="n">person</span><span class="o">.</span><span class="na">getHeightInMeters</span><span class="o">()+</span><span class="mi">1</span><span class="o">);</span>
+    <span class="n">sqlMap</span><span class="o">.</span><span class="na">update</span><span class="o">(</span><span class="s">"updatePerson"</span><span class="o">,</span><span class="n">person</span><span class="o">);</span>
+    
+    <span class="c1">//delete object</span>
+    <span class="n">sqlMap</span><span class="o">.</span><span class="na">delete</span><span class="o">(</span><span class="s">"deletePerson"</span><span class="o">,</span> <span class="n">person</span><span class="o">);</span>
+
+    <span class="c1">//insert object</span>
+    <span class="n">person</span><span class="o">.</span><span class="na">setLastName</span><span class="o">(</span><span class="n">person</span><span class="o">.</span><span class="na">getLastName</span><span class="o">()</span> <span class="o">+</span> <span class="s">"!"</span><span class="o">);</span>
+    <span class="n">sqlMap</span><span class="o">.</span><span class="na">insert</span><span class="o">(</span><span class="s">"insertPerson"</span><span class="o">,</span> <span class="n">person</span><span class="o">);</span>
+
+    <span class="c1">//get list</span>
+    <span class="k">return</span> <span class="n">sqlMap</span><span class="o">.</span><span class="na">queryForList</span><span class="o">(</span><span class="s">"selectAllPersons"</span><span class="o">).</span><span class="na">toString</span><span class="o">();</span>
+</code></pre></div></div>
+<p>일</p>
+
+<h3 id="error-모음">error 모음</h3>
+<h4 id="orgspringframeworkbeansfactorybeancreationexception-error-creating-bean-with-name-persistenceexceptiontranslationpostprocessor">org.springframework.beans.factory.BeanCreationException: Error creating bean with name ‘persistenceExceptionTranslationPostProcessor’</h4>
+:ET

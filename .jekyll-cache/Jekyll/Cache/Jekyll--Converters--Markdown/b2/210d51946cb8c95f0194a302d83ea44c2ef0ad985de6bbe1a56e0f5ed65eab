@@ -1,0 +1,99 @@
+I"?*
+<p>super-agent 를 이용해서 HTTP통신을 통한 테스트를 쉽게 해준다.</p>
+
+<blockquote>
+  <p>The motivation with this module is to provide a high-level abstraction for testing HTTP, while still allowing you to drop down to the lower-level API provided by super-agent.</p>
+</blockquote>
+
+<h2 id="install">install</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>npm install supertest --save-dev
+</code></pre></div></div>
+
+<h2 id="basic-example">Basic example</h2>
+
+<p>supertest를 require 한 후에 express 를 인자로 넘겨준다. 그다음에는 체이닝으로 <a href="#super-agent">Super Agent</a>의 API와 <a href="#expect">exptect</a>를 마음대로 사용할 수 있다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">request</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">supertest</span><span class="dl">'</span><span class="p">)</span>
+  <span class="p">,</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">express</span><span class="dl">'</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="dl">'</span><span class="s1">/user</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">){</span>
+  <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="p">{</span> <span class="na">name</span><span class="p">:</span> <span class="dl">'</span><span class="s1">tobi</span><span class="dl">'</span> <span class="p">});</span>
+<span class="p">});</span>
+
+<span class="nx">request</span><span class="p">(</span><span class="nx">app</span><span class="p">)</span>
+  <span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="dl">'</span><span class="s1">/user</span><span class="dl">'</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="dl">'</span><span class="s1">Content-Type</span><span class="dl">'</span><span class="p">,</span> <span class="sr">/json/</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="dl">'</span><span class="s1">Content-Length</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">20</span><span class="dl">'</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">){</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">throw</span> <span class="nx">err</span><span class="p">;</span>
+  <span class="p">});</span>
+</code></pre></div></div>
+
+<h2 id="super-agent"><a href="http://visionmedia.github.io/superagent/">Super Agent</a></h2>
+
+<p>HTTP Request Library</p>
+
+<p>Github link : https://github.com/visionmedia/superagent</p>
+
+<h3 id="some-examples">Some examples</h3>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="dl">'</span><span class="s1">/user</span><span class="dl">'</span><span class="p">)</span>
+  <span class="p">.</span><span class="kd">set</span><span class="p">(</span><span class="dl">'</span><span class="s1">Accept</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">application/json</span><span class="dl">'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">request</span>
+  <span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="dl">'</span><span class="s1">/api/pet</span><span class="dl">'</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">send</span><span class="p">({</span> <span class="na">name</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Manny</span><span class="dl">'</span><span class="p">,</span> <span class="na">species</span><span class="p">:</span> <span class="dl">'</span><span class="s1">cat</span><span class="dl">'</span> <span class="p">})</span>
+  <span class="p">.</span><span class="kd">set</span><span class="p">(</span><span class="dl">'</span><span class="s1">X-API-Key</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">foobar</span><span class="dl">'</span><span class="p">)</span>
+  <span class="p">.</span><span class="kd">set</span><span class="p">(</span><span class="dl">'</span><span class="s1">Accept</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">application/json</span><span class="dl">'</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">){</span>
+    <span class="c1">// Calling the end function will send the request</span>
+  <span class="p">});</span>
+</code></pre></div></div>
+
+<h2 id="expect">Expect</h2>
+
+<p>.end() 메쏘드를 사용하면 .expect() 가 실패해도 에러를 던지지 않고, end 메쏘드의 err 인자로 넘겨준다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="nx">status</span><span class="p">[,</span> <span class="nx">fn</span><span class="p">])</span> <span class="c1">//Assert response status code.</span>
+
+<span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="nx">status</span><span class="p">,</span> <span class="nx">body</span><span class="p">[,</span> <span class="nx">fn</span><span class="p">])</span> <span class="c1">//Assert response status code and body.</span>
+
+<span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="nx">body</span><span class="p">[,</span> <span class="nx">fn</span><span class="p">])</span> <span class="c1">//Assert response body text with a string, regular expression, or parsed body object.</span>
+
+<span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="nx">field</span><span class="p">,</span> <span class="nx">value</span><span class="p">[,</span> <span class="nx">fn</span><span class="p">])</span> <span class="c1">//Assert header field value with a string or regular expression.</span>
+
+<span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">res</span><span class="p">)</span> <span class="p">{})</span>
+</code></pre></div></div>
+
+<h2 id="usage-with-test-tool--assertion-engine">Usage with Test Tool &amp; Assertion Engine</h2>
+
+<ul>
+  <li><a href="/test/2015/08/06/mocha/">Mocha</a></li>
+  <li><a href="/test/2015/08/06/mocha/#chai-api">Chai</a></li>
+</ul>
+
+<p>.end의 callback에서 테스트를 실행한다. 비동기이므로 <a href="/test/2015/08/06/mocha/#Async Test">done을 이용해야 한다.</a></p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">request</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">supertest</span><span class="dl">'</span><span class="p">),</span>
+    <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">express</span><span class="dl">'</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+
+<span class="nx">describe</span><span class="p">(</span><span class="dl">'</span><span class="s1">some api</span><span class="dl">'</span><span class="p">,</span><span class="kd">function</span><span class="p">(){</span>
+    <span class="nx">it</span><span class="p">(</span><span class="dl">'</span><span class="s1">works asyncronously</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">done</span><span class="p">){</span>
+      <span class="nx">request</span><span class="p">(</span><span class="nx">app</span><span class="p">)</span>
+        <span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="dl">'</span><span class="s1">/api</span><span class="dl">'</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">){</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">throw</span> <span class="nx">err</span><span class="p">;</span>
+          <span class="nx">expect</span><span class="p">(</span><span class="nx">res</span><span class="p">.</span><span class="nx">body</span><span class="p">).</span><span class="nx">to</span><span class="p">.</span><span class="nx">be</span><span class="p">.</span><span class="kc">true</span><span class="p">;</span>
+          <span class="nx">done</span><span class="p">();</span>
+        <span class="p">});</span>
+    <span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div></div>
+:ET

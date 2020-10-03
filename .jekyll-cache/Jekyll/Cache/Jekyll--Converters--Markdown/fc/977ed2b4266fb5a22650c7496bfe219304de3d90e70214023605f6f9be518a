@@ -1,0 +1,109 @@
+I"�
+<p>개발 시 필요한 여러 기술 스택에 따라서 초기 설정과 디렉토리 구성 등 반복작업이 되기 쉬운 초반 작업을 자동으로 구성 해주는 generator.</p>
+
+<h2 id="install">Install</h2>
+<p>npm으로 yeoman과 기타 필요한 모듈을 설치해준다.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ npm install -g yo bower grunt-cli gulp grunt
+</code></pre></div></div>
+
+<h2 id="generators">Generators</h2>
+<p>Yeoman에서 구동할 generator를 설치해야 한다.<br />
+<a href="http://yeoman.io/generators/">http://yeoman.io/generators/</a><br />
+위 링크에서 검색을 해서 자신의 프로젝트에 알맞은 generator를 찾은 후 다음과 같이 설치한다.</p>
+
+<p>node module이라 왠지 front-end나 nodejs 관련 generator만 있을것 같지만 java spring + angularjs, python django 등 언어와 프레임웍을 가리지 않고 여러가지 generator들이 다양하게 검색된다. 다음 목록은 생각나는 대로 검색해서 나온 눈에 띄는 generator들이다.</p>
+
+<ul>
+  <li><a href="https://github.com/DaftMonk/generator-angular-fullstack">generator-angular-fullstack</a> : AngularJs with an Express server</li>
+  <li><a href="https://github.com/jhipster/generator-jhipster">jhipster</a> : Hipster stack for Java developers. + Maven + Spring + AngularJs in one handy generator</li>
+  <li><a href="https://github.com/kriasoft/react-starter-kit">react starter kit</a> : React Starter Kit — a skeleton of an “isomorphic” webapp/ SPA built with React.js, Express, Flux, ES6+, JSX, Babel, PostCSS, Webpack, BrowserSync..</li>
+  <li><a href="https://github.com/wesleytodd/YeoPress">wordpress</a> : wordpress</li>
+  <li><a href="https://github.com/hung-phan/generator-rails-mithril">rails-mithril</a> : Fast way to integrate mithril.js and require.js with Ruby on Rails project</li>
+  <li><a href="https://github.com/rockallite/generator-django-webapp">django-webapp</a> : Scaffolds out a Django web app with front-end support</li>
+</ul>
+
+<p>테스트를 위해서 다음의 generator를 실행시켜 봤다.</p>
+
+<h3 id="angularjs-full-stack-generator">AngularJs Full-Stack generator</h3>
+<p>MEAN 스택으로 개발을 시작하기 위한 boiler-plate를 제공하는 Generator. front-end 코드 뿐만 아니라 서버측 코드도 미리 작성되어 있다.</p>
+
+<h4 id="링크">링크</h4>
+
+<p><a href="https://github.com/DaftMonk/generator-angular-fullstack">generator-angular-fullstack</a></p>
+
+<h4 id="지원-스택">지원 스택</h4>
+
+<h5 id="client">Client</h5>
+
+<ul>
+  <li>Scripts: JavaScript, CoffeeScript, Babel</li>
+  <li>Markup: HTML, Jade</li>
+  <li>Stylesheets: CSS, Stylus, Sass, Less,</li>
+  <li>Angular Routers: ngRoute, ui-router</li>
+</ul>
+
+<h5 id="server">Server</h5>
+
+<ul>
+  <li>Database: None, MongoDB</li>
+  <li>Authentication boilerplate: Yes, No</li>
+  <li>oAuth integrations: Facebook Twitter Google</li>
+  <li>Socket.io integration: Yes, No</li>
+</ul>
+
+<p>다음 코드로 generator를 설치한다.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ npm install -g generator-angular-fullstack
+</code></pre></div></div>
+
+<p>generator를 설치했으면 실제 프로젝트가 위치할 디렉토리를 만들고 그 안에서 yo를 실행한다.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ mkdir my-new-project &amp;&amp; cd $_
+$ yo angular-fullstack [app-name]
+</code></pre></div></div>
+
+<p>설치과정에서 선택할 수 있는 옵션을 제시해준다. 원하는 옵션을 적절히 선택해준다.
+<img src="http://i.imgur.com/ACHYKox.png" alt="" /></p>
+
+<p><strong>[주의]</strong> generator 를 실행하기 전 프로젝트를 시작할 디렉토리를 만들어 
+그안에서 실행해야 한다.</p>
+
+<p><strong>[주의]</strong> yeoman으로 생성한 프로젝트 안에는 <code class="language-plaintext highlighter-rouge">.yo-rc.json</code> 파일이 hidden으로 생성된다. 이 파일이 존재하는 디렉토리가 해당 프로젝트의 root directory로, 이 디렉토리의 하위 디렉토리에서 yo를 실행하면 root 경로에 generate하게 된다. 따라서 프로젝트를 실수로 상위 디렉토리에 잘못 생성한 경우 이 hidden 파일을 반드시 삭제해야 제대로 다시 generating할 수 있다.</p>
+
+<h2 id="build">Build</h2>
+
+<p>일반적으로 <code class="language-plaintext highlighter-rouge">grunt</code>를 이용해서 빌드한다.</p>
+
+<h3 id="테스트">테스트</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ grunt test
+</code></pre></div></div>
+
+<h3 id="빌드">빌드</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ grunt build
+</code></pre></div></div>
+
+<h3 id="프리뷰">프리뷰</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ grunt serve
+</code></pre></div></div>
+
+<p><a href="https://github.com/DaftMonk/generator-angular-fullstack">generator-angular-fullstack</a>의 경우, 다음과 같은 그런트 빌드를 제공한다. mongodb 관련 서버측 코드도 미리 작성되어있으므로 <code class="language-plaintext highlighter-rouge">mongod</code>를 실행시켜야 서버가 제대로 실행된다.</p>
+
+<blockquote>
+  <p>Run <code class="language-plaintext highlighter-rouge">grunt</code> for building, <code class="language-plaintext highlighter-rouge">grunt serve</code> for preview, and <code class="language-plaintext highlighter-rouge">grunt serve:dist</code> for a preview of the built app.</p>
+</blockquote>
+
+<p><code class="language-plaintext highlighter-rouge">$ grunt serve</code>를 실행하면 preview 빌드를 완료하고 grunt watch를 실행하고 바로 브라우저 까지 띄워준다.</p>
+
+<p><img src="http://i.imgur.com/qUIvuSB.png" alt="Imgur" /></p>
+
+<p>위와 같은 과정을 거쳐서 프리뷰를 하면 매번 하는 기본적이고 반복적인 세팅이 다 완성되어 있고, 중요한 로직만 작성하면 되는 상태로 코드가 작성되어 나온다.
+<a href="https://github.com/DaftMonk/generator-angular-fullstack">generator-angular-fullstack</a> 같은 경우 기본적인 로그인 기능과 심지어 SNS oAuth 기능까지도(!!!) 완성된 코드가 나온다.</p>
+
+<p>앱을 처음 만들어 보는 사람이라면 처음부터 자신의 코드를 완성해가는 보람을 느낄 수 없을지 모르지만, 매번 뻔한 스택 구성과 언제나 들어가는 로그인 기능을 반복해서 만드느라 지친 개발자에게는 반복작업을 줄이고 중요한 로직부터 작성할 수 있는 발판을 쉽게 제공할 수 있다는 생각이 든다.</p>
+
+<p>또한 대부분 유명한 Yeoman Generator는 오픈소스로 관리되고 있고, 풀 리퀘스트가 활발히 일어나고 있다. 즉, 여러 선배 개발자들의 노하우가 적용되어 안정적인 구조를 가지고 있으므로, 특정 프레임웍을 사용할 때 어떤 것이 모범적인 셋팅인지 갈피를 잡을 수 없다면 Yeoman이 generate 해준 코드를 참고해가면서 실력을 향상해 가는것도 좋은 방법이라고 생각된다.</p>
+:ET

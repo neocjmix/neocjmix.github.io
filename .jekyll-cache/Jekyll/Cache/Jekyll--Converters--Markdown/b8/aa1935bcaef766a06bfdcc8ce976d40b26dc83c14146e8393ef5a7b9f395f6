@@ -1,0 +1,32 @@
+I"_<h2 id="form">Form</h2>
+
+<h3 id="element-attribute에-object-를-할당하는-경우">element attribute에 object 를 할당하는 경우</h3>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">input</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="dl">"</span><span class="s2">input</span><span class="dl">"</span><span class="p">);</span>
+<span class="nx">input</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="dl">"</span><span class="s2">value</span><span class="dl">"</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]);</span>
+</code></pre></div></div>
+
+<p>위의 코드는 IE9 이하에서 오동작한다.
+input.value 를 다시 접근하면 결과는 다음과 같다.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>IE 7,8,9</th>
+      <th>ModernBrowser</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[object]</code></td>
+      <td><code class="language-plaintext highlighter-rouge">"1,2,3"</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>따라서 오래된 브라우저에서는 다음과 같이 파싱해서 할당해야 한다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">input</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="dl">"</span><span class="s2">myArray</span><span class="dl">"</span><span class="p">,[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">].</span><span class="nx">join</span><span class="p">(</span><span class="dl">"</span><span class="s2">,</span><span class="dl">"</span><span class="p">));</span>
+</code></pre></div></div>
+
+:ET

@@ -1,0 +1,37 @@
+I")<h2 id="sha1-hmac">sha1 hmac</h2>
+
+<h3 id="hmac">HMAC</h3>
+
+<blockquote>
+  <p>MAC that uses a cryptographic hash function in conjunction with a secret key.</p>
+</blockquote>
+
+<p>mac : Message Authentication Code - 무결성을 검증</p>
+
+<p>따라서 sha1 hmac 란 sha1를 해시 함수로 쓰는 메시지 무결성 검증 코드이다.</p>
+
+<h2 id="generating-sha1-hmac-signature-with-java">Generating sha1 hmac signature with Java</h2>
+
+<ul>
+  <li>mac 객체 생성    : <code class="language-plaintext highlighter-rouge">Mac mac = Mac.getInstance(해시알고리즘).init(new SecretKeySpec(키값, 해시알고리즘))</code>;</li>
+  <li>암호화                 : <code class="language-plaintext highlighter-rouge">byte[] rawHmac = mac.doFinal(암호화할 데이터)</code></li>
+  <li>base64 인코딩   : <code class="language-plaintext highlighter-rouge">Base64.encode(rawHmac);</code></li>
+</ul>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="nc">String</span> <span class="no">HMAC_SHA1_ALGORITHM</span> <span class="o">=</span> <span class="s">"HmacSHA1"</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="nc">String</span> <span class="nf">calculateHMAC</span><span class="o">(</span><span class="nc">String</span> <span class="n">data</span><span class="o">,</span> <span class="nc">String</span> <span class="n">key</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">java</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">SignatureException</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="nc">SecretKeySpec</span> <span class="n">signingKey</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">SecretKeySpec</span><span class="o">(</span><span class="n">key</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(),</span><span class="no">HMAC_SHA1_ALGORITHM</span><span class="o">);</span>
+            <span class="nc">Mac</span> <span class="n">mac</span> <span class="o">=</span> <span class="nc">Mac</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="no">HMAC_SHA1_ALGORITHM</span><span class="o">);</span>
+            <span class="n">mac</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="n">signingKey</span><span class="o">);</span>
+            <span class="kt">byte</span><span class="o">[]</span> <span class="n">rawHmac</span> <span class="o">=</span> <span class="n">mac</span><span class="o">.</span><span class="na">doFinal</span><span class="o">(</span><span class="n">data</span><span class="o">.</span><span class="na">getBytes</span><span class="o">());</span>
+            <span class="k">return</span> <span class="nc">Base64</span><span class="o">.</span><span class="na">encode</span><span class="o">(</span><span class="n">rawHmac</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">SignatureException</span><span class="o">(</span><span class="s">"Failed to generate HMAC : "</span> <span class="o">+</span> <span class="n">e</span><span class="o">.</span><span class="na">getMessage</span><span class="o">());</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<p>동일한 키로 데이터를 signature로 바꾼 후에 비교해서 무결성을 검증한다.</p>
+:ET

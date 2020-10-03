@@ -1,0 +1,271 @@
+I"�s
+<h2 id="quickstart">Quickstart</h2>
+
+<h3 id="모듈-로딩--db연결">모듈 로딩 &amp; DB연결</h3>
+
+<p><code class="language-plaintext highlighter-rouge">on</code>, <code class="language-plaintext highlighter-rouge">once</code> 를 이용해서 error 및 success시 callback.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">mongoose</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">mongoose</span><span class="dl">'</span><span class="p">);</span>
+<span class="nx">mongoose</span><span class="p">.</span><span class="nx">connect</span><span class="p">(</span><span class="dl">'</span><span class="s1">mongodb://localhost/test</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">db</span> <span class="o">=</span> <span class="nx">mongoose</span><span class="p">.</span><span class="nx">connection</span><span class="p">;</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">error</span><span class="dl">'</span><span class="p">,</span> <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">console</span><span class="p">,</span> <span class="dl">'</span><span class="s1">connection error:</span><span class="dl">'</span><span class="p">));</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">once</span><span class="p">(</span><span class="dl">'</span><span class="s1">open</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h3 id="schema">Schema</h3>
+
+<h4 id="basic">basic</h4>
+
+<p>MongoDB에서 기본적으로 지원하지 않는 document 스키마를 설정할 수 있다.</p>
+
+<ol>
+  <li>
+    <p>스키마를 만든다.</p>
+
+    <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="kd">var</span> <span class="nx">kittySchema</span> <span class="o">=</span> <span class="nx">mongoose</span><span class="p">.</span><span class="nx">Schema</span><span class="p">({</span>
+     <span class="na">name</span><span class="p">:</span> <span class="nb">String</span>
+ <span class="p">});</span>
+</code></pre></div>    </div>
+    <p>지원되는 데이터 타입은 다음과 같다.</p>
+    <ul>
+      <li>String</li>
+      <li>Number</li>
+      <li>Date</li>
+      <li>Buffer</li>
+      <li>Boolean</li>
+      <li>Mixed</li>
+      <li>ObjectId</li>
+      <li>Array</li>
+    </ul>
+
+    <p>.</p>
+  </li>
+  <li>
+    <p>스키마에 메쏘드를 추가 (스키마가 직접 행동을 한다고?!)</p>
+
+    <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nx">kittySchema</span><span class="p">.</span><span class="nx">methods</span><span class="p">.</span><span class="nx">speak</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+   <span class="kd">var</span> <span class="nx">greeting</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span>
+     <span class="p">?</span> <span class="dl">"</span><span class="s2">Meow name is </span><span class="dl">"</span> <span class="o">+</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span>
+     <span class="p">:</span> <span class="dl">"</span><span class="s2">I don't have a name</span><span class="dl">"</span><span class="p">;</span>
+   <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">greeting</span><span class="p">);</span>
+ <span class="p">}</span>
+</code></pre></div>    </div>
+
+    <p><strong>[주의]메쏘드는 다음단계에서 컴파일 하기 전에 추가해야 한다.</strong></p>
+  </li>
+  <li>
+    <p>생성한 스키마를 모델로 컴파일 -&gt; 생성자를 리턴</p>
+
+    <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="kd">var</span> <span class="nx">Kitten</span> <span class="o">=</span> <span class="nx">mongoose</span><span class="p">.</span><span class="nx">model</span><span class="p">(</span><span class="dl">'</span><span class="s1">Kitten</span><span class="dl">'</span><span class="p">,</span> <span class="nx">kittySchema</span><span class="p">);</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>리턴받은 생성자를 이용해서 model의 인스턴스인 Document 객체 생성<br />
+스키마에 추가한 메쏘드는 스키마가 하는 행동이 아니라 모델 객체의 메쏘드가 된다. 그러니까 얘는 db에 있는 데이터를 가지고 스스로 행동을 할 수 있는 구현체가 되는거임.</p>
+
+    <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="kd">var</span> <span class="nx">fluffy</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Kitten</span><span class="p">({</span> <span class="na">name</span><span class="p">:</span> <span class="dl">'</span><span class="s1">fluffy</span><span class="dl">'</span> <span class="p">});</span>
+ <span class="nx">fluffy</span><span class="p">.</span><span class="nx">speak</span><span class="p">();</span> <span class="c1">// "Meow name is fluffy"</span>
+</code></pre></div>    </div>
+
+    <p>Document는 사용자 정의한 메쏘드 말고도 <a href="http://mongoosejs.com/docs/api.html#document_function%20Object()%20%7B%20%5Bnative%20code%5D%20%7D-%24isDefault">유용한 기본 메쏘드</a>를 많이 가지고 있다.</p>
+  </li>
+</ol>
+
+<h4 id="static-method">Static method</h4>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//추가</span>
+<span class="nx">kittySchema</span><span class="p">.</span><span class="nx">statics</span><span class="p">.</span><span class="nx">findByName</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">find</span><span class="p">({</span> <span class="na">name</span><span class="p">:</span> <span class="k">new</span> <span class="nb">RegExp</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="dl">'</span><span class="s1">i</span><span class="dl">'</span><span class="p">)</span> <span class="p">},</span> <span class="nx">cb</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nx">사용</span>
+<span class="kd">var</span> <span class="nx">Kitten</span> <span class="o">=</span> <span class="nx">mongoose</span><span class="p">.</span><span class="nx">model</span><span class="p">(</span><span class="dl">'</span><span class="s1">Kitten</span><span class="dl">'</span><span class="p">,</span> <span class="nx">kittySchema</span><span class="p">);</span>
+<span class="nx">Kitten</span><span class="p">.</span><span class="nx">findByName</span><span class="p">(</span><span class="dl">'</span><span class="s1">fluffy</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">kitties</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">kitties</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h4 id="후크">후크</h4>
+
+<p>http://mongoosejs.com/docs/middleware.html</p>
+
+<h4 id="setter--getter">setter &amp; getter</h4>
+
+<p>db내 데이터에 대한 연산을 추상화 해서 sanitizing 이나 출력을 가공하는데 유용하다.</p>
+
+<h5 id="setter">setter</h5>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">toLower</span> <span class="p">(</span><span class="nx">v</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">v</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">UserSchema</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Schema</span><span class="p">({</span>
+  <span class="na">email</span><span class="p">:</span> <span class="p">{</span> <span class="na">type</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span> <span class="na">set</span><span class="p">:</span> <span class="nx">toLower</span> <span class="p">}</span> 
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h5 id="getter">getter</h5>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">obfuscate</span> <span class="p">(</span><span class="nx">cc</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="dl">'</span><span class="s1">****-****-****-</span><span class="dl">'</span> <span class="o">+</span> <span class="nx">cc</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="nx">cc</span><span class="p">.</span><span class="nx">length</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="nx">cc</span><span class="p">.</span><span class="nx">length</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">AccountSchema</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Schema</span><span class="p">({</span>
+  <span class="na">creditCardNumber</span><span class="p">:</span> <span class="p">{</span> <span class="na">type</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span> <span class="na">get</span><span class="p">:</span> <span class="nx">obfuscate</span> <span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h4 id="virtual-attributes">Virtual Attributes</h4>
+
+<p>mongoose 내에서 입출력이 가능하지만 실제로 db 에 저장되지는 않는 필드. 두개 이상의 속성을 하나의 getter / setter로 관리하거나, 패스워드를 입력한다든지 할 때, 패스워드는 가상속성으로 받고, encrypt를 해서 해시만 저장한다든지 하는데 유용하다.</p>
+
+<h5 id="get">get</h5>
+
+<p>다음과 같은 스키마가 있다고 할 때,</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">PersonSchema</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Schema</span><span class="p">({</span>
+    <span class="na">name</span><span class="p">:</span> <span class="p">{</span>
+        <span class="na">first</span><span class="p">:</span> <span class="nb">String</span>
+      <span class="p">,</span> <span class="na">last</span><span class="p">:</span> <span class="nb">String</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>아래와 같이 가상 속성을 만들면</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">PersonSchema</span>
+<span class="p">.</span><span class="nx">virtual</span><span class="p">(</span><span class="dl">'</span><span class="s1">name.full</span><span class="dl">'</span><span class="p">)</span>
+<span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span><span class="p">.</span><span class="nx">first</span> <span class="o">+</span> <span class="dl">'</span><span class="s1"> </span><span class="dl">'</span> <span class="o">+</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span><span class="p">.</span><span class="nx">last</span><span class="p">;</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>아래처럼 편리하게 출력할 수 있다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//console.log(person.name.first + ' ' + theSituation.name.last);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">person</span><span class="p">.</span><span class="nx">name</span><span class="p">.</span><span class="nx">full</span><span class="p">);</span> 
+</code></pre></div></div>
+
+<h5 id="set">set</h5>
+
+<p>같은 가상 속성에 대해 다음과 같이 setter를 설정하면</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">.</span><span class="kd">set</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">setFullNameTo</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">split</span> <span class="o">=</span> <span class="nx">setFullNameTo</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="dl">'</span><span class="s1"> </span><span class="dl">'</span><span class="p">)</span>
+    <span class="p">,</span> <span class="nx">firstName</span> <span class="o">=</span> <span class="nx">split</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="p">,</span> <span class="nx">lastName</span> <span class="o">=</span> <span class="nx">split</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+
+  <span class="k">this</span><span class="p">.</span><span class="kd">set</span><span class="p">(</span><span class="dl">'</span><span class="s1">name.first</span><span class="dl">'</span><span class="p">,</span> <span class="nx">firstName</span><span class="p">);</span>
+  <span class="k">this</span><span class="p">.</span><span class="kd">set</span><span class="p">(</span><span class="dl">'</span><span class="s1">name.last</span><span class="dl">'</span><span class="p">,</span> <span class="nx">lastName</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>아래와 같이 간단하게 두개의 필드를 입력할 수 있다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">person</span><span class="p">.</span><span class="kd">set</span><span class="p">(</span><span class="dl">'</span><span class="s1">name.full</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">The Situation</span><span class="dl">'</span><span class="p">);</span> 
+</code></pre></div></div>
+
+<h4 id="validation">Validation</h4>
+
+<p>이렇게 하든지?</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">validator</span> <span class="p">(</span><span class="nx">v</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">v</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">new</span> <span class="nx">Schema</span><span class="p">({</span>
+    <span class="na">name</span><span class="p">:</span> <span class="p">{</span> <span class="na">type</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span> <span class="na">validate</span><span class="p">:</span> <span class="p">[</span><span class="nx">validator</span><span class="p">,</span> <span class="dl">'</span><span class="s1">my error type</span><span class="dl">'</span><span class="p">]</span> <span class="p">}</span>
+<span class="p">})</span>
+</code></pre></div></div>
+
+<p>아니면 이렇게 하든지.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">schema</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Schema</span><span class="p">({</span>
+    <span class="na">name</span><span class="p">:</span> <span class="nb">String</span>
+<span class="p">})</span>
+</code></pre></div></div>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">schema</span><span class="p">.</span><span class="nx">path</span><span class="p">(</span><span class="dl">'</span><span class="s1">name</span><span class="dl">'</span><span class="p">).</span><span class="nx">validate</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">v</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">v</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">;</span>
+<span class="p">},</span> <span class="dl">'</span><span class="s1">my error type</span><span class="dl">'</span><span class="p">);</span> 
+</code></pre></div></div>
+
+<p>아니면 regex 를 쓰든지?</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">schema</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Schema</span><span class="p">({</span>
+    <span class="na">name</span><span class="p">:</span> <span class="p">{</span> <span class="na">type</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span> <span class="na">validate</span><span class="p">:</span> <span class="sr">/</span><span class="se">[</span><span class="sr">a-z</span><span class="se">]</span><span class="sr">/</span> <span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>아니면 built-in을 쓰든지.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">Post</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Schema</span><span class="p">({</span>
+    <span class="na">type</span><span class="p">:</span> <span class="p">{</span> <span class="na">type</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span> <span class="na">enum</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">page</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">post</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">link</span><span class="dl">'</span><span class="p">]</span> <span class="p">}</span>
+<span class="p">})</span>
+</code></pre></div></div>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">Person</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Schema</span><span class="p">({</span>
+    <span class="na">age</span><span class="p">:</span> <span class="p">{</span> <span class="na">type</span><span class="p">:</span> <span class="nb">Number</span><span class="p">,</span> <span class="na">min</span><span class="p">:</span> <span class="mi">5</span> <span class="p">}</span>
+<span class="p">})</span>
+</code></pre></div></div>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">Person</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Schema</span><span class="p">({</span>
+    <span class="na">age</span><span class="p">:</span> <span class="p">{</span> <span class="na">type</span><span class="p">:</span> <span class="nb">Number</span><span class="p">,</span> <span class="na">max</span><span class="p">:</span> <span class="mi">100</span> <span class="p">}</span>
+<span class="p">})</span>
+</code></pre></div></div>
+
+<p>async로 할 수도 있다. validate 함수의 파라메터를 2개 만들어 줘야 한다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">schema</span><span class="p">.</span><span class="nx">path</span><span class="p">(</span><span class="dl">'</span><span class="s1">name</span><span class="dl">'</span><span class="p">).</span><span class="nx">validate</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">v</span><span class="p">,</span> <span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// my logic</span>
+<span class="p">},</span> <span class="dl">'</span><span class="s1">my error type</span><span class="dl">'</span><span class="p">);</span> 
+</code></pre></div></div>
+<p>fn으로 넘어온 callback 함수는 true 나 false parameter로 실행된다.</p>
+
+<h3 id="document">Document</h3>
+
+<p><a href="http://docs.mongodb.org/manual/reference/operator/">MongoDB rich query syntax</a> 를 이용해서 Document를 DB에 바로 CRUD 할 수 있다.</p>
+
+<h4 id="c">C!</h4>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">fluffy</span><span class="p">.</span><span class="nx">save</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">fluffy</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+  <span class="nx">fluffy</span><span class="p">.</span><span class="nx">speak</span><span class="p">();</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h4 id="r">R!</h4>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">Kitten</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">kittens</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">kittens</span><span class="p">);</span>
+<span class="p">})</span>
+</code></pre></div></div>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">Kitten</span><span class="p">.</span><span class="nx">find</span><span class="p">({</span> <span class="na">name</span><span class="p">:</span> <span class="sr">/^Fluff/</span> <span class="p">},</span> <span class="nx">callback</span><span class="p">);</span>
+</code></pre></div></div>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">Kitten</span><span class="p">.</span><span class="nx">find</span><span class="p">({</span> <span class="na">size</span><span class="p">:</span> <span class="dl">'</span><span class="s1">small</span><span class="dl">'</span> <span class="p">}).</span><span class="nx">where</span><span class="p">(</span><span class="dl">'</span><span class="s1">createdDate</span><span class="dl">'</span><span class="p">).</span><span class="nx">gt</span><span class="p">(</span><span class="nx">oneYearAgo</span><span class="p">).</span><span class="nx">exec</span><span class="p">(</span><span class="nx">callback</span><span class="p">);</span>
+</code></pre></div></div>
+<h4 id="u">U!</h4>
+
+<p>보통 save를 사용하면 되지만, 다음과 같이 model에서 바로update할 수 있다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">MyModel</span><span class="p">.</span><span class="nx">update</span><span class="p">({</span> <span class="na">age</span><span class="p">:</span> <span class="p">{</span> <span class="na">$gt</span><span class="p">:</span> <span class="mi">18</span> <span class="p">}</span> <span class="p">},</span> <span class="p">{</span> <span class="na">oldEnough</span><span class="p">:</span> <span class="kc">true</span> <span class="p">},</span> <span class="nx">fn</span><span class="p">);</span>
+<span class="nx">MyModel</span><span class="p">.</span><span class="nx">update</span><span class="p">({</span> <span class="na">name</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Tobi</span><span class="dl">'</span> <span class="p">},</span> <span class="p">{</span> <span class="na">ferret</span><span class="p">:</span> <span class="kc">true</span> <span class="p">},</span> <span class="p">{</span> <span class="na">multi</span><span class="p">:</span> <span class="kc">true</span> <span class="p">},</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">raw</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">handleError</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">The raw response from Mongo was </span><span class="dl">'</span><span class="p">,</span> <span class="nx">raw</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div></div>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">A</span><span class="p">.</span><span class="nx">findOneAndUpdate</span><span class="p">(</span><span class="nx">conditions</span><span class="p">,</span> <span class="nx">update</span><span class="p">,</span> <span class="nx">options</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="c1">// executes</span>
+<span class="nx">A</span><span class="p">.</span><span class="nx">findOneAndUpdate</span><span class="p">(</span><span class="nx">conditions</span><span class="p">,</span> <span class="nx">update</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span>  <span class="c1">// returns Query</span>
+<span class="nx">A</span><span class="p">.</span><span class="nx">findOneAndUpdate</span><span class="p">(</span><span class="nx">conditions</span><span class="p">,</span> <span class="nx">update</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="c1">// executes</span>
+<span class="nx">A</span><span class="p">.</span><span class="nx">findOneAndUpdate</span><span class="p">(</span><span class="nx">conditions</span><span class="p">,</span> <span class="nx">update</span><span class="p">)</span>           <span class="c1">// returns Query</span>
+<span class="nx">A</span><span class="p">.</span><span class="nx">findOneAndUpdate</span><span class="p">()</span>                             <span class="c1">// returns Query</span>
+</code></pre></div></div>
+
+<h4 id="d">D!</h4>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">Kitten</span><span class="p">.</span><span class="nx">remove</span><span class="p">({</span> <span class="na">name</span><span class="p">:</span> <span class="dl">"</span><span class="s2">Fluffy</span><span class="dl">"</span> <span class="p">},</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">handleError</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+  <span class="c1">// removed!</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+:ET

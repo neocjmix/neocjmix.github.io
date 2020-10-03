@@ -1,0 +1,42 @@
+I"�<h2 id="artifact-를-local-repository에-배포하기">Artifact 를 local repository에 배포하기</h2>
+
+<h3 id="배포">배포</h3>
+
+<p>라이브러리를 만들어서 여러 프로젝트에 활용하고 싶은데, 일일이 파일을 복사하기 귀찮고, 중앙 저장소나, 팀 저장소에 올리기엔 좀 오버인것 같으면 로컬 저장소에 배포해서 자기 컴퓨터에서 써먹는 방법이 있다.</p>
+
+<p>메이븐 플러그인중 install 플러그인을 사용하면 된다. goal은 다음과 같이 지정하면 된다.</p>
+
+<p><code class="language-plaintext highlighter-rouge">mvn install:install-file -Dfile={path/to/my/artifact.jar} -DgroupId=myGroupID -DartifactId=artifact.jar -Dversion=1.2.3 -Dpackaging=jar</code></p>
+
+<p>매번 배포할때마다 goal을 지정하는 것이 번거롭기때문에, POM을 통해서 설정하는 것이 낫다.</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;project&gt;</span>
+    ...
+    <span class="nt">&lt;properties&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>${project.groupId}<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>${project.artifactId}<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>${project.version}<span class="nt">&lt;/version&gt;</span>
+        <span class="nt">&lt;packaging&gt;</span>${project.packaging}<span class="nt">&lt;/packaging&gt;</span>
+        <span class="nt">&lt;file&gt;</span>${project.build.directory}/${project.artifactId}-${project.version}.${project.packaging}<span class="nt">&lt;/file&gt;</span>
+    <span class="nt">&lt;/properties&gt;</span>
+<span class="nt">&lt;/project&gt;</span>
+</code></pre></div></div>
+
+<p>이렇게 설정하면 -Dparameter 에 각 property가 자동매칭되어 편하다.</p>
+
+<h3 id="사용">사용</h3>
+<p>보통 아티팩트처럼 라이브러리를 사용하고 싶은 프로젝트에서 POM.xml 의 dependencies 에 설정하면 된다.</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;dependencies&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>my.group<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>my-artifact<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>1.2.3<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+<span class="nt">&lt;/dependencies&gt;</span>
+</code></pre></div></div>
+
+<p>다만 다른 컴퓨터와 공동작업하는 경우, repository가 공유되지는 않으므로 그런 경우는 nexus 등의 maven repo를 구성해서 활용하는 것이 낫다.</p>
+
+<p>소스코드 출처 : http://stackoverflow.com/questions/9892612/install-file-using-pom-instead-of-commandline</p>
+:ET

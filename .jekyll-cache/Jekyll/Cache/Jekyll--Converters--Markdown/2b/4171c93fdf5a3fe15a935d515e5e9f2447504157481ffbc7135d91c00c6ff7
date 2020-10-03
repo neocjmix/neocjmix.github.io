@@ -1,0 +1,48 @@
+I"r<h2 id="oracle-db">Oracle DB</h2>
+
+<h3 id="tnstransparent-network-substrate">TNS(Transparent Network Substrate)</h3>
+
+<blockquote>
+  <p>TNS란 ORACLE社에서 개발한 Network 기술로써 서로 다른 Network 구성을 가지고 있는 Client/Server 또는 Server/Server 간에도 Data의 전송을 가능하게 해주는 기술을 말한다.</p>
+</blockquote>
+
+<p>Ex)
+[client]
+-&gt; [TNS community]
+-&gt; [TNS Listener]
+-&gt; [Dedicated server process] or [Shared dispatcher process(MTS)]</p>
+
+<h4 id="client-side-configuration-file">Client Side Configuration file</h4>
+
+<h5 id="tnsnamesora">TNSNAMES.ORA</h5>
+
+<blockquote>
+  <p>SQL*NET V2에만 존재하는 file 이다. 이 file에는 Service name과 Network를 통해 connect하고자 하는 수신지에 관한 사항을 기술한다. 즉, 연결을 하고자 하는 쪽의 computer machine상에 반드시 이 file이 존재해야 한다.</p>
+</blockquote>
+
+<p>Ex)</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Production =
+(DESCRIPTION =
+ (ADDRESS = (PROTOCOL = TCP)(HOST = prod.corp.com)(PORT = 1521)
+  )
+ (CONNECT_DATA =
+  (SERVICE_NAME= orcl)
+  )
+ )
+</code></pre></div></div>
+
+<h4 id="server-side-configuration-file">Server Side Configuration file</h4>
+
+<h5 id="listenerora">LISTENER.ORA</h5>
+
+<blockquote>
+  <p>machine 상의 모든 Listener의 name과 address를 포함하고 있으며 Database의 SID와 Listener를 control하는 Control Parameter에 관한 정보를 담고 있다.</p>
+</blockquote>
+
+<h3 id="유의점">유의점</h3>
+
+<ul>
+  <li>Oracle db는 테이블, 필드명에 대소문자 구분 안함</li>
+</ul>
+:ET

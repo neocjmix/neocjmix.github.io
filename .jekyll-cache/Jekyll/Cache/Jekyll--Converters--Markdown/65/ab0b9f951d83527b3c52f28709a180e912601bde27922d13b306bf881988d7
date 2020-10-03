@@ -1,0 +1,145 @@
+I"I<h2 id="promise-pattern">Promise pattern</h2>
+<p>Promise 패턴은 Javascript 에서 연속적인 비동기 처리를 원활히 하기 위해서 제안된 패턴이고, ES6에서부터는 정식으로 채택되었다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="c1">//return Promise Object</span>
+<span class="k">new</span> <span class="nb">Promise</span><span class="p">(</span> <span class="kd">function</span><span class="p">(</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">//async</span>
+    <span class="nb">window</span><span class="p">.</span><span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">param</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">resolve</span><span class="p">(</span><span class="dl">"</span><span class="s2">done</span><span class="dl">"</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">reject</span><span class="p">(</span><span class="nb">Error</span><span class="p">(</span><span class="dl">"</span><span class="s2">fail</span><span class="dl">"</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">},</span> <span class="mi">0</span><span class="p">);</span>
+<span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">text</span><span class="p">)</span> <span class="p">{</span>   <span class="c1">//set callback with chaining "then(success, error)""</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">text</span><span class="p">);</span>
+<span class="p">},</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">error</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h2 id="polyfill">Polyfill</h2>
+<p>오래된 브라우저에서는 native Promise를 지원하지 않으므로 다양한 Library나 Framework에서 polyfill을 지원하고 있다.</p>
+
+<h3 id="jquerydeferred">jQuery.deferred</h3>
+
+<ul>
+  <li>resolve, reject, notify 를 이용하면 done, fail, progress 시점에 예약된 callback을 실행시킬 수 있다.</li>
+  <li>resolveWith, rejectWith, notifyWith 를 이용해서 각 시점에 메시지를 전달할 수 있다.</li>
+</ul>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">promise</span> <span class="o">=</span> <span class="nx">$</span><span class="p">.</span><span class="nx">Deferred</span><span class="p">();</span>
+
+<span class="c1">//resolve 되었을 때의 callback을 등록한다. Chaining을 할 수 있다.</span>
+<span class="nx">promise</span><span class="p">.</span><span class="nx">done</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span><span class="p">){</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">done</span><span class="dl">"</span><span class="p">,</span> <span class="k">this</span><span class="p">,</span> <span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span><span class="p">);</span>
+<span class="p">}).</span><span class="nx">fail</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span><span class="p">){</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">fail</span><span class="dl">"</span><span class="p">,</span> <span class="k">this</span><span class="p">,</span> <span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span><span class="p">);</span>
+<span class="p">}).</span><span class="nx">progress</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span><span class="p">){</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">progress</span><span class="dl">"</span><span class="p">,</span> <span class="k">this</span><span class="p">,</span> <span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span><span class="p">);</span>
+<span class="p">}).</span><span class="nx">always</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span><span class="p">){</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">always</span><span class="dl">"</span><span class="p">,</span> <span class="k">this</span><span class="p">,</span> <span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span><span class="p">);</span>
+<span class="p">});</span>
+
+
+<span class="k">switch</span><span class="p">(</span><span class="nx">prompt</span><span class="p">(</span><span class="dl">"</span><span class="s2">1=resolve, 2=reject, 3=notify</span><span class="dl">"</span><span class="p">)){</span>
+    <span class="k">case</span> <span class="dl">"</span><span class="s2">1</span><span class="dl">"</span><span class="p">:</span>
+        <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+            <span class="nx">promise</span><span class="p">.</span><span class="nx">notifyWith</span><span class="p">(</span><span class="nb">window</span><span class="p">,</span> <span class="p">[</span><span class="dl">"</span><span class="s2">progress</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">resolving in progress...</span><span class="dl">"</span><span class="p">]);</span>
+        <span class="p">},</span><span class="mi">1000</span><span class="p">);</span>
+
+        <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+            <span class="nx">promise</span><span class="p">.</span><span class="nx">resolveWith</span><span class="p">(</span><span class="nb">window</span><span class="p">,</span> <span class="p">[</span><span class="dl">"</span><span class="s2">done</span><span class="dl">"</span><span class="p">]);</span>
+        <span class="p">},</span><span class="mi">3000</span><span class="p">);</span>
+        <span class="k">break</span><span class="p">;</span>
+    <span class="k">case</span> <span class="dl">"</span><span class="s2">2</span><span class="dl">"</span><span class="p">:</span>
+
+        <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+            <span class="nx">promise</span><span class="p">.</span><span class="nx">notifyWith</span><span class="p">(</span><span class="nb">window</span><span class="p">,</span> <span class="p">[</span><span class="dl">"</span><span class="s2">progress</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">rejecting in progress...</span><span class="dl">"</span><span class="p">]);</span>
+        <span class="p">},</span><span class="mi">1000</span><span class="p">);</span>
+
+        <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+            <span class="nx">promise</span><span class="p">.</span><span class="nx">rejectWith</span><span class="p">(</span><span class="nb">window</span><span class="p">,</span> <span class="p">[</span><span class="dl">"</span><span class="s2">fail</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">Custom error</span><span class="dl">"</span><span class="p">]);</span>
+        <span class="p">},</span><span class="mi">3000</span><span class="p">);</span>
+        <span class="k">break</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>jQuery의 $.ajax 를 실행하면, 해당 요청에 대한 promise가 리턴된다.
+다음은 jQuery.deferred를 이용해서 다중 ajax 요청을 보내고 모든 요청에 대한 모든응답이 성공했을 때 callback을 연속적으로 수행하는 예제이다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//각각의 요청에 대한 promise들을 저장할 배열</span>
+<span class="kd">var</span> <span class="nx">promises</span> <span class="o">=</span> <span class="p">[];</span>
+
+<span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">){</span>
+  <span class="c1">//i를 위한 closure scope</span>
+  <span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">i</span><span class="p">){</span>
+
+    <span class="c1">//배열에 promise를 밀어넣는다.</span>
+    <span class="nx">promises</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
+      <span class="na">url</span><span class="p">:</span> <span class="dl">"</span><span class="s2">/echo/json/</span><span class="dl">"</span><span class="p">,</span>
+      <span class="na">method</span><span class="p">:</span> <span class="dl">'</span><span class="s1">POST</span><span class="dl">'</span><span class="p">,</span>
+      <span class="na">data</span><span class="p">:</span> <span class="p">{</span>
+       <span class="na">json</span><span class="p">:</span><span class="dl">'</span><span class="s1">{"key":</span><span class="dl">'</span><span class="o">+</span><span class="nx">i</span><span class="o">+</span><span class="dl">'</span><span class="s1">}</span><span class="dl">'</span>
+      <span class="p">}</span>
+    <span class="p">}));</span>
+
+  <span class="p">})(</span><span class="nx">i</span><span class="p">);</span>   
+  <span class="c1">//closure 끝</span>
+<span class="p">}</span>
+
+
+<span class="c1">//원래 when은 promise들을 연속된 parameter로 받도록 되어 있으므로,  --&gt; $.when(promise1, promise2, ...)</span>
+<span class="c1">//배열 형태의 promise들을 parameter로 넣어주기 위해서 Function.prototype.apply를 사용한다.</span>
+<span class="nx">$</span><span class="p">.</span><span class="nx">when</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">$</span><span class="p">,</span><span class="nx">promises</span><span class="p">).</span><span class="nx">done</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+
+    <span class="c1">//모든 요청이 성공해서 응답을 받은 후에 실행된다.</span>
+    <span class="c1">//각 promise에 대한 resolve 파라미터가 배열형태로 정리되어 arguments 에 다음 형태로 들어온다.</span>
+    <span class="c1">//[[arg1, arg2, arg3], [arg1, arg2, arg3], [arg1, arg2, arg3], [arg1, arg2, arg3]]</span>
+    <span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">arguments</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span>
+		<span class="nb">document</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="nx">arguments</span><span class="p">[</span><span class="nx">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="dl">"</span><span class="s2"> : </span><span class="dl">"</span> <span class="o">+</span> <span class="nx">arguments</span><span class="p">[</span><span class="nx">i</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="nx">key</span> <span class="o">+</span> <span class="dl">"</span><span class="s2">&lt;br /&gt;</span><span class="dl">"</span><span class="p">);</span>
+
+<span class="p">}).</span><span class="nx">fail</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+
+    <span class="c1">//하나라도 실패했을 시</span>
+    <span class="nb">document</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="dl">"</span><span class="s2">failed</span><span class="dl">"</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>실패하든 성공하든, 모든 비동기 요청이 종료되었을 때 callback을 실행하기 위해서는 promise를 한겹 더 사용해야 한다.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">AlldonePromises</span> <span class="o">=</span> <span class="p">[];</span>
+
+<span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">){</span>
+
+  <span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">i</span><span class="p">){</span>
+    <span class="kd">var</span> <span class="nx">promise</span> <span class="o">=</span> <span class="nx">$</span><span class="p">.</span><span class="nx">Deferred</span><span class="p">();</span>
+
+    <span class="c1">//일부를 실패하도록 한다.</span>
+    <span class="kd">var</span> <span class="nx">url</span> <span class="o">=</span> <span class="p">(</span><span class="nx">i</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">)</span> <span class="p">?</span> <span class="dl">"</span><span class="s2">/echo/json/</span><span class="dl">"</span> <span class="p">:</span> <span class="dl">"</span><span class="s2">/failURL/</span><span class="dl">"</span><span class="p">;</span>
+
+    <span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
+      <span class="na">url</span><span class="p">:</span> <span class="nx">url</span><span class="p">,</span>
+      <span class="na">method</span><span class="p">:</span> <span class="dl">'</span><span class="s1">POST</span><span class="dl">'</span><span class="p">,</span>
+      <span class="na">data</span><span class="p">:</span> <span class="p">{</span>
+       <span class="na">json</span><span class="p">:</span><span class="dl">'</span><span class="s1">{"key":</span><span class="dl">'</span><span class="o">+</span><span class="nx">i</span><span class="o">+</span><span class="dl">'</span><span class="s1">}</span><span class="dl">'</span>
+      <span class="p">}</span>
+    <span class="p">}).</span><span class="nx">always</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+      <span class="c1">//성공하든 실패하든 resolve 한다.</span>
+      <span class="nx">promise</span><span class="p">.</span><span class="nx">resolveWith</span><span class="p">(</span><span class="k">this</span><span class="p">,</span><span class="nx">arguments</span><span class="p">);</span>
+    <span class="p">});</span>
+
+    <span class="nx">AlldonePromises</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">promise</span><span class="p">);</span>
+  <span class="p">})(</span><span class="nx">i</span><span class="p">);</span>   
+<span class="p">}</span>
+
+<span class="nx">$</span><span class="p">.</span><span class="nx">when</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">$</span><span class="p">,</span><span class="nx">AlldonePromises</span><span class="p">).</span><span class="nx">done</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+    <span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">arguments</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span>
+		<span class="nb">document</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="nx">arguments</span><span class="p">[</span><span class="nx">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="dl">"</span><span class="s2"> : </span><span class="dl">"</span> <span class="o">+</span> <span class="nx">arguments</span><span class="p">[</span><span class="nx">i</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="nx">key</span> <span class="o">+</span> <span class="dl">"</span><span class="s2">&lt;br /&gt;</span><span class="dl">"</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h3 id="angularjs-q">AngularJs $q</h3>
+<p>…</p>
+:ET
