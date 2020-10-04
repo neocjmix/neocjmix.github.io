@@ -1,0 +1,16 @@
+I"b<p><a href="/2020/09/30/AWS-WebRTC(1)">p2p 화상채팅 구현 (1)</a> 에서 이어서 작성한 코드를 실제 서비스 가능하도록 배포까지 하는게 목표. 
+<a href="https://github.com/neocjmix/WebRTC/tree/p2p-%ED%99%94%EC%83%81%EC%B1%84%ED%8C%85-%EA%B5%AC%ED%98%84-(1)">https://github.com/neocjmix/WebRTC/tree/p2p-화상채팅-구현-(1)</a></p>
+
+<p>p2p 화상채팅 구현을 위해 스터디한 내용을 기록한다.<br />
+이 시리즈에서는 직접 구현해나가면서 경험한 문제와 해결 방법들을 순서대로 기록하기 때문에 좀 돌아갈 수도 있다.<br />
+완성된 코드를 먼저 보고 직접 분석하고 싶다면, 맨 마지막에 있는 깃헙 주소를 참조하기 바란다.</p>
+
+<link href="/assets/toc.css" rel="stylesheet" />
+
+<nav class="toc">
+  <h2 class="no_toc" id="section">목차</h2>
+
+
+</nav>
+
+:ET
