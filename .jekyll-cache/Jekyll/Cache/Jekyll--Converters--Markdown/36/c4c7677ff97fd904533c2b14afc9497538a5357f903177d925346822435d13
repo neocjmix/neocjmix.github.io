@@ -1,0 +1,408 @@
+I"�o<h2 id="tldr">TL;DR</h2>
+
+<p><a href="/2020/09/30/AWS-WebRTC(1)">이전 포스팅</a>에서 이어진다.</p>
+
+<p><a href="https://github.com/neocjmix/WebRTC/tree/p2p-%ED%99%94%EC%83%81%EC%B1%84%ED%8C%85-%EA%B5%AC%ED%98%84-(1)">https://github.com/neocjmix/WebRTC/tree/p2p-화상채팅-구현-(1)</a></p>
+
+<p>이번 포스팅에서는 AWS 설정 과정이 포함되어 있는데, 주제 이외의 기술적 내용을 가능한 배제하기 위해서 별도의 framework이나
+AWS CloudFormation등을 이용하지 않고 웹 콘솔 설정 화면을 캡쳐해 보여줄 것이다. AWS의 API Gateway, lambda, S3에 대해 지식이 
+있다면 <a href="#connectionid-가져오기">AWS관련 챕터들 이후</a>부터 읽거나, 맨 마지막에 있는 깃헙 주소의 코드만 참조해도 무방할 듯 하다.</p>
+
+<link href="/assets/toc.css" rel="stylesheet" />
+
+<nav class="toc">
+  <h2 class="no_toc" id="section">목차</h2>
+
+<ol id="markdown-toc">
+  <li><a href="#tldr" id="markdown-toc-tldr">TL;DR</a></li>
+  <li><a href="#구현목표" id="markdown-toc-구현목표">구현목표</a>    <ol>
+      <li><a href="#준비할것" id="markdown-toc-준비할것">준비할것</a></li>
+    </ol>
+  </li>
+  <li><a href="#aws-s3" id="markdown-toc-aws-s3">AWS S3</a></li>
+  <li><a href="#aws-api-gateway---websocket-api" id="markdown-toc-aws-api-gateway---websocket-api">AWS API Gateway - WebSocket API</a>    <ol>
+      <li><a href="#api-테스트" id="markdown-toc-api-테스트">API 테스트</a></li>
+    </ol>
+  </li>
+  <li><a href="#aws-lambda" id="markdown-toc-aws-lambda">AWS Lambda</a></li>
+  <li><a href="#connectionid-가져오기" id="markdown-toc-connectionid-가져오기">ConnectionId 가져오기</a>    <ol>
+      <li><a href="#connection-api" id="markdown-toc-connection-api">@Connection API</a></li>
+    </ol>
+  </li>
+</ol>
+
+</nav>
+
+<h2 id="구현목표">구현목표</h2>
+
+<p>현재까지 앱의 구성을 보면 한개의 Node.js 기반 WAS에서 Socket.io를 통해 서로 통신하는 한개의 signaling 엔드포인트와 
+한개의 정적 html 페이지로 이루어져 있다. 이 Node.js 앱을 통째로 AWS EC2에 올려도 별 문제 없이 작동 하겠지만, 
+이 튜토리얼에서는 serverless 환경으로 구성해보고자 한다. 목표하는 구성은 다음과 같다.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>내용</th>
+      <th>as-is</th>
+      <th>to-be</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>WebSocket</td>
+      <td>Socket.io</td>
+      <td>AWS API Gateway WebSocket API</td>
+    </tr>
+    <tr>
+      <td>Signaling Server</td>
+      <td>Node.js ‘http’</td>
+      <td>AWS lambda</td>
+    </tr>
+    <tr>
+      <td>frontend</td>
+      <td>Node.js ‘node-static’</td>
+      <td>AWS S3</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>또한 로컬 네트웍이 아닌 인터넷 환경에서 새롭게 발생하는 문제들을 해결하고, 화상통화를 할 상대방을 식별하는 간단한
+방법을 구현하여 실제 동작 가능한 레벨로 로직을 향상시킬 것이다.</p>
+
+<h3 id="준비할것">준비할것</h3>
+
+<ul>
+  <li>AWS 계정 : <a href="https://aws.amazon.com/ko/">AWS웹사이트</a> 에서 가입. <br />
+프리티어로 시작하면 왠만한 기능은 적당한 트래픽 한도 내에서 12개월동안 무료이다.</li>
+</ul>
+
+<h2 id="aws-s3">AWS S3</h2>
+
+<p>이전 포스팅에서도 그랬지만, 일단 눈에 보이는 거부터 해보자.</p>
+
+<p>(특별한 설정은 필요없기때문에 S3 콘솔에 익숙하지 않은 경우에만 아래 섹션을 클릭해 참조하면 되겠다.)</p>
+<details>
+  <summary><b>이전 프로젝트의 client 디렉토리의 파일들을 S3 스토리지에 올려서 https 프로토콜로 서빙한다.</b> (자세히 보려면 클릭)</summary>
+
+  <ol>
+    <li>
+      <p><a href="https://s3.console.aws.amazon.com/">AWS S3 콘솔</a> 에 접속해서 Create Bucket 버튼을 클릭해 버킷을 하나 만든다. 
+  <img src="/images/webrtc/1.png" alt="step1" /></p>
+    </li>
+    <li>
+      <p>Bucket Name과 Region을 정하고 Next를 클릭한다.
+  <img src="/images/webrtc/2.png" alt="step2" width="600" /></p>
+    </li>
+    <li>
+      <p>이 버킷에 올리는 모든 파일을 호스팅 할 예정이므로 모든 접근을 열어준다.
+  <img src="/images/webrtc/3.png" alt="step3" width="600" />
+  이후 기본값으로 Next를 계속 클릭해 버킷을 생성한다.</p>
+    </li>
+    <li>
+      <p>버킷에 들어간다.
+  <img src="/images/webrtc/4.png" alt="step4" /></p>
+    </li>
+    <li>
+      <p>Upload를 클릭한다.
+  <img src="/images/webrtc/5.png" alt="step5" />
+  나타나는 모달에 <code class="language-plaintext highlighter-rouge">/client</code> 이하 세개의 파일들을 Drag &amp; Drop
+  <img src="/images/webrtc/6.png" alt="step6" width="600" />
+  이후 Next를 계속 클릭해 업로드를 마무리한다.</p>
+    </li>
+    <li>
+      <p>모든 파일을 선택해 Actions → Make Public
+  <img src="/images/webrtc/7.png" alt="step7" /></p>
+    </li>
+    <li>
+      <p><code class="language-plaintext highlighter-rouge">index.html</code>을 클릭해서 Overview를 확인하면 public URL을 확인할 수 있다.
+  <img src="/images/webrtc/8.png" alt="step8" width="600" />
+  클릭하면 클라이언트 앱을 브라우저에 띄운다.</p>
+    </li>
+  </ol>
+</details>
+
+<p>S3를 통해서 client App을 호스팅하고 브라우저에 띄워보면 HTTP 주소로 특별한 경고 메시지 없이 
+정상적으로 잘 접속되는 것을 확인할 수 있다. 하지만 백엔드에서 Socket.io를 서빙하고 있지 않으므로 정상작동하지 
+않으며 콘솔의 에러메시지를 확인하면 <code class="language-plaintext highlighter-rouge">sendMessage</code>, <code class="language-plaintext highlighter-rouge">onMessage</code>를 구현하고 있는 <code class="language-plaintext highlighter-rouge">message.js</code>에서 
+<code class="language-plaintext highlighter-rouge">socket.io</code>를 로딩할 수 없다는 에러를 확인할 수 있다.</p>
+
+<p><a href="#구현목표">구현목표</a> 를 다시 확인해보면 Socket.io를 AWS API Gateway WebSocket API로 변경할 예정이므로 
+다음챕터에서 WebSocket endpoint를 AWS에 구현한 다음 돌아와서 client 코드를 수정해야 한다.</p>
+
+<h2 id="aws-api-gateway---websocket-api">AWS API Gateway - WebSocket API</h2>
+
+<p>이제 Socket.io와 http모듈을 통해서 구현했던 signaling 서버를 AWS API Gateway와 AWS Lambda 조합으로 재구성한다.
+AWS API Gateway는 AWS의 여러가지 서비스를 외부에서 작동하기 위한 endpoint를 만들 수 있는 서비스이다. 
+REST API뿐만 아니라 웹소켓 API도 생성할 수 있다.</p>
+
+<details>
+  <summary><b>먼저 WebSocket endpoint를 AWS API Gateway를 통해서 구성한다.</b> (자세히 보려면 클릭)</summary>
+
+  <ol>
+    <li>
+      <p><a href="https://console.aws.amazon.com/apigateway">AWS API Gateway</a>에 접속해서 Create API 버튼을 클릭해 
+새로운 endpoint 구성을 시작한다. <br />
+(API를 생성한 적이 없다면 건너뛰고 다음 단계로 진행)
+<img src="/images/webrtc/a1.png" alt="step1" /></p>
+    </li>
+    <li>
+      <p>여러 API type중 WebSocket API 를 선택한다.
+<img src="/images/webrtc/a2.png" alt="step2" width="600" /></p>
+    </li>
+    <li>
+      <p>임의의 API 이름을 지정하고 Next를 클릭한다.
+<img src="/images/webrtc/a3.png" alt="step3" width="600" /></p>
+    </li>
+    <li>
+      <p>이전 화면에서 route selection expression에 설정했던 <code class="language-plaintext highlighter-rouge">$request.body.action</code> 값에 따라 여러 integration으로 
+routing을 할 수 있는데 여기서는 모든 요청을 받아줄 단 한개의 integration으로 구성할 것이기 때문에
+$default route만 추가하고 Next를 클릭한다.  <br />
+<img src="/images/webrtc/a4.png" alt="step4" width="600" /></p>
+    </li>
+    <li>
+      <p>실제 요청을 가지고 비즈니스 로직을 처리할 integration을 설정해야 한다. 
+원래 Lambda function과 integration하는 것이 목표인데, 아직 Lambda function은 채 만들지 않았다. 일단 되는대로 Mock으로 진행. 
+<img src="/images/webrtc/a6.png" alt="step6" width="600" /></p>
+    </li>
+    <li>
+      <p>배포 스테이지를 정하는 단계이다. 개발 스테이지를 따로 만든다는지 그런걸 생각할 단계는 아니다. 기본값으로 진행.
+<img src="/images/webrtc/a7.png" alt="step7" width="600" />
+Next를 클릭하면 API 가 생성된다.</p>
+    </li>
+    <li>
+      <p>일단 배포를 하고 보자. Actions → Deploy API
+<img src="/images/webrtc/a11.png" alt="step11" width="600" /></p>
+    </li>
+    <li>
+      <p>Dashboard 에 들어가 보면
+<img src="/images/webrtc/a8.png" alt="step8" width="600" />
+WebSocket endpoint가 생성되어 있다.
+<img src="/images/webrtc/a9.png" alt="step9" width="600" /></p>
+    </li>
+  </ol>
+</details>
+
+<h3 id="api-테스트">API 테스트</h3>
+
+<p>여기까지 진행했다면 내용을 떠나서 URL이 생성되었으니 WebSocket 연결은 가능할 것같다. 
+브라우저에서 <strong>새탭을 열고</strong>(aws 가 열려있는 탭에서 하면 에러가 난다.) 개발자 도구 콘솔창에 입력해보자.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 아래 세줄을 한번에 붙여넣는다.</span>
+<span class="kd">const</span> <span class="nx">ws</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WebSocket</span><span class="p">(</span><span class="dl">"</span><span class="s2">wss://{apiId}.execute-api.{region}.amazonaws.com/{stage}</span><span class="dl">"</span><span class="p">);</span> <span class="c1">// 생성된 WebSocket URL</span>
+<span class="nx">ws</span><span class="p">.</span><span class="nx">onopen</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">connected.</span><span class="dl">"</span><span class="p">);</span>
+<span class="nx">ws</span><span class="p">.</span><span class="nx">onmessage</span> <span class="o">=</span> <span class="nx">e</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">data</span><span class="p">);</span>
+<span class="c1">// connected.</span>
+
+<span class="nx">ws</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="dl">''</span><span class="p">)</span> <span class="c1">//대충 아무 내용이나 보내보자.</span>
+<span class="c1">// {"message": "Internal server error", "connectionId":"UP98SdpMIE0CJPw=", "requestId":"UP9_GH07oE0Ft9w="}</span>
+</code></pre></div></div>
+
+<p>위 코드는 Socket.io를 이용하지 않고 브라우저 기본 API를 이용해서 WebSocket 메시지를 주고받는 코드이다. 
+나중에 활용되니 눈여겨봐두자.</p>
+
+<p><code class="language-plaintext highlighter-rouge">wscat</code>라는 CLI 툴을 이용해서 테스트할 수도 있다.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;</span> npm <span class="nb">install</span> <span class="nt">-g</span> wscat
+<span class="o">&gt;</span> wscat <span class="nt">-c</span> wss://<span class="o">{</span>apiId<span class="o">}</span>.execute-api.<span class="o">{</span>region<span class="o">}</span>.amazonaws.com/<span class="o">{</span>stage<span class="o">}</span> <span class="c">## 생성된 WebSocket URL</span>
+Connected <span class="o">(</span>press CTRL+C to quit<span class="o">)</span>
+<span class="o">&gt;</span> <span class="o">{</span><span class="s2">"action"</span>:<span class="s2">"foobar"</span><span class="o">}</span>
+&lt; <span class="o">{</span><span class="s2">"message"</span>: <span class="s2">"Internal server error"</span>, <span class="s2">"connectionId"</span>:<span class="s2">"UPtw1ejFoE0CFAQ="</span>, <span class="s2">"requestId"</span>:<span class="s2">"UPtxGFJ0oE0FRYA="</span><span class="o">}</span>
+</code></pre></div></div>
+
+<p>제대로 된 integration이나 response설정을 하지 않았기 때문에 error가 발생할 것이다.
+이제 Lambda 함수를 생성해서 integration 연결을 해보자.</p>
+
+<h2 id="aws-lambda">AWS Lambda</h2>
+
+<p>AWS Lambda는 AWS serverless 아키텍쳐의 핵심으로 내부 서비스나 API Gateway를 통해 호출되어 일정한 비즈니스 로직을 수행할 수 있다.
+Lambda function은 매번 새로운 인스턴스로 실행되기 때문에 상태를 유지하는것이 불가능하며, 
+이는 Stateful 프로토콜인 WebSocket과는 배치되는 일면이 있어 보이지만,
+WebSocket API의 connectionId를 사용한 접속자 구분 기능과 DynamoDB등 persistent서비스와의 연동을 통해서 stateful한
+비즈니스 로직을 구성할 수 있다.</p>
+
+<p>이번 챕터에서는 일단 기본 function을 생성해서 API Gateway와 연동하고 브라우저에서 connection을 이루어
+메시지를 주고받는것 까지만 한다.</p>
+
+<p>이를 위해서</p>
+<details>
+  <summary>
+<b>새 Lambda function을 작성하고 WebSocket API 의 $default route integration에 설정한 후 
+integration response를 추가하고 API를 배포한다</b> (자세히 보려면 클릭)
+</summary>
+
+  <ol>
+    <li>
+      <p><a href="https://console.aws.amazon.com/lambda">AWS API Lambda</a> 에 접속해서 Create function 버튼을 클릭해 
+새로운 함수를 추가한다.
+<img src="/images/webrtc/b1.png" alt="step1" width="600" /></p>
+    </li>
+    <li>일단 Hello World만 할거니까 특별한 설정을 하지 않는다. 함수 이름을 넣고 Create function,
+<img src="/images/webrtc/b2.png" alt="step2" width="600" />
+기본 구현 그대로 두고 함수생성을 마친다. 아마 아래와 같은 코드가 생성될 것이다.
+      <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// AWS Lambda function scratch Hello World example </span>
+<span class="nx">exports</span><span class="p">.</span><span class="nx">handler</span> <span class="o">=</span> <span class="k">async</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+ <span class="c1">// TODO implement</span>
+ <span class="kd">const</span> <span class="nx">response</span> <span class="o">=</span> <span class="p">{</span>
+     <span class="na">statusCode</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+     <span class="na">body</span><span class="p">:</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="dl">'</span><span class="s1">Hello from Lambda!</span><span class="dl">'</span><span class="p">),</span>
+ <span class="p">};</span>
+ <span class="k">return</span> <span class="nx">response</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div>      </div>
+    </li>
+    <li>
+      <p><a href="https://console.aws.amazon.com/apigateway">API Gateway</a> 로 돌아가서 아까 만든 WebSocket API $default 라우트를 선택한뒤
+현재 MOCK으로 설정되어 있는 Integration Request를 클릭
+<img src="/images/webrtc/b3.png" alt="step3" width="600" /></p>
+    </li>
+    <li>
+      <p>Lambda Function을 선택하고 방금 작성한 function을 고른후 Save. 
+(API와 lambda의 Region이 서로 다르다면 번거로운 추가 설정이 필요하니 확인해보고 같은 Region으로 다시 만든다.)
+<img src="/images/webrtc/b4.png" alt="step4" width="600" /></p>
+    </li>
+    <li>
+      <p>integration에서 리턴한 결과를 client에게 돌려주려면 integration Response를 추가해줘야만 한다. 
+그렇지 않으면 비즈니스 로직은 실행이 되지만 클라이언트는 아무런 응답을 받을 수 없다.
+<img src="/images/webrtc/b5.png" alt="step5" width="600" /></p>
+    </li>
+    <li>마지막으로 변경사항을 적용하기 위해서는 API를 반드시 재배포해야한다.
+<img src="/images/webrtc/b6.png" alt="step6" width="400" /></li>
+  </ol>
+</details>
+
+<p>여기까지 진행한 후에 위 <a href="#API-테스트">API 테스트</a> 에서 실행한 절차를 다시 수행해보자. 
+<code class="language-plaintext highlighter-rouge">Hello from Lambda!</code> 라는 ws 응답을 확인할 수 있을 것이다.</p>
+
+<p>이제 지루한 AWS설정은 (거의) 다 끝났다. 남은것은 (거의)코딩뿐이다!! (물론 코드 업데이트는 웹콘솔을 통해서 해야한다.)</p>
+
+<h2 id="connectionid-가져오기">ConnectionId 가져오기</h2>
+
+<p>지난 포스팅에서 완성한 signaling서버 예제에서는 구현을 간단히 하기 위해서 모든 메시지를 broadcasting하였다. 
+이것은 서버 로직을 극단적으로 줄여주긴 했지만 결과적으로는 실제 사용에 큰 제약이 있는 시그널링 로직이었다. 
+게다가 socket.io의 broadcasting은 room 기능을 이용해서 구현되는데, 현재 접속한 사용자들의 목록을 유지하기 위해서 메모리에 state유지가
+가능한 서버가 필요하다.</p>
+
+<p>stateless한 Lambda function에서 broadcasting을 구현하기 위해서는 WebSocket API의 $connect $disconnect route를 이용하여 
+각 connection의 세션 정보를 DynamoDB등 persistent서비스에 저장하는 로직이 필요하다.
+WebSocket API가 integration된 Lambda function의 event 인자에 connectionId를 넘겨주므로 이를 이용하여 다음과 같은 구조로
+구현할 수 있겠다.</p>
+
+<p><strong>(참고) Broadcasting을 위한 로직 구성</strong></p>
+<figure>
+<div class="mermaid">
+flowchart LR 
+
+  subgraph Sender
+    C0(connection0)
+  end
+  
+  subgraph Recievers
+    C1("connection1 (id1)") 
+    C2("connection2 (id2)") 
+    C3("connection3... (id3...)")  
+  end
+  
+  subgraph "WebSocket API/$connect"
+    L1("Lambda1")
+    L2("Lambda1")
+    L3("Lambda1")
+  end
+  
+  P[(Persistence)]
+  
+  subgraph "WebSocket API/$message"
+    L0("Lambda0")
+  end
+  
+  C1 --&gt;|Id1| L1 --&gt;|Id1| P
+  C2 --&gt;|Id2| L2 --&gt;|Id2| P
+  C3 --&gt;|Id3...| L3 --&gt;|Id3...| P
+  C0 --&gt;|message| L0 --&gt; Recievers
+                  L0 --&gt; Recievers
+                  L0 --&gt; Recievers
+                  L0 --&gt; Recievers
+                  L0 --&gt; Recievers
+                  L0 --&gt; Recievers
+  P -.-&gt;|"[id1, id2, id3, ...]"| L0
+</div>
+<figcaption>
+Reciever들이 자신의 connectionID를 persistence서비스에 저장해두면 <br />
+Sender에서 broadcasting 요청이 있을때 저장되어 있던 모든 connectionID에게 메시지를 전달하는 식이다.
+</figcaption>
+</figure>
+
+<p>하지만 이 연재에서 구현하려고 하는것은 1:1 통신이고 지정된 상대방에게만 메시지를 전달하면 된다.
+connectionId가 제공되는 Lambda 환경에서는 브로드캐스팅보다 훨씬 간단하게 구현가능하다.
+이걸 어떻게 하는지는 나중에 구현할때 보고 일단 자신의 connectionId를 받아와 보자.</p>
+
+<p>먼저 Lambda function 코드를 다음과 같이 수정하고 deploy 버튼을 누른다.</p>
+
+<p><strong>Lambda function</strong></p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">exports</span><span class="p">.</span><span class="nx">handler</span> <span class="o">=</span> <span class="k">async</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="na">statusCode</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+    <span class="na">body</span><span class="p">:</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span> <span class="na">connectionId</span> <span class="p">:</span> <span class="nx">event</span><span class="p">.</span><span class="nx">requestContext</span><span class="p">.</span><span class="nx">connectionId</span> <span class="p">}),</span> <span class="c1">// connectionId를 되돌려준다.</span>
+  <span class="p">};</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>그다음 socket.io로 되어있는 message.js를 새로운 API를 사용하는 WebSocket 코드로 재작성 해보자. <a href="#API-테스트">API 테스트</a>에서 
+사용했던 브라우저 WebSocket API를 이용해서 작성한다.</p>
+
+<p><strong>index.html</strong></p>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>...
+<span class="nt">&lt;h2&gt;</span>내 화면<span class="nt">&lt;/h2&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">readonly</span> <span class="na">id=</span><span class="s">"localConnectionId"</span> <span class="nt">/&gt;</span> <span class="c">&lt;!--내 ConnectionId를 표시할 input--&gt;</span>
+<span class="nt">&lt;video</span> <span class="na">id=</span><span class="s">"localVideo"</span> <span class="na">autoplay</span> <span class="na">width=</span><span class="s">"480px"</span> <span class="na">playsinline</span><span class="nt">&gt;&lt;/video&gt;</span>
+<span class="nt">&lt;h2&gt;</span>상대방 화면<span class="nt">&lt;/h2&gt;</span>
+<span class="nt">&lt;video</span> <span class="na">id=</span><span class="s">"remoteVideo"</span> <span class="na">autoplay</span> <span class="na">width=</span><span class="s">"480px"</span> <span class="na">playsinline</span><span class="nt">&gt;&lt;/video&gt;</span>
+<span class="nt">&lt;button</span> <span class="na">id=</span><span class="s">"call"</span><span class="nt">&gt;</span>📞<span class="nt">&lt;/button&gt;</span>
+<span class="c">&lt;!--삭제 &lt;script src="/socket.io/socket.io.js"&gt;&lt;/script&gt;--&gt;</span>
+<span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"script.js"</span> <span class="na">type=</span><span class="s">"module"</span><span class="nt">&gt;&lt;/script&gt;</span>
+...
+</code></pre></div></div>
+
+<p><strong>message.js</strong></p>
+
+<p>코드가 깨지지 않도록 기존 함수들의 interface만 유지하고 구현부는 일단 삭제한다.<br />
+<code class="language-plaintext highlighter-rouge">getConnectionId</code> 함수를 추가한다.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// WebSocket API</span>
+<span class="kd">const</span> <span class="nx">WEB_SOCKET_API_URL</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">wss://{apiId}.execute-api.{region}.amazonaws.com/{stage}</span><span class="dl">'</span><span class="p">;</span>
+<span class="kd">const</span> <span class="nx">socket</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WebSocket</span><span class="p">(</span><span class="nx">WEB_SOCKET_API_URL</span><span class="p">);</span> 
+
+<span class="c1">// 기존 함수들 인터페이스 유지</span>
+<span class="k">export</span> <span class="kd">const</span> <span class="nx">sendMessage</span> <span class="o">=</span> <span class="p">(</span><span class="nx">type</span><span class="p">,</span> <span class="nx">payload</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="cm">/* 나중에 구현예정 */</span><span class="p">};</span>
+<span class="k">export</span> <span class="kd">const</span> <span class="nx">onMessage</span> <span class="o">=</span> <span class="p">(</span><span class="nx">type</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">socket</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">'</span><span class="s1">message</span><span class="dl">'</span><span class="p">,</span> <span class="nx">e</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="cm">/* 나중에 구현예정 */</span><span class="p">});</span>
+
+<span class="k">export</span> <span class="kd">const</span> <span class="nx">waitForConnected</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Promise</span><span class="p">(</span><span class="nx">resolve</span> <span class="o">=&gt;</span> <span class="nx">socket</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">'</span><span class="s1">open</span><span class="dl">'</span><span class="p">,</span> <span class="nx">resolve</span><span class="p">));</span>
+
+<span class="k">export</span> <span class="kd">const</span> <span class="nx">getConnectionId</span> <span class="o">=</span> <span class="k">async</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">await</span> <span class="nx">waitForConnected</span><span class="p">;</span>
+  <span class="nx">socket</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="dl">''</span><span class="p">);</span>
+  <span class="k">return</span> <span class="k">new</span> <span class="nb">Promise</span><span class="p">(</span><span class="nx">resolve</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">socket</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">'</span><span class="s1">message</span><span class="dl">'</span><span class="p">,</span> <span class="nx">e</span> <span class="o">=&gt;</span> <span class="nx">resolve</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">data</span><span class="p">).</span><span class="nx">connectionId</span><span class="p">),</span> <span class="p">{</span><span class="na">once</span><span class="p">:</span> <span class="kc">true</span><span class="p">});</span>
+  <span class="p">});</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p><strong>script.js</strong></p>
+
+<p>맨 처음에 다음 내용 추가</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span><span class="nx">onMessage</span><span class="p">,</span> <span class="nx">sendMessage</span><span class="p">,</span> <span class="nx">getConnectionId</span><span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">./message.js</span><span class="dl">"</span><span class="p">;</span> <span class="c1">// getConnectionId import 추가</span>
+<span class="nx">getConnectionId</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">connectionId</span> <span class="o">=&gt;</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">localConnectionId</span><span class="dl">'</span><span class="p">).</span><span class="nx">value</span> <span class="o">=</span> <span class="nx">connectionId</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>수정된 세 파일을 S3에 업로드 하고 Make Public을 실행 해준다. <code class="language-plaintext highlighter-rouge">index.html</code>의 URL로 접속해보면 새로 추가된 input에
+connectionId가 표시될 것이다. <br />
+(웹 소켓 연결 에러가 날 경우 <code class="language-plaintext highlighter-rouge">WEB_SOCKET_API_URL</code>을 제대로 지정해주었는지 Gateway Dashboard를 보고 확인해보자.)</p>
+
+<h3 id="connection-api">@Connection API</h3>
+
+<p>이전에 생성한 WebSocket API의 Dashboard를 다시한번 봐보자.
+<img src="/images/webrtc/a10.png" alt="step10" /> 
+Connection URL 항목에 있는 URL은 <a href="https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-how-to-call-websocket-api-connections.html"></a></p>
+
+:ET

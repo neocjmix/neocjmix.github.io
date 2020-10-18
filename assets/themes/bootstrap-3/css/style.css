@@ -355,6 +355,15 @@ pre {
     background-color: #f8f8f8
 }
 
+.post-full .content figcaption{
+    text-align: center;
+    font-size: .9em;
+}
+
+.post-full .content figure{
+    margin-bottom: 1em;
+}
+
 /* tag_box */
 .tag_box {
     list-style: none;

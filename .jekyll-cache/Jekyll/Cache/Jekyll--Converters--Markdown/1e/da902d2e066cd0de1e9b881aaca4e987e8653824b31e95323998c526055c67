@@ -1,4 +1,4 @@
-I"h�<h2 id="tldr">TL;DR</h2>
+I"��<h2 id="tldr">TL;DR</h2>
 
 <p>이 시리즈에서는 직접 구현해나가면서 경험한 문제와 해결 방법들을 순서대로 기록하기 때문에 좀 돌아갈 수도 있다.<br />
 빠르게 완성된 코드를 먼저 보고 직접 분석하고 싶다면, 맨 마지막에 있는 깃헙 주소를 참조하기 바란다.</p>
@@ -14,7 +14,7 @@
   <li><a href="#클라이언트-어플리케이션-구성" id="markdown-toc-클라이언트-어플리케이션-구성">클라이언트 어플리케이션 구성</a></li>
   <li><a href="#화면에-웹캠-스트리밍-표시하기" id="markdown-toc-화면에-웹캠-스트리밍-표시하기">화면에 웹캠 스트리밍 표시하기</a></li>
   <li><a href="#rtc-연결-생성하기-1" id="markdown-toc-rtc-연결-생성하기-1">RTC 연결 생성하기 (1)</a>    <ol>
-      <li><a href="#sdp-교환-단계" id="markdown-toc-sdp-교환-단계">SDP 교환 단계</a></li>
+      <li><a href="#sdp-offeranswer-교환-단계" id="markdown-toc-sdp-offeranswer-교환-단계">SDP offer/answer 교환 단계</a></li>
     </ol>
   </li>
   <li><a href="#signaling-server-구현" id="markdown-toc-signaling-server-구현">Signaling Server 구현</a>    <ol>
@@ -22,7 +22,7 @@
     </ol>
   </li>
   <li><a href="#rtc-연결-생성하기-2" id="markdown-toc-rtc-연결-생성하기-2">RTC 연결 생성하기 (2)</a>    <ol>
-      <li><a href="#ice-교환-단계" id="markdown-toc-ice-교환-단계">ICE 교환 단계</a></li>
+      <li><a href="#ice-candidates-교환-단계" id="markdown-toc-ice-candidates-교환-단계">ICE candidates 교환 단계</a></li>
     </ol>
   </li>
   <li><a href="#caller-callee-코드-통합-및-정리" id="markdown-toc-caller-callee-코드-통합-및-정리">Caller, Callee 코드 통합 및 정리</a></li>
@@ -156,22 +156,17 @@ caller, callee 양쪽에서 동일하게 다음과 같이 생성하고 <code cla
 <p>(간혹 <code class="language-plaintext highlighter-rouge">addTrack</code> 대신 <code class="language-plaintext highlighter-rouge">addStream</code>을 이용한 예제가 있는데 <a href="https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addStream">deprecate</a>되었다.
 api가 최근에 구현된 일부 브라우저에서 작동하지 않는다.)</p>
 
-<p>이제 양쪽 클라이언트의 <code class="language-plaintext highlighter-rouge">RTCPeerConnection</code>는 서로 몇가지 사항을 협의(negotiation)해야 한다.</p>
-
-<ul>
-  <li>어떤 경로를 통해서 접근해야 하는지 <strong>(SDP - Session Description Protocol)</strong></li>
-  <li>어떤 형식으로 데이터를 주고 받을지 <strong>(ICE - Interactive Connectivity Establishment)</strong></li>
-</ul>
-
-<p>위 두 가지 형식의 데이터를 교환함으로써 협의가 이루어지고 이후 실제 데이터를 주고 받게 된다.</p>
-
-<p>이러한 negotiation이 필요하다고 판단될 시, 즉 연결 초기 셋업시(e.g. addTrack), 
+<p>이제 양쪽 클라이언트의 <code class="language-plaintext highlighter-rouge">RTCPeerConnection</code>는 서로 어떤 형식의 데이터를 주고받을 지를 협의(negotiation)해야 한다.
+이러한 negotiation이 필요하다고 판단될 시, 즉 연결 초기 셋업시(e.g. addTrack), 
 또는 네트워크 환경 변화(e.g. 모바일 기기 ip변경)등으로 재협상이 필요할때 브라우저는 <code class="language-plaintext highlighter-rouge">negotiationneeded</code> 이벤트를 발생시킨다.</p>
 
-<h3 id="sdp-교환-단계">SDP 교환 단계</h3>
+<h3 id="sdp-offeranswer-교환-단계">SDP offer/answer 교환 단계</h3>
 
-<p><code class="language-plaintext highlighter-rouge">negotiationneeded</code> 이벤트는 negotiation이 필요하다는 소리니까 이 이벤트의 핸들러에서 먼저 SDP 교환을 구현해주어야 하겠다.
-두 클라이언트는 아래 과정을 거쳐서 서로에게 어떻게 접속해야 할지에 대한 정보 (localDescription, remoteDescription)를 교환하게 된다.</p>
+<p><code class="language-plaintext highlighter-rouge">negotiationneeded</code> 이벤트는 윗 문단에서 설명한 것 처럼 어떤 형식의 데이터를 주고받을 지를 협의해야 한다는 소리니까,
+이 이벤트의 핸들러에서 이 협의 절차를 수행해주어야 하겠다.</p>
+
+<p>이 데이터를 교환하기 위한 절차는 <strong>SDP - Session Description Protocol</strong> 라는 프로토콜로 정의되어 있다.
+SDP는 양 peer가 SDP offer와 SDP answer라 불리는 특정 형식의 데이터를 주고받음으로써 수행된다.</p>
 
 <div class="mermaid"> 
 sequenceDiagram
@@ -229,9 +224,8 @@ Note left of caller: RemoteDescription = answer
 <span class="p">});</span>
 </code></pre></div></div>
 
-<p><code class="language-plaintext highlighter-rouge">rtcPeerConnection.setRemoteDescription</code>를 호출하여 상대편 브라우저에 연결할 주소정보를 설정해주면 
-이제 서로 상대방을 네트워크 상에서 식별할 준비가 된 것이다. 
-이 상태가 되면 상대편에서 추가한 track이 넘어와 <code class="language-plaintext highlighter-rouge">track</code> 이벤트가 발생한다.</p>
+<p><code class="language-plaintext highlighter-rouge">rtcPeerConnection.setRemoteDescription</code>를 호출하여 상대편 브라우저의 SDP 정보를 지정해주면
+원격 peer의 데이터 형식을 알게 되므로 remote트랙이 추가되어 <code class="language-plaintext highlighter-rouge">track</code> 이벤트가 발생한다.</p>
 
 <p><strong>caller.js</strong>, <strong>callee.js</strong> 동일하게</p>
 
@@ -240,6 +234,7 @@ Note left of caller: RemoteDescription = answer
   <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">remoteVideo</span><span class="dl">'</span><span class="p">).</span><span class="nx">srcObject</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">MediaStream</span><span class="p">([</span><span class="nx">e</span><span class="p">.</span><span class="nx">track</span><span class="p">])</span>
 <span class="p">});</span>
 </code></pre></div></div>
+
 <p>이 이벤트 객체에 담긴 track을 MediaStream 객체에 담아서 <code class="language-plaintext highlighter-rouge">&lt;video /&gt;</code> 요소의 <code class="language-plaintext highlighter-rouge">srcObject</code>로 지정하면 
 이후 connection이 성립 한 후에 stream을 타고 전송되어 온 remote video data를 화면에 송출할 수 있다.</p>
 
@@ -382,7 +377,9 @@ Signaling Server의 WebSocket을 통해서 서로 SDP를 교환하는 내용을 
 
 <p>브라우저가 크롬인 경우, <a href="chrome://webrtc-internals/">chrome://webrtc-internals/</a> 에 접속해보면
 webrtc 관련한 네트워크 상태와 이벤트 발생을 모니터 할 수 있는데, 마지막으로 발생한 <code class="language-plaintext highlighter-rouge">signalingstatechange</code> 이벤트를 살펴보면
-양측에서 상태가 <code class="language-plaintext highlighter-rouge">stable</code>로 변경된 것을 확인할 수 있다.</p>
+양측에서 상태가 <code class="language-plaintext highlighter-rouge">stable</code>로 변경된 것을 확인할 수 있다. 
+(다른 상태들에 대해서는 <a href="https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/signalingState#RTCSignalingState_enum_2">developer.mozilla.org의 관련 문서</a>
+를 참조)</p>
 
 <h4 id="️주의사항">⚠️주의사항</h4>
 
@@ -395,24 +392,23 @@ caller, callee 각각 한개씩 이상의 브라우저를 띄울 경우, 각각�
 <a href="http://localhost:3000/caller.html">caller App</a> 과 <a href="http://localhost:3000/callee.html">callee App</a> 을 띄우고 
 서로 전송되는 두개의 화면을 볼수 있는 것일까?!</p>
 
-<p>실제 실행해보면 아직 local video만 나오고 remote video는 나오지 않는다.
-<a href="#rtc-연결-생성하기-1">RTC 연결 생성하기 (1)</a> 에서 언급한 것 처럼 실제 연결이 이루어지고 통신을 하기 위해서는 SDP와 ICE 두가지 정보가 교환되어야 하는데
-아직 어떤 형식으로 데이터를 주고 받을지에 대한 정보를 담고 있는 <strong>ICE(Interactive Connectivity Establishment)</strong> 를 
-교환하는 단계에 대한 구현이 이루어 지지 않았다.</p>
-
-<p>데이터를 주고받는 형식은 미디어 타입이나 브라우저 상황에 따라 한가지 이상의 방식으로 통신이 가능하기때문에 
-ICE candidates라고 불리는 여러개의 후보군을 주고 받고, 이중에서 서로 가능한 방식이 있을때 최적이라고 판단되는 ICE를
-골라서 협의하게 된다.</p>
+<p>실제 실행해보면 아직 local video만 나오고 remote video는 나오지 않는다. 왜냐하면 여태까지 두 peer사이에서 오간 정보는
+미디어 데이터 형식에 대한 것 뿐이고, 서로를 네트워크 상에서 어떻게 식별해야 하는지를 알지 못하기 때문에
+데이터를 어디로 보내야 할지 알 수가 없다. 이 문제를 해결하기 위한 프레임워크가 바로 <strong>ICE - Interactive Connectivity Establishment</strong> 이다.<br />
+두개의 peer가 처해있는 네트워크 상황(라우터, 방화벽 등) 에 따라 여러가지 방식으로 서로 통신이 가능하기때문에 
+ICE는 ICE candidates라고 불리는 여러개의 후보군을 주고 받고, 이중에서 서로 가능한 방식이 있을때 최적이라고 판단되는 candidate를
+골라서 이를 통해 connection을 수립하게 된다.</p>
 
 <p>이 선택과정은 표준에 의해 구현된 브라우저가 실행하게 되므로 우리는 위에서 구축한 Signaling Server를 통해서
 ICE candidates를 서로 전달해주기만 하면 된다.</p>
 
-<h3 id="ice-교환-단계">ICE 교환 단계</h3>
+<h3 id="ice-candidates-교환-단계">ICE candidates 교환 단계</h3>
 
-<p><code class="language-plaintext highlighter-rouge">rtcPeerConnection.setLocalDescription</code>를 호출한 시점 이후로부터 각 <code class="language-plaintext highlighter-rouge">rtcPeerConnection</code>객체는 ICE candidate 를 생성할 수 있고
-그때마다 <code class="language-plaintext highlighter-rouge">icecandidate</code>이벤트를 발생시킨다. 이 이벤트 객체에 ICE candidate 정보가 들어있으므로 이를 상대편에게 메시지로
-전달하고, 또 메시지가 들어오면 <code class="language-plaintext highlighter-rouge">rtcPeerConnection.addIceCandidate</code> 메소드를 호출하여 상대편에서 보내온 ICE candidate를
-로컬 rtcPeerConnection에 등록하면 된다.</p>
+<p>각 <code class="language-plaintext highlighter-rouge">rtcPeerConnection</code>객체는 SDP교환 단계에서 <code class="language-plaintext highlighter-rouge">rtcPeerConnection.setLocalDescription</code>를 호출한 시점 이후로부터 
+ICE candidate 를 생성할 수 있고 그때마다 <code class="language-plaintext highlighter-rouge">icecandidate</code>이벤트를 발생시킨다.
+이 이벤트 객체에 ICE candidate 정보가 들어있으므로 이를 상대편에게 메시지로 전달하고, 
+또 메시지가 들어오면 <code class="language-plaintext highlighter-rouge">rtcPeerConnection.addIceCandidate</code> 메소드를 호출하여 
+상대편에서 보내온 ICE candidate를 로컬 rtcPeerConnection에 등록하면 된다.</p>
 
 <p><strong>caller.js</strong>, <strong>callee.js</strong> 동일하게</p>
 
@@ -432,7 +428,7 @@ ICE candidates를 서로 전달해주기만 하면 된다.</p>
 </code></pre></div></div>
 
 <p>여기까지 수행하면 두개의 브라우저에 각각 local, remote 화면이 출력되는 것을 확인할 수 있으며, 
-서로 다른 프로세스 사이에서 시그널 서버를 통하지 않고 직접 네트워크를 통해 통신하여 비디오 스트림을 전송하는 것을 확인할 수 있다.
+서로 다른 프로세스 사이에서 시그널 서버를 비롯한 별개의 서버를 통하지 않고 직접 네트워크를 통해 통신하여 비디오 스트림을 전송하는 것을 확인할 수 있다.
 실제 전송되는 데이터에 대한 실시간 모니터링을 <a href="chrome://webrtc-internals/">chrome://webrtc-internals/</a>에서 확인할 수 있다.
 다만 현재까지는 하나의 컴퓨터에서 실행하고 있기 때문에 local 비디오나 remote 비디오나 같은 화면이 보일텐데 
 네트워크를 통하기 때문에 자세히 보면 미세한 레이턴시가 발생하는것을 알 수 있다.</p>
@@ -563,7 +559,7 @@ callee-&gt;&gt;caller: p2p Media streaming(Audio, Video, Data)
 <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;</span> ifconfig | <span class="nb">grep </span>192 <span class="c">## 192.168.0.6 -&gt; http://192.168.0.6:3000로 접속</span>
 </code></pre></div></div>
 
-<p>아마 제대로 작동이 안될 것이다. userMedia를 가져올때 localhost 이외의 주소에서는 http<strong>s</strong> 접속이 요구된다. 그렇지 않으면
+<p>아마 제대로 작동이 안될 것이다. userMedia를 가져올때 localhost 이외의 주소에서는 TLS(http<strong>s</strong>) 통신이 요구된다. 그렇지 않으면
 관련 API가 작동하지 않는다. 간단한 SSL proxy 서버를 통해서 로컬에서 https 서버를 띄워보자.</p>
 
 <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;</span> npm <span class="nb">install</span> <span class="nt">-g</span> local-ssl-proxy
@@ -589,9 +585,9 @@ mobile safari에선 <code class="language-plaintext highlighter-rouge">&lt;video
 <span class="nt">&lt;video</span> <span class="na">id=</span><span class="s">"remoteVideo"</span> <span class="na">autoplay</span> <span class="na">playsinline</span> <span class="na">width=</span><span class="s">"480px"</span><span class="nt">&gt;&lt;/video&gt;</span>
 </code></pre></div></div>
 
-<p>삽질까지 모두 따라 하느라 수고 많았다.<br />
+<p>여태 삽질까지 모두 따라 하느라 수고 많았다.<br />
 이제 드디어 두개의 화면중 하나에서 CALL 버튼을 누르면 내 얼굴을 서로 다른 각도로 확인해 볼 수 있다!
-본인의 정수리 탈모 진행상태를 체크하는 데 매우 유용하다. 이제 자기 얼굴을 두개나 보는데 질렸다면 가족에게도 접속해 보라고 해보자.
+본인의 정수리 탈모 진행상태를 체크하는 데 매우 유용하다. 이제 자기 얼굴을 두개나 보는데 질렸다면 가족 등 주변인에게도 접속해 보라고 해보자.
 다만 같은 와이파이를 잡아야 하고 각종 보안 경고를 왜 무시해야 하는지 불안해하고 귀찮아 하는 상대방을 잘 설득해야 한다.
 그리고 “안돼는데??” 같은 소리를 듣지 않으려면, 한번에 딱 두명씩만 접속해야 하고, 
 PC에 따로 접속된 브라우저 탭이 있다면 미리미리 꺼두고 시도하자.</p>
@@ -599,12 +595,15 @@ PC에 따로 접속된 브라우저 탭이 있다면 미리미리 꺼두고 시�
 <h2 id="남은-과제">남은 과제</h2>
 
 <p>만약 가족에게도 테스트를 시도해봤다면 절실히 느꼈겠지만, 아직 제대로된 기능을 구현했다고 보기는 어렵다.
-현재 시그널링 서버 구현으로는 두개 이상의 기기가 접속하면 제대로 연결을 맺어줄 수 없으므로, 여러 사용자가 접속해서 원하는 상대방을 찾을 수 있는 방법을 구현해야 한다.</p>
+현재 시그널링 서버 구현으로는 두개 이상의 기기가 접속하면 제대로 연결을 맺어줄 수 없으므로, 
+여러 사용자가 접속해서 원하는 상대방을 찾을 수 있는 방법을 구현해야 한다.</p>
 
 <p>또한 제대로 하나의 서비스로써 완성하기 위해서는 임의의 사용자가 접속해서 이용할 수 있는 public ip와 SSL로 인증된 도메인을 갖춘 환경을 구축해야 한다.
 이러한 문제를 해결하기 위한 여러 방법이 있지만, 개인 프로젝트의 경우 AWS와 같은 클라우드 서비스에 배포하는 방법이 현실적일 것이다.</p>
 
-<p><a href="/2020/10/04/AWS-WebRTC(2)">다음 포스팅</a>에서 이러한 내용들을 다룰 예정이다.</p>
+<p>게다가 서비스가 로컬 네트워크가 아닌 인터넷으로 나아갔을때는 더 골치아픈 문제들이 기다리고 있다.</p>
+
+<p><a href="/2020/10/11/AWS-WebRTC(2)">다음 포스팅</a>에서 이러한 내용들을 다룰 예정이다.</p>
 
 <p>여기까지 진행된 소스 코드는 아래 깃헙 리파지토리 브랜치에 공유되어 있다.</p>
 
