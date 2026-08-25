@@ -4,43 +4,14 @@ on:
   push:
     tags:
       - "v*.*.*"
-    branches:
-      - master
-    paths:
-      - ".github/workflows/publish-holographic-button.yml"
 
 concurrency:
   group: holographic-button-release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  bootstrap-tag:
-    name: Create the release tag
-    if: github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Check out master
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-        with:
-          fetch-depth: 0
-
-      - name: Create tag from package version
-        run: |
-          package_version="$(node -p "require('./holographic-cta-lab/react/package.json').version")"
-          release_tag="v$package_version"
-
-          if git ls-remote --exit-code --tags origin "refs/tags/$release_tag" >/dev/null 2>&1; then
-            echo "$release_tag already exists; nothing to do."
-          else
-            git tag "$release_tag" "$GITHUB_SHA"
-            git push origin "refs/tags/$release_tag"
-          fi
-
   publish:
     name: Verify and publish to npm
-    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -52,7 +23,6 @@ jobs:
     outputs:
       package_name: ${{ steps.package.outputs.name }}
       package_version: ${{ steps.package.outputs.version }}
-      release_tag: ${{ steps.package.outputs.release_tag }}
     steps:
       - name: Check out the tagged commit
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -72,21 +42,15 @@ jobs:
       - name: Validate tag, package version, and release branch
         id: package
         env:
-          RELEASE_REF_NAME: ${{ github.ref_name }}
-          RELEASE_REF_TYPE: ${{ github.ref_type }}
+          RELEASE_TAG: ${{ github.ref_name }}
           RELEASE_SHA: ${{ github.sha }}
         run: |
           package_name="$(node -p "require('./package.json').name")"
           package_version="$(node -p "require('./package.json').version")"
-          if [[ "$RELEASE_REF_TYPE" == "tag" ]]; then
-            release_tag="$RELEASE_REF_NAME"
-          else
-            release_tag="v$package_version"
-          fi
-          tag_version="${release_tag#v}"
+          tag_version="${RELEASE_TAG#v}"
 
-          if [[ "$release_tag" != v* ]] || [[ "$tag_version" != "$package_version" ]]; then
-            echo "Tag $release_tag must match package version $package_version." >&2
+          if [[ "$RELEASE_TAG" != v* ]] || [[ "$tag_version" != "$package_version" ]]; then
+            echo "Tag $RELEASE_TAG must match package version $package_version." >&2
             exit 1
           fi
 
@@ -98,7 +62,6 @@ jobs:
 
           echo "name=$package_name" >> "$GITHUB_OUTPUT"
           echo "version=$package_version" >> "$GITHUB_OUTPUT"
-          echo "release_tag=$release_tag" >> "$GITHUB_OUTPUT"
 
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
@@ -139,7 +102,7 @@ jobs:
       - name: Create release with generated notes
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ needs.publish.outputs.release_tag }}
+          RELEASE_TAG: ${{ github.ref_name }}
           PACKAGE_NAME: ${{ needs.publish.outputs.package_name }}
           PACKAGE_VERSION: ${{ needs.publish.outputs.package_version }}
         run: |
