@@ -4,14 +4,43 @@ on:
   push:
     tags:
       - "v*.*.*"
+    branches:
+      - master
+    paths:
+      - ".github/workflows/publish-holographic-button.yml"
 
 concurrency:
   group: holographic-button-release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
+  bootstrap-tag:
+    name: Create the release tag
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out master
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Create tag from package version
+        run: |
+          package_version="$(node -p "require('./holographic-cta-lab/react/package.json').version")"
+          release_tag="v$package_version"
+
+          if git ls-remote --exit-code --tags origin "refs/tags/$release_tag" >/dev/null 2>&1; then
+            echo "$release_tag already exists; nothing to do."
+          else
+            git tag "$release_tag" "$GITHUB_SHA"
+            git push origin "refs/tags/$release_tag"
+          fi
+
   publish:
     name: Verify and publish to npm
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     permissions:
       contents: read
